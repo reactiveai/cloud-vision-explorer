@@ -1,0 +1,47 @@
+{
+  "extends": "plugin:react/recommended",
+  "rules": {
+    "indent":[2, 2, {"SwitchCase": 1}],
+    "quotes": [2, "single"],
+    "linebreak-style": [2, "unix"],
+    "semi": [2, "never"],
+    "no-dupe-keys": 2,
+    "no-duplicate-case": 2,
+    "no-eq-null": 1,
+    "no-console": 0,
+    "no-extra-bind": 1,
+    "no-fallthrough": 1,
+    "no-unused-expressions": 1,
+    "no-useless-concat": 2,
+    "no-useless-call": 1,
+    "no-with": 1,
+    "no-delete-var": 1,
+    "no-unused-vars": 1,
+    "no-use-before-define": 1,
+    "arrow-spacing": [2,{"before":true,"after":true}],
+    "no-var": 2,
+    "prefer-const": 1,
+    "prefer-spread": 1,
+    "prefer-template": 2,
+    "prefer-reflect": 1,
+    "prefer-arrow-callback": 1,
+    "require-yield": 2,
+    "template-curly-spacing": 2,
+    "react/jsx-uses-vars": 1
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "plugins": [
+    "react",
+    "babel"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "sourceType": "module"
+  }
+}
