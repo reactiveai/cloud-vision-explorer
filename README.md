@@ -1,7 +1,1 @@
-# Mordern webapp boilerplate
-
-- Express
-- Gulp
-- React
-- Reflux
-- Jasmine
+# Google Cloud Vision API Explorer
