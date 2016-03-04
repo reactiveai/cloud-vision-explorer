@@ -14,8 +14,18 @@ gulp.task('default', () => {
   seq('lint', 'test', ['server', 'webpack'])
 })
 
+gulp.task('dev', () => {
+  seq('lint', 'test', ['server', 'server-hot-reload', 'webpack'])
+})
+
 gulp.task('server', () => {
   supervisor('server.js', {
+    ignore: ['public']
+  })
+})
+
+gulp.task('server-hot-reload', () => {
+  supervisor('server.dev.js', {
     ignore: ['public']
   })
 })
