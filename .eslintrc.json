@@ -18,6 +18,7 @@
     "no-delete-var": 1,
     "no-unused-vars": 1,
     "no-use-before-define": 1,
+    "no-undef": 2,
     "arrow-spacing": [2,{"before":true,"after":true}],
     "no-var": 2,
     "prefer-const": 1,
