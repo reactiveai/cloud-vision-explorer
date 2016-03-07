@@ -32,3 +32,6 @@ npm-debug.log
 public/javascripts/bundle.js
 .env
 .envrc
+
+# Added by Reactive Inc.
+scripts/images/*.jpg
