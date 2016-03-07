@@ -1,14 +1,14 @@
 import React from 'react'
 
 import THREE from 'three'
+import Stats from 'three/examples/js/libs/stats.min'
+
+import 'stylesheets/RenderView'
 
 export default React.createClass({
   render() {
     return (
-      <div>
-        Render view
-        <div ref={(c) => this._container = c} ></div>
-      </div>
+      <div ref={(c) => this._container = c} className="render-view"></div>
     )
   },
   // Perhaps this is added for performance reasons?
@@ -25,18 +25,34 @@ export default React.createClass({
 
     const scene = new THREE.Scene()
 
-    const geometry = new THREE.BoxGeometry(200, 200, 200)
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x00ffff
-    })
+    const group = new THREE.Group()
+    scene.add( group )
 
-    const mesh = new THREE.Mesh(geometry, material)
-    scene.add(mesh)
+    for ( let i = 0; i < 1000; i++ ) {
+
+      const material = new THREE.SpriteMaterial()
+
+      const particle = new THREE.Sprite( material )
+
+      particle.position.x = Math.random() * 2000 - 1000
+      particle.position.y = Math.random() * 2000 - 1000
+      particle.position.z = Math.random() * 2000 - 1000
+
+      particle.scale.x = particle.scale.y = Math.random() * 20 + 10
+      group.add( particle )
+    }
+
+
 
     const renderer = new THREE.WebGLRenderer()
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     this._container.appendChild(renderer.domElement)
+
+    const stats = new Stats()
+    stats.domElement.style.position = 'absolute'
+    stats.domElement.style.top = '0px'
+    this._container.appendChild(stats.domElement)
 
     window.addEventListener('resize', () => {
 
@@ -49,10 +65,14 @@ export default React.createClass({
 
     const animate = () => {
 
+      stats.begin()
+
       requestAnimationFrame(animate)
 
-      mesh.rotation.x += 0.01
-      mesh.rotation.y += 0.01
+      group.rotation.x += 0.001
+      group.rotation.y += 0.002
+
+      stats.end()
 
       renderer.render(scene, camera)
 

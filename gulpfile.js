@@ -1,21 +1,17 @@
 'use strict'
-const gulp       = require('gulp')
-const supervisor = require('gulp-supervisor')
-const plumber    = require('gulp-plumber')
-const eslint     = require('gulp-eslint')
-const jasmine    = require('gulp-jasmine')
-const seq        = require('run-sequence')
-const webpack    = require('webpack')
-const wpStream   = require('webpack-stream')
+const gulp          = require('gulp')
+const supervisor    = require('gulp-supervisor')
+const plumber       = require('gulp-plumber')
+const eslint        = require('gulp-eslint')
+const jasmine       = require('gulp-jasmine')
+const seq           = require('run-sequence')
+const wpStream      = require('webpack-stream')
+const webpackConfig = require('./webpack.config.js')
 
-const CLIENT_JS_ENTRY_POINT = 'public/javascripts/main.js'
+const CLIENT_JS_ENTRY_POINT = 'src/javascripts/main.js'
 
 gulp.task('default', () => {
-  seq('lint', 'test', ['server', 'webpack'])
-})
-
-gulp.task('dev', () => {
-  seq('lint', 'test', ['server', 'server-hot-reload', 'webpack'])
+  seq('lint', 'test', ['server', 'server-hot-reload'])
 })
 
 gulp.task('server', () => {
@@ -41,44 +37,17 @@ gulp.task('lint', () => {
     '*.js',
     '!newrelic.js',
     'routes/**/*.js',
-    'public/javascripts/**/*.js',
-    '!public/javascripts/bundle.js'
+    'src/javascripts/**/*.js',
+    '!public/bundle.js'
   ])
   .pipe(eslint({configFile: '.eslintrc.json'}))
   .pipe(eslint.format())
   // .pipe(eslint.failOnError())
 })
 
-const buildClient = (doesWatch) => {
+gulp.task('build', () => {
   return gulp.src(CLIENT_JS_ENTRY_POINT)
     .pipe(plumber())
-    .pipe(wpStream({
-      watch: doesWatch,
-      output: { filename: 'bundle.js' },
-      plugins: [
-        new webpack.DefinePlugin({
-          // 'process.env': { 'FOO': JSON.stringify(process.env.FOO) }
-        })
-      ],
-      module: {
-        loaders: [{
-          loader: 'babel',
-          exclude: /node_modules/,
-          test: /\.js[x]?$/,
-          query: {
-            cacheDirectory: false,
-            presets: ['react', 'es2015']
-          }
-        }]
-      }
-    }))
-    .pipe(gulp.dest('public/javascripts/'))
-}
-
-gulp.task('build', () => {
-  return buildClient(false)
-})
-
-gulp.task('webpack', () => {
-  return buildClient(true)
+    .pipe(wpStream(webpackConfig))
+    .pipe(gulp.dest('public/'))
 })
