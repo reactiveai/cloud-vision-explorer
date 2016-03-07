@@ -35,3 +35,6 @@ public/javascripts/bundle.js
 
 # Added by Reactive Inc.
 scripts/images/*.jpg
+*.mat
+*.pyc
+.DS_Store
