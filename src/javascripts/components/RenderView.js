@@ -5,10 +5,13 @@ import Stats from 'three/examples/js/libs/stats.min'
 
 import 'stylesheets/RenderView'
 
+const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min
+
 export default React.createClass({
   render() {
     return (
-      <div ref={(c) => this._container = c} className="render-view"></div>
+      <div ref={(c) => this._container = c} className="render-view">
+</div>
     )
   },
   // Perhaps this is added for performance reasons?
@@ -21,27 +24,89 @@ export default React.createClass({
     console.log('componentDidMount')
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000)
-    camera.position.z = 400
+    camera.position.z = 1000
 
     const scene = new THREE.Scene()
 
-    const group = new THREE.Group()
-    scene.add( group )
 
-    for ( let i = 0; i < 1000; i++ ) {
-
-      const material = new THREE.SpriteMaterial()
-
-      const particle = new THREE.Sprite( material )
-
-      particle.position.x = Math.random() * 2000 - 1000
-      particle.position.y = Math.random() * 2000 - 1000
-      particle.position.z = Math.random() * 2000 - 1000
-
-      particle.scale.x = particle.scale.y = Math.random() * 20 + 10
-      group.add( particle )
+    const vertices = []
+    for (let i = 0; i < 1000; i++) {
+      vertices.push(new THREE.Vector3(
+        getRandomArbitrary(-1000, 1000),
+        getRandomArbitrary(-1000, 1000),
+        getRandomArbitrary(-1000, 1000)
+      ))
     }
 
+    const positions = new Float32Array(vertices.length * 3)
+    const colors = new Float32Array(vertices.length * 3)
+    const sizes = new Float32Array(vertices.length)
+
+    const PARTICLE_SIZE = 20
+
+    const color = new THREE.Color()
+
+    for (let i = 0, l = vertices.length; i < l; i++) {
+
+      const vertex = vertices[ i ]
+      vertex.toArray(positions, i * 3)
+
+      color.setHSL(0.01 + 0.1 * ( i / l ), 1.0, 0.5)
+      color.toArray(colors, i * 3)
+
+      sizes[i] = PARTICLE_SIZE * 0.5
+
+    }
+
+    const geometry = new THREE.BufferGeometry()
+    geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geometry.addAttribute('customColor', new THREE.BufferAttribute(colors, 3))
+    geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1))
+
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        color:   { type: 'c', value: new THREE.Color( 0xffffff ) },
+        texture: { type: 't', value: new THREE.TextureLoader().load( 'images/disc.png' ) }
+      },
+      vertexShader: `
+        attribute float size;
+        attribute vec3 customColor;
+
+        varying vec3 vColor;
+
+        void main() {
+
+          vColor = customColor;
+
+          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+          gl_PointSize = size * ( 300.0 / -mvPosition.z );
+
+          gl_Position = projectionMatrix * mvPosition;
+
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 color;
+        uniform sampler2D texture;
+
+        varying vec3 vColor;
+
+        void main() {
+
+          gl_FragColor = vec4( color * vColor, 1.0 );
+
+          gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+
+          if ( gl_FragColor.a < ALPHATEST ) discard;
+
+        }
+      `,
+      alphaTest: 0.9,
+    })
+
+    const particles = new THREE.Points(geometry, material)
+    scene.add(particles)
 
 
     const renderer = new THREE.WebGLRenderer()
@@ -69,8 +134,8 @@ export default React.createClass({
 
       requestAnimationFrame(animate)
 
-      group.rotation.x += 0.001
-      group.rotation.y += 0.002
+      particles.rotation.x += 0.0005
+      particles.rotation.y += 0.001
 
       stats.end()
 
