@@ -38,3 +38,4 @@ scripts/images/*.jpg
 *.mat
 *.pyc
 .DS_Store
+*.txt

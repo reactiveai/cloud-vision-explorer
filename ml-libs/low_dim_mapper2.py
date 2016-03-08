@@ -3,6 +3,8 @@ import json_parser
 from scipy.io import savemat
 import string
 import word2vec
+import pickle
+import numpy as np
 
 if __name__ == "__main__":
     vecs = []
@@ -26,4 +28,9 @@ if __name__ == "__main__":
     matlab_dict['data'] = vecs
     matlab_dict['label'] = label_names
     savemat(file_name="tsne.mat", appendmat=False, do_compression=False,oned_as='row', mdict=matlab_dict)
+
+    tsne_python_file = open('tsne_data.dat', 'w')
+    pickle.dump(obj=matlab_dict, file=tsne_python_file)
+
+    np.savetxt('tsne_data.txt', vecs)
 
