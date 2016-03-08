@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import json
-import base64
+import logging
 import time
 from more_itertools import chunked
+from logging import getLogger, StreamHandler, INFO
 
 import googleapiclient
 from googleapiclient import discovery
@@ -13,68 +15,108 @@ from oauth2client.client import GoogleCredentials
 
 class CloudVisionRequester(object):
     DISCOVERY_URL = 'https://{api}.googleapis.com/$discovery/rest?version={apiVersion}'
-    IMG_DIR = os.path.join(os.path.dirname(__file__), 'images')
-    OUT_FILE_PATH = os.path.join(os.path.dirname(__file__), 'out.json')
-    MAX_IMG_PROCESSING = 20
+    GCS_BUCKET = 'gcs-samples2-explorer'
+    GCS_IMG_PREFIX = 'image/'
+    GCS_IMG_SUFFIX = '.jpg'
+    MAX_IMG_BATCH_SIZE = 10
     MAX_API_RETRY = 4
     API_RETRY_DELAY = 5
 
-    def main(self):
-        # authentication
+    def __init__(self, logger):
+        self.logger = logger
         credentials = GoogleCredentials.get_application_default()
-        service = discovery.build(
+        self.vision_service = discovery.build(
             'vision', 'v1', credentials=credentials,
             discoveryServiceUrl=self.DISCOVERY_URL)
+        self.storage_service = discovery.build(
+            'storage', 'v1', credentials=credentials)
+
+    def run(self, options):
+        req = self.storage_service.objects().list(
+            bucket=self.GCS_BUCKET,
+            prefix=self.GCS_IMG_PREFIX,
+            fields='nextPageToken,items(name)',
+            maxResults=self.MAX_IMG_BATCH_SIZE)
 
         count = 0
-        responses = []
-        for img_names in chunked(os.listdir(self.IMG_DIR), self.MAX_IMG_PROCESSING):
-            print 'Now processing %d => %d...' % (
-                count * self.MAX_IMG_PROCESSING + 1,
-                (count + 1) * self.MAX_IMG_PROCESSING)
-            count += 1
+        while req:
+            self.logger.info('Now processing %d => %d...' % (
+                count + 1, count + self.MAX_IMG_BATCH_SIZE))
+            count += self.MAX_IMG_BATCH_SIZE
 
-            requests = map(
-                lambda img_name: self.__make_request(os.path.join(self.IMG_DIR, img_name)),
-                img_names)
-            service_request = service.images().annotate(body={'requests': requests})
+            resp = req.execute()
+            image_paths = self.__get_image_paths(resp)
+            self.__handle_vision_api_responses(
+                image_paths,
+                self.__analyze_images(image_paths),
+                options.outdir)
 
-            for i in range(0, self.MAX_API_RETRY + 1):
-                try:
-                    result = service_request.execute()
-                    break
-                except googleapiclient.errors.HttpError:
-                    if i < self.MAX_API_RETRY:
-                        print 'WARN: got an error from Vision API so retrying...'
-                        time.sleep(self.API_RETRY_DELAY)
-                    else:
-                        print 'ERROR: retry limit exceeded'
-                        raise
+            req = self.storage_service.objects().list_next(req, resp)
 
-            for response in result['responses']:
-                if 'error' in response:
-                    print 'WARN: got an error so skip this. [%s]' % response['error']
+    def __get_image_paths(self, storage_response):
+        return filter(
+            lambda path: path.endswith(self.GCS_IMG_SUFFIX),
+            map(lambda item: item['name'], storage_response['items']))
+
+    def __analyze_images(self, image_paths):
+        requests = map(lambda path: self.__make_request(path), image_paths)
+        req = self.vision_service.images().annotate(body={'requests': requests})
+
+        for i in range(0, self.MAX_API_RETRY + 1):
+            try:
+                result = req.execute()
+                break
+            except googleapiclient.errors.HttpError:
+                if i < self.MAX_API_RETRY:
+                    self.logger.warning('got an error from Vision API so retrying...')
+                    time.sleep(self.API_RETRY_DELAY)
                 else:
-                    responses.append(response)
+                    self.logger.error('retry limit exceeded')
+                    raise
 
-        with open(self.OUT_FILE_PATH, 'w') as f:
-            json.dump({'responses': responses}, f)
+        return result['responses']
 
-    def __make_request(self, img_path):
-        with open(img_path, 'rb') as image:
-            image_content = base64.b64encode(image.read())
-            return {
-                'image': {'content': image_content.decode('UTF-8')},
-                'features': [
-                    {'type': 'FACE_DETECTION', 'maxResults': 10},
-                    {'type': 'LANDMARK_DETECTION', 'maxResults': 10},
-                    {'type': 'LOGO_DETECTION', 'maxResults': 10},
-                    {'type': 'LABEL_DETECTION', 'maxResults': 10},
-                    {'type': 'TEXT_DETECTION', 'maxResults': 10},
-                    {'type': 'SAFE_SEARCH_DETECTION', 'maxResults': 10},
-                    {'type': 'IMAGE_PROPERTIES', 'maxResults': 10}
-                ]
-            }
+    def __handle_vision_api_responses(self, image_paths, responses, out_dir):
+        def save_response(image_path, resp):
+            name_without_ext = image_path.lstrip(self.GCS_IMG_PREFIX).rstrip(self.GCS_IMG_SUFFIX)
+            file = os.path.join(out_dir, name_without_ext + '.json')
+            with open(file, 'w') as f:
+                json.dump(resp, f)
+
+        for image_path, resp in zip(image_paths, responses):
+            if 'error' in resp:
+                self.logger.warning('WARN: got an error so skip this. [%s]' % resp['error'])
+            else:
+                save_response(image_path, resp)
+
+    def __make_request(self, image_path):
+        return {
+            'image': {
+                'source': {
+                    'gcsImageUri': 'gs://%s/%s' % (self.GCS_BUCKET, image_path)
+                }
+            },
+            'features': [
+                {'type': 'FACE_DETECTION', 'maxResults': 10},
+                {'type': 'LANDMARK_DETECTION', 'maxResults': 10},
+                {'type': 'LOGO_DETECTION', 'maxResults': 10},
+                {'type': 'LABEL_DETECTION', 'maxResults': 10},
+                {'type': 'TEXT_DETECTION', 'maxResults': 10},
+                {'type': 'SAFE_SEARCH_DETECTION', 'maxResults': 10},
+                {'type': 'IMAGE_PROPERTIES', 'maxResults': 10}
+            ]
+        }
 
 if __name__ == '__main__':
-    CloudVisionRequester().main()
+    handler = StreamHandler()
+    handler.setLevel(INFO)
+    logger = getLogger(__name__)
+    logger.setLevel(INFO)
+    logger.addHandler(handler)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'outdir',
+        help='A directory to place JSON results from Vision API')
+
+    CloudVisionRequester(logger).run(parser.parse_args())
