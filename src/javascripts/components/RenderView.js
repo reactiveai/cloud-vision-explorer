@@ -7,7 +7,7 @@ require('../misc/TrackballControls.js')(THREE)
 
 import 'stylesheets/RenderView'
 
-const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min
+import _ from 'lodash'
 
 export default React.createClass({
   render() {
@@ -25,22 +25,41 @@ export default React.createClass({
 
     console.log('componentDidMount')
 
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000)
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
     camera.position.z = 1000
 
     const scene = new THREE.Scene()
 
 
+    const numberOfMockGroups = _.random(50, 500)
+
     // Mock data
     const data = []
-    for (let i = 0; i < 100000; i++) {
-      data.push({
-        x: getRandomArbitrary(-1000, 1000),
-        y: getRandomArbitrary(-1000, 1000),
-        z: getRandomArbitrary(-1000, 1000),
-        g: getRandomArbitrary(0, 500)
-      })
+    for (let i = 0; i < numberOfMockGroups; i++) {
+
+      const groupLocation = new THREE.Vector3(
+        _.random(-1000.0, 1000.0),
+        _.random(-1000.0, 1000.0),
+        _.random(-1000.0, 1000.0))
+
+      const groupSize = _.random(10.0, 100.0)
+
+      for (let j = 0; j < 100000/numberOfMockGroups; j++) {
+        data.push({
+          id: i,
+          x: groupLocation.x + _.random(-groupSize, groupSize),
+          y: groupLocation.y + _.random(-groupSize, groupSize),
+          z: groupLocation.z + _.random(-groupSize, groupSize),
+          g: i
+        })
+      }
     }
+
+    // First sort by the group ID ascending
+    const sortedData = _.orderBy(data, ['g'], ['asc'])
+
+    // Generate an object consisting out of groups of cluster IDs
+    const groupedData = _.groupBy(sortedData, (element) => element.g)
 
     const vertices = data.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
@@ -48,7 +67,7 @@ export default React.createClass({
     const colors = new Float32Array(vertices.length * 3)
     const sizes = new Float32Array(vertices.length)
 
-    const PARTICLE_SIZE = 20
+    const PARTICLE_SIZE = 10
 
     const color = new THREE.Color()
 
@@ -88,7 +107,7 @@ export default React.createClass({
 
           vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 
-          gl_PointSize = size * ( 600.0 / -mvPosition.z );
+          gl_PointSize = size * ( 300.0 / -mvPosition.z );
 
           gl_Position = projectionMatrix * mvPosition;
 
@@ -116,22 +135,27 @@ export default React.createClass({
     const particles = new THREE.Points(geometry, material)
     group.add(particles)
 
-    const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0x0000ff
-    })
+    // To achieve an effect similar to the mocks, we need to shoot a line
+    // at another node that is most near, except if node that was already drawn to
+    const nodesDrawnTo = {}
 
-    {
+    _.forEach(groupedData, (value, key) => {
       const geometry = new THREE.Geometry()
 
-      geometry.vertices.push(
-        new THREE.Vector3( -10, 0, 0 ),
-        new THREE.Vector3( 0, 10, 0 ),
-        new THREE.Vector3( 10, 0, 0 )
-      )
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff * Math.random(),
+        blending:     THREE.AdditiveBlending,
+        depthTest:    false,
+        transparent:  true
+      })
+
+      const vertices = value.map((p) => new THREE.Vector3(p.x, p.y, p.z))
+
+      geometry.vertices = vertices
 
       const line = new THREE.Line( geometry, lineMaterial )
       group.add(line)
-    }
+    })
 
     scene.add(group)
 
