@@ -18,7 +18,6 @@ class CloudVisionRequester(object):
     GCS_BUCKET = 'gcs-samples2-explorer'
     GCS_IMG_PREFIX = 'image/'
     GCS_IMG_SUFFIX = '.jpg'
-    MAX_IMG_BATCH_SIZE = 10
     MAX_API_RETRY = 4
     API_RETRY_DELAY = 5
 
@@ -32,26 +31,30 @@ class CloudVisionRequester(object):
             'storage', 'v1', credentials=credentials)
 
     def run(self, options):
+        image_batch_size = int(options.batch_size)
+
         req = self.storage_service.objects().list(
             bucket=self.GCS_BUCKET,
             prefix=self.GCS_IMG_PREFIX,
             fields='nextPageToken,items(name)',
-            maxResults=self.MAX_IMG_BATCH_SIZE)
+            maxResults=image_batch_size)
 
         count = 0
         while req:
             self.logger.info('Now processing %d => %d...' % (
-                count + 1, count + self.MAX_IMG_BATCH_SIZE))
-            count += self.MAX_IMG_BATCH_SIZE
+                count + 1, count + image_batch_size))
+            count += image_batch_size
 
             resp = req.execute()
             image_paths = self.__get_image_paths(resp)
-            vision_responses = self.__analyze_images(image_paths)
-            if vision_responses:
-                self.__handle_vision_api_responses(
-                    image_paths, vision_responses, options.outdir)
-            else:
-                self.logger.warn('failed to get results from Vision API, so will continue from next batch...')
+
+            if image_paths:
+                vision_responses = self.__analyze_images(image_paths)
+                if vision_responses:
+                    self.__handle_vision_api_responses(
+                        image_paths, vision_responses, options.outdir)
+                else:
+                    self.logger.warn('failed to get results from Vision API, so will continue from next batch...')
 
             req = self.storage_service.objects().list_next(req, resp)
 
@@ -121,5 +124,9 @@ if __name__ == '__main__':
     parser.add_argument(
         'outdir',
         help='A directory to place JSON results from Vision API')
+    parser.add_argument(
+        '--batch-size',
+        default='10',
+        help='max images per request to Vision API')
 
     CloudVisionRequester(logger).run(parser.parse_args())
