@@ -9,24 +9,14 @@ const mysql = require('mysql')
 
 const ID_LENGTH = 32
 
-if(process.argv.length < 5) {
-  console.log('usage  : load2sql <ImagePathPattern> <ThumbDir> <VisionDir>')
-  console.log('example: load2sql "foo/*.jpg" /bar /buz')
+if(process.argv.length < 4) {
+  console.log('usage  : load2sql <VisionPattern> <ThumbDir>')
+  console.log('example: load2sql "./vision_dir/*.jpg" ./thumb_dir')
   process.exit()
 }
 
-const ImagePathPattern = process.argv[2]
-const ThumbDir         = process.argv[3]
-const VisionDir        = process.argv[4]
-
-const getVisionResult = (id) => {
-  const json = fs.readFileSync(`${VisionDir}/${id}.json`, 'utf8')
-  return JSON.parse(json)
-}
-
-const getThumbnailBuffer = (id) => {
-  return fs.readFileSync(`${ThumbDir}/${id}.jpg`)
-}
+const VisionPattern = process.argv[2]
+const ThumbDir      = process.argv[3]
 
 const conn = mysql.createConnection({
   host: process.env.MYSQL_SERVER,
@@ -38,12 +28,12 @@ const conn = mysql.createConnection({
 
 conn.connect()
 
-_.each(glob.sync(ImagePathPattern), (file) => {
-  const id = path.basename(file, '.jpg')
+_.each(glob.sync(VisionPattern), (file) => {
+  const id = path.basename(file, '.json')
   if(id.length != ID_LENGTH) { return }
 
-  const vision = JSON.stringify(getVisionResult(id))
-  const thumb = getThumbnailBuffer(id)
+  const vision = fs.readFileSync(file, 'utf8')
+  const thumb  = fs.readFileSync(`${ThumbDir}/${id}.jpg`)
 
   console.log(id)
 
