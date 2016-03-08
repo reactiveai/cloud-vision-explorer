@@ -31,14 +31,18 @@ export default React.createClass({
     const scene = new THREE.Scene()
 
 
-    const vertices = []
+    // Mock data
+    const data = []
     for (let i = 0; i < 100000; i++) {
-      vertices.push(new THREE.Vector3(
-        getRandomArbitrary(-1000, 1000),
-        getRandomArbitrary(-1000, 1000),
-        getRandomArbitrary(-1000, 1000)
-      ))
+      data.push({
+        x: getRandomArbitrary(-1000, 1000),
+        y: getRandomArbitrary(-1000, 1000),
+        z: getRandomArbitrary(-1000, 1000),
+        g: getRandomArbitrary(0, 500)
+      })
     }
+
+    const vertices = data.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
     const positions = new Float32Array(vertices.length * 3)
     const colors = new Float32Array(vertices.length * 3)
