@@ -71,7 +71,7 @@ class CloudVisionRequester(object):
             try:
                 result = req.execute()
                 break
-            except googleapiclient.errors.HttpError:
+            except googleapiclient.errors.HttpError, e:
                 if i < self.MAX_API_RETRY:
                     self.logger.warning('got an error from Vision API, so retrying...')
                     time.sleep(self.API_RETRY_DELAY)
