@@ -3,6 +3,8 @@ import React from 'react'
 import THREE from 'three'
 import Stats from 'three/examples/js/libs/stats.min'
 
+require('../misc/TrackballControls.js')(THREE)
+
 import 'stylesheets/RenderView'
 
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min
@@ -108,6 +110,19 @@ export default React.createClass({
     const particles = new THREE.Points(geometry, material)
     scene.add(particles)
 
+    const controls = new THREE.TrackballControls(camera)
+
+    controls.rotateSpeed = 1.0
+    controls.zoomSpeed = 1.2
+    controls.panSpeed = 0.8
+
+    controls.noZoom = false
+    controls.noPan = false
+
+    controls.staticMoving = true
+    controls.dynamicDampingFactor = 0.3
+
+    controls.keys = [ 65, 83, 68 ]
 
     const renderer = new THREE.WebGLRenderer()
     renderer.setPixelRatio(window.devicePixelRatio)
@@ -126,11 +141,15 @@ export default React.createClass({
 
       renderer.setSize(window.innerWidth, window.innerHeight)
 
+      controls.handleResize()
+
     }, false)
 
     const animate = () => {
 
       stats.begin()
+
+      controls.update()
 
       requestAnimationFrame(animate)
 
