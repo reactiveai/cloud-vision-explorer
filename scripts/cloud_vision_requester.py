@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import glob
 import os
 import json
 import logging
@@ -57,6 +58,17 @@ class CloudVisionRequester(object):
                     self.logger.warn('failed to get results from Vision API, so will continue from next batch...')
 
             req = self.storage_service.objects().list_next(req, resp)
+
+    def merge_vision_outputs(self, options):
+        def to_response(path):
+            with open(path, 'r') as f:
+                response = json.load(f)
+            response['image_id'] = os.path.basename(path).rstrip('.json')
+            return response
+
+        responses = map(to_response, glob.glob(options.pathname))
+        with open(options.outfile, 'w') as f:
+            json.dump({'responses': responses}, f)
 
     def __get_image_paths(self, storage_response):
         return filter(
@@ -121,12 +133,28 @@ if __name__ == '__main__':
     logger.addHandler(handler)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
+    subparsers = parser.add_subparsers(
+        title='subcommands', description='valid subcommands', dest='subcommand')
+
+    analyze_parser = subparsers.add_parser('analyze')
+    analyze_parser.add_argument(
         'outdir',
         help='A directory to place JSON results from Vision API')
-    parser.add_argument(
+    analyze_parser.add_argument(
         '--batch-size',
         default='10',
         help='max images per request to Vision API')
 
-    CloudVisionRequester(logger).run(parser.parse_args())
+    merge_parser = subparsers.add_parser('merge')
+    merge_parser.add_argument(
+        'pathname',
+        help='A Unix style pathname pattern of JSON results from Vision API (e.g. \'dir/*.json\')')
+    merge_parser.add_argument(
+        'outfile',
+        help='A file path for a merged JSON')
+
+    args = parser.parse_args()
+    if args.subcommand == 'analyze':
+        CloudVisionRequester(logger).run(args)
+    elif args.subcommand == 'merge':
+        CloudVisionRequester(logger).merge_vision_outputs(args)
