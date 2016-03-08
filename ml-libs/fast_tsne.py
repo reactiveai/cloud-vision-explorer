@@ -45,12 +45,13 @@ import numpy as np
 from tempfile import mkdtemp
 from os.path import abspath, dirname, isfile, join as path_join
 from struct import calcsize, pack, unpack
-from sys import stderr, stdin, stdout
+from sys import stderr, stdin, stdout, exit
 from platform import system
 from os import devnull
 from shutil import rmtree
 from subprocess import Popen
 
+### Constants
 IS_WINDOWS = True if system() == 'Windows' else False
 
 BH_TSNE_BIN_PATH = path_join(dirname(__file__), 'windows', 'bhtsne/bh_tsne.exe') if IS_WINDOWS else path_join(
@@ -100,12 +101,12 @@ def _read_unpack(fmt, fh):
     return unpack(fmt, fh.read(calcsize(fmt)))
 
 
-def fast_tsne(X, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAULT_OUTPUT_DIMS, perplexity=DEFAULT_PERPLEXITY,
-              theta=DEFAULT_THETA, rand_seed=EMPTY_SEED, verbose=DEFAULT_VERBOSE):
-
+def bh_tsne(samples, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAULT_OUTPUT_DIMS,
+            perplexity=DEFAULT_PERPLEXITY,
+            theta=DEFAULT_THETA, randseed=EMPTY_SEED, verbose=DEFAULT_VERBOSE):
     # Perform the initial dimensionality reduction using PCA
-    X -= np.mean(X, axis=0)
-    cov_x = np.dot(np.transpose(X), X)
+    samples -= np.mean(samples, axis=0)
+    cov_x = np.dot(np.transpose(samples), samples)
     [eig_val, eig_vec] = np.linalg.eig(cov_x)
 
     # sort the eigenvalues desc.
@@ -118,21 +119,26 @@ def fast_tsne(X, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAULT_OU
         initial_dims = len(eig_vec)
 
     eig_vec = eig_vec[:, :initial_dims]
-    X = np.dot(X, eig_vec)
+    samples = np.dot(samples, eig_vec)
 
-    sample_dim = len(X[0])
-    sample_count = len(X)
+    sample_dim = len(samples[0])
+    sample_count = len(samples)
 
+    # bh_tsne works with fixed input and output paths, give it a temporary
+    #   directory to work in so we don't clutter the filesystem
     with TmpDir() as tmp_dir_path:
+
+        # Note: The binary format used by bh_tsne is roughly the same as for
+        #   vanilla tsne
         with open(path_join(tmp_dir_path, 'data.dat'), 'wb') as data_file:
             # Write the bh_tsne header
             data_file.write(pack('iiddi', sample_count, sample_dim, theta, perplexity, no_dims))
             # Then write the data
-            for sample in X:
+            for sample in samples:
                 data_file.write(pack('{}d'.format(len(sample)), *sample))
             # Write random seed if specified
-            if rand_seed != EMPTY_SEED:
-                data_file.write(pack('i', rand_seed))
+            if randseed != EMPTY_SEED:
+                data_file.write(pack('i', randseed))
 
         # Call bh_tsne and let it do its thing
         with open(devnull, 'w') as dev_null:
@@ -166,13 +172,20 @@ def fast_tsne(X, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAULT_OU
 
 def main(args):
     arg_p = arg_parse().parse_args(args[1:])
-    data = np.loadtxt(arg_p.input)
-    for result in fast_tsne(data,
-                            no_dims=arg_p.no_dims,
-                            initial_dims=arg_p.initial_dims,
-                            perplexity=arg_p.perplexity, theta=arg_p.theta,
-                            rand_seed=arg_p.randseed,
-                            verbose=arg_p.verbose):
+    data = []
+    try:
+        data = np.loadtxt(arg_p.input)
+    except Exception:
+        print('Error reading filename {}. Invalid format. The file should be readable by numpy.loadtxt() function.'
+              ).format(arg_p.input.name)
+        exit()
+
+    for result in bh_tsne(data,
+                          no_dims=arg_p.no_dims,
+                          initial_dims=arg_p.initial_dims,
+                          perplexity=arg_p.perplexity, theta=arg_p.theta,
+                          randseed=arg_p.randseed,
+                          verbose=arg_p.verbose):
         fmt = ''
         for i in range(1, len(result)):
             fmt += '{}\t'
@@ -182,6 +195,7 @@ def main(args):
 
 if __name__ == "__main__":
     from sys import argv
+
     exit(main(argv))
     # tsne_python_file = open('tsne_data.dat', 'r')
     # python_dict = pickle.load(tsne_python_file)
