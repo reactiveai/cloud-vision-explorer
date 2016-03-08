@@ -50,6 +50,7 @@ from platform import system
 from os import devnull
 from shutil import rmtree
 from subprocess import Popen
+import pickle
 
 ### Constants
 IS_WINDOWS = True if system() == 'Windows' else False
@@ -109,11 +110,8 @@ def bh_tsne(samples, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAUL
     cov_x = np.dot(np.transpose(samples), samples)
     [eig_val, eig_vec] = np.linalg.eig(cov_x)
 
-    # sort the eigenvalues desc.
-    ev_list = zip(eig_val, eig_vec)
-    ev_list.sort(key=lambda tup: tup[0], reverse=True)
-    eig_val, eig_vec = zip(*ev_list)
-    eig_vec = np.array(eig_vec)
+    idx = eig_val.argsort()[::-1]
+    eig_vec = eig_vec[:, idx]
 
     if initial_dims > len(eig_vec):
         initial_dims = len(eig_vec)
@@ -194,11 +192,10 @@ def main(args):
 
 
 if __name__ == "__main__":
-    from sys import argv
-
-    exit(main(argv))
-    # tsne_python_file = open('tsne_data.dat', 'r')
-    # python_dict = pickle.load(tsne_python_file)
-    # X = np.array(python_dict['data'])
-    # for result in tsne(X):
-    #    print result
+    #  from sys import argv
+    # exit(main(argv))
+    tsne_python_file = open('tsne_data.dat', 'r')
+    python_dict = pickle.load(tsne_python_file)
+    X = np.array(python_dict['data'])
+    for result in bh_tsne(X):
+        print result
