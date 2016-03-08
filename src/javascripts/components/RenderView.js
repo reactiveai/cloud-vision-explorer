@@ -48,6 +48,8 @@ export default React.createClass({
 
     const color = new THREE.Color()
 
+    const group = new THREE.Group()
+
     for (let i = 0, l = vertices.length; i < l; i++) {
 
       const vertex = vertices[ i ]
@@ -108,7 +110,26 @@ export default React.createClass({
     })
 
     const particles = new THREE.Points(geometry, material)
-    scene.add(particles)
+    group.add(particles)
+
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: 0x0000ff
+    })
+
+    {
+      const geometry = new THREE.Geometry()
+
+      geometry.vertices.push(
+        new THREE.Vector3( -10, 0, 0 ),
+        new THREE.Vector3( 0, 10, 0 ),
+        new THREE.Vector3( 10, 0, 0 )
+      )
+
+      const line = new THREE.Line( geometry, lineMaterial )
+      group.add(line)
+    }
+
+    scene.add(group)
 
     const controls = new THREE.TrackballControls(camera)
 
@@ -153,8 +174,8 @@ export default React.createClass({
 
       requestAnimationFrame(animate)
 
-      particles.rotation.x += 0.00005
-      particles.rotation.y += 0.0001
+      group.rotation.x += 0.00005
+      group.rotation.y += 0.0001
 
       stats.end()
 
