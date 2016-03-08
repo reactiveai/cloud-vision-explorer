@@ -32,7 +32,7 @@ export default React.createClass({
 
 
     const vertices = []
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100000; i++) {
       vertices.push(new THREE.Vector3(
         getRandomArbitrary(-1000, 1000),
         getRandomArbitrary(-1000, 1000),
@@ -53,7 +53,7 @@ export default React.createClass({
       const vertex = vertices[ i ]
       vertex.toArray(positions, i * 3)
 
-      color.setHSL(0.01 + 0.1 * ( i / l ), 1.0, 0.5)
+      color.setHex(0xffffff * Math.random())
       color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE * 0.5
@@ -82,7 +82,7 @@ export default React.createClass({
 
           vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 
-          gl_PointSize = size * ( 300.0 / -mvPosition.z );
+          gl_PointSize = size * ( 600.0 / -mvPosition.z );
 
           gl_Position = projectionMatrix * mvPosition;
 
@@ -153,8 +153,8 @@ export default React.createClass({
 
       requestAnimationFrame(animate)
 
-      particles.rotation.x += 0.0005
-      particles.rotation.y += 0.001
+      particles.rotation.x += 0.00005
+      particles.rotation.y += 0.0001
 
       stats.end()
 
