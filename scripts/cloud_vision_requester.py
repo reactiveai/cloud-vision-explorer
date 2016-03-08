@@ -46,10 +46,12 @@ class CloudVisionRequester(object):
 
             resp = req.execute()
             image_paths = self.__get_image_paths(resp)
-            self.__handle_vision_api_responses(
-                image_paths,
-                self.__analyze_images(image_paths),
-                options.outdir)
+            vision_responses = self.__analyze_images(image_paths)
+            if vision_responses:
+                self.__handle_vision_api_responses(
+                    image_paths, vision_responses, options.outdir)
+            else:
+                self.logger.warn('failed to get results from Vision API, so will continue from next batch...')
 
             req = self.storage_service.objects().list_next(req, resp)
 
@@ -68,11 +70,12 @@ class CloudVisionRequester(object):
                 break
             except googleapiclient.errors.HttpError:
                 if i < self.MAX_API_RETRY:
-                    self.logger.warning('got an error from Vision API so retrying...')
+                    self.logger.warning('got an error from Vision API, so retrying...')
                     time.sleep(self.API_RETRY_DELAY)
                 else:
+                    self.logger.exception(e)
                     self.logger.error('retry limit exceeded')
-                    raise
+                    return None
 
         return result['responses']
 
