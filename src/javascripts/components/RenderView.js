@@ -8,6 +8,15 @@ require('../misc/TrackballControls.js')(THREE)
 import 'stylesheets/RenderView'
 
 import _ from 'lodash'
+import $ from 'npm-zepto'
+
+const getJSON = (url) => {
+  return new Promise(function(resolve, reject) {
+    $.getJSON(url, (data) => {
+      resolve(data)
+    })
+  })
+}
 
 export default React.createClass({
   render() {
@@ -21,16 +30,7 @@ export default React.createClass({
     console.log('shouldComponentUpdate')
     return false
   },
-  componentDidMount() {
-
-    console.log('componentDidMount')
-
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.position.z = 1000
-
-    const scene = new THREE.Scene()
-
-
+  _generateMockData() {
     const numberOfMockGroups = _.random(50, 500)
 
     // Mock data
@@ -47,13 +47,38 @@ export default React.createClass({
       for (let j = 0; j < 100000/numberOfMockGroups; j++) {
         data.push({
           id: i,
-          x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 3)),
-          y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 3)),
-          z: groupLocation.z + Math.pow(_.random(-groupSize, groupSize), _.random(1, 3)),
+          x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
+          y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
+          z: groupLocation.z + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
           g: i
         })
       }
     }
+
+    return data
+  },
+  componentDidMount() {
+
+    console.log('componentDidMount')
+
+    getJSON('/output.json').then(this._setupScene)
+
+  },
+  _setupScene(data) {
+
+    // Normalize data
+    data.forEach((elem) => {
+      elem.x *= 1000.0
+      elem.y *= 1000.0
+      elem.z *= 1000.0
+    })
+
+    console.log(data)
+
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
+    camera.position.z = 1000
+
+    const scene = new THREE.Scene()
 
     // First sort by the group ID ascending
     const sortedData = _.orderBy(data, ['g'], ['asc'])
@@ -75,7 +100,7 @@ export default React.createClass({
     const colors = new Float32Array(vertices.length * 3)
     const sizes = new Float32Array(vertices.length)
 
-    const PARTICLE_SIZE = 10
+    const PARTICLE_SIZE = 40
 
     const color = new THREE.Color()
 
@@ -151,7 +176,7 @@ export default React.createClass({
       const geometry = new THREE.Geometry()
 
       const lineMaterial = new THREE.LineBasicMaterial({
-        color: 0xffffff * Math.random(),
+        color: value.color,
         blending:     THREE.AdditiveBlending,
         depthTest:    false,
         transparent:  true
@@ -159,10 +184,13 @@ export default React.createClass({
 
       const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
-      geometry.vertices = vertices
+      const sampleVertices = _.sampleSize(vertices, 200)
+
+      geometry.vertices = sampleVertices
 
       const line = new THREE.Line( geometry, lineMaterial )
-      //group.add(line)
+
+      // group.add(line)
     })
 
     scene.add(group)
