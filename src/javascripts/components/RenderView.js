@@ -10,15 +10,17 @@ import 'stylesheets/RenderView'
 import _ from 'lodash'
 import $ from 'npm-zepto'
 
-const generateMockData = (numberOfMockGroups = _.random(50, 500), numberOfNodes = 100000) => {
+const generateMockData = (numberOfMockGroups = _.random(50, 500),
+  numberOfNodes = 100000,
+  groupLocationSpread = 1000.0) => {
   // Mock data
   const data = []
   for (let i = 0; i < numberOfMockGroups; i++) {
 
     const groupLocation = new THREE.Vector3(
-      _.random(-1000.0, 1000.0),
-      _.random(-1000.0, 1000.0),
-      _.random(-1000.0, 1000.0))
+      _.random(-groupLocationSpread, groupLocationSpread),
+      _.random(-groupLocationSpread, groupLocationSpread),
+      _.random(-groupLocationSpread, groupLocationSpread))
 
     const groupSize = _.random(10.0, 500.0)
 
@@ -66,7 +68,7 @@ export default React.createClass({
     // })
 
     {
-      const data = generateMockData()
+      const data = generateMockData(1, 1000, 0)
       this._setupScene(data)
     }
 
@@ -74,9 +76,16 @@ export default React.createClass({
   _setupScene(data) {
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.position.z = 1000
+    camera.position.z = 3000
 
     const scene = new THREE.Scene()
+
+    const raycaster = new THREE.Raycaster()
+
+    // Increase the default mouseover detection radius of points
+    raycaster.params.Points.threshold = 5
+
+    const mouse = new THREE.Vector2()
 
     // First sort by the group ID ascending
     const sortedData = _.orderBy(data, ['g'], ['asc'])
@@ -99,7 +108,7 @@ export default React.createClass({
     const colors = new Float32Array(vertices.length * 3)
     const sizes = new Float32Array(vertices.length)
 
-    const PARTICLE_SIZE = 40
+    const PARTICLE_SIZE = 20
 
     const color = new THREE.Color()
 
@@ -113,7 +122,7 @@ export default React.createClass({
       color.setHex(groupedData[data[i].g].color)
       color.toArray(colors, i * 3)
 
-      sizes[i] = PARTICLE_SIZE * 0.5
+      sizes[i] = PARTICLE_SIZE
 
     }
 
@@ -240,6 +249,11 @@ export default React.createClass({
     stats.domElement.style.top = '0px'
     this._container.appendChild(stats.domElement)
 
+    document.addEventListener( 'mousemove', () => {
+      mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
+      mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
+    }, false)
+
     window.addEventListener('resize', () => {
 
       camera.aspect = window.innerWidth / window.innerHeight
@@ -251,6 +265,60 @@ export default React.createClass({
 
     }, false)
 
+    let lastIntersectIndex = null
+
+    const tick = () => {
+      group.rotation.x += 0.00005
+      group.rotation.y += 0.0001
+
+      const geometry = particles.geometry
+      const attributes = geometry.attributes
+
+      raycaster.setFromCamera( mouse, camera )
+
+      const intersects = raycaster.intersectObject(particles)
+
+      if ( intersects.length > 0 ) {
+
+        if ( lastIntersectIndex != intersects[ 0 ].index ) {
+
+          if (lastIntersectIndex) {
+            attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
+
+            const color = new THREE.Color()
+            color.setHex(groupedData[data[lastIntersectIndex].g].color)
+            color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
+          }
+
+          lastIntersectIndex = intersects[ 0 ].index
+
+          attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
+          attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
+          attributes.size.needsUpdate = true
+
+          color.setRGB(255, 255, 255)
+          color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
+
+          attributes.customColor.needsUpdate = true
+
+        }
+
+      } else if ( lastIntersectIndex !== null ) {
+
+        attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
+        attributes.size.needsUpdate = true
+
+        const color = new THREE.Color()
+        color.setHex(groupedData[data[lastIntersectIndex].g].color)
+        color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
+        attributes.customColor.needsUpdate = true
+
+        lastIntersectIndex = null
+
+      }
+
+    }
+
     const animate = () => {
 
       stats.begin()
@@ -259,8 +327,7 @@ export default React.createClass({
 
       requestAnimationFrame(animate)
 
-      group.rotation.x += 0.00005
-      group.rotation.y += 0.0001
+      tick()
 
       stats.end()
 
