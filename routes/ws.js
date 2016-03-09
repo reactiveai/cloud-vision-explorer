@@ -1,5 +1,5 @@
-const _ = require('lodash')
-const mysql = require('mysql')
+const _       = require('lodash')
+const numeral = require('numeral')
 
 const onConnection = (sock, db) => {
   console.log('connected')
@@ -12,9 +12,8 @@ const onConnection = (sock, db) => {
         return
       }
 
-      console.log(`returning ${rows.length} thumbnail`)
-
       sock.emit('thumbnail', _.map(rows, (row) => {
+        console.log(`emitting thumbnail : ${row.id} / ${numeral(row.thumb.byteLength).format('0.0 b')}`)
         return {
           id: row['id'],
           thumb: row['thumb']
@@ -31,9 +30,8 @@ const onConnection = (sock, db) => {
         return
       }
 
-      console.log(`returning ${rows.length} vision`)
-
       sock.emit('vision', _.map(rows, (row) => {
+        console.log(`emitting vision : ${row.id} / ${numeral(row.vision.length).format('0.0 b')}`)
         return {
           id: row['id'],
           vision: JSON.parse(row['vision'])
