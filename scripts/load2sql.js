@@ -22,8 +22,7 @@ const conn = mysql.createConnection({
   host: process.env.MYSQL_SERVER,
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  connectionLimit: 10
+  database: process.env.MYSQL_DATABASE
 })
 
 conn.connect()
