@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from __future__ import print_function
 from clustering import kmeans
 from tsne import low_dim_mapper

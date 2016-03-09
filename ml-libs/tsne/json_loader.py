@@ -1,7 +1,7 @@
 from __future__ import print_function
 import json
 import word2vec
-JSON_FILENAME = "../data/out.json"
+JSON_FILENAME = "input.json"
 
 
 def enrich_map_with_word2vec(label_map, w2v):
