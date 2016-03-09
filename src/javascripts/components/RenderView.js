@@ -10,9 +10,7 @@ import 'stylesheets/RenderView'
 import _ from 'lodash'
 import $ from 'npm-zepto'
 
-const generateMockData = () => {
-  const numberOfMockGroups = _.random(50, 500)
-
+const generateMockData = (numberOfMockGroups = _.random(50, 500), numberOfNodes = 100000) => {
   // Mock data
   const data = []
   for (let i = 0; i < numberOfMockGroups; i++) {
@@ -24,7 +22,7 @@ const generateMockData = () => {
 
     const groupSize = _.random(10.0, 500.0)
 
-    for (let j = 0; j < 100000/numberOfMockGroups; j++) {
+    for (let j = 0; j < numberOfNodes/numberOfMockGroups; j++) {
       data.push({
         id: i,
         x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
