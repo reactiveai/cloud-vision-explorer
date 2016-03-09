@@ -47,9 +47,9 @@ export default React.createClass({
       for (let j = 0; j < 100000/numberOfMockGroups; j++) {
         data.push({
           id: i,
-          x: groupLocation.x + _.random(-groupSize, groupSize),
-          y: groupLocation.y + _.random(-groupSize, groupSize),
-          z: groupLocation.z + _.random(-groupSize, groupSize),
+          x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 3)),
+          y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 3)),
+          z: groupLocation.z + Math.pow(_.random(-groupSize, groupSize), _.random(1, 3)),
           g: i
         })
       }
@@ -60,6 +60,14 @@ export default React.createClass({
 
     // Generate an object consisting out of groups of cluster IDs
     const groupedData = _.groupBy(sortedData, (element) => element.g)
+
+    // Add metadata to each group
+    _.each(groupedData, (value, key, coll) => {
+      coll[key] = {
+        nodes: value,
+        color: 0xffffff * Math.random()
+      }
+    })
 
     const vertices = data.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
@@ -78,7 +86,7 @@ export default React.createClass({
       const vertex = vertices[ i ]
       vertex.toArray(positions, i * 3)
 
-      color.setHex(0xffffff * Math.random())
+      color.setHex(groupedData[data[i].g].color)
       color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE * 0.5
@@ -149,12 +157,12 @@ export default React.createClass({
         transparent:  true
       })
 
-      const vertices = value.map((p) => new THREE.Vector3(p.x, p.y, p.z))
+      const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
       geometry.vertices = vertices
 
       const line = new THREE.Line( geometry, lineMaterial )
-      group.add(line)
+      //group.add(line)
     })
 
     scene.add(group)
