@@ -10,6 +10,7 @@ const sassLoaders = [
 ]
 
 module.exports = {
+  devtool: 'inline-source-map',
   entry: [
     'webpack-dev-server/client?http://0.0.0.0:3001',
     'webpack/hot/only-dev-server',
@@ -32,6 +33,10 @@ module.exports = {
       {
         test: /\.sass$/,
         loader: ExtractTextPlugin.extract('style-loader', sassLoaders.join('!'))
+      },
+      {
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style', 'css?sourceMap&modules&importLoaders=1!postcss!sass?sourceMap')
       }
     ]
   },
@@ -49,7 +54,7 @@ module.exports = {
   ],
 
   resolve: {
-    extensions: ['', '.js', '.sass'],
+    extensions: ['', '.js', '.sass', '.scss'],
     modulesDirectories: ['src', 'node_modules']
   }
 }
