@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Websocket Test</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const TARGET_IDS = [
+        '02dfc015067fedf36e0b5f2f4d8c903a',
+        '1b1035c01f2d8df490c146a76080b41a'
+      ]
+
+      const socket = io()
+
+      socket.on('thumbnail', (results) => {
+        console.debug(`received ${results.length} thumbnail`)
+        console.debug(results)
+      })
+
+      socket.on('vision', (results) => {
+        console.debug(`received ${results.length} vision`)
+        console.debug(results)
+      })
+
+      socket.on('connect', () => {
+        console.debug('connected')
+        socket.emit('thumbnail', TARGET_IDS)
+        socket.emit('vision', TARGET_IDS)
+      })
+    </script>
+  </head>
+  <body>
+    <h1>Websocket Test</h1>
+    <p>See the source code and dev console</p>
+  </body>
+</html>
