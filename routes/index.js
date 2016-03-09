@@ -6,5 +6,9 @@ module.exports = (app) => {
   //   res.render('index', {})
   // })
 
+  router.get('/wstest', (req, res) => {
+    res.render('wstest', {})
+  })
+
   return router
 }
