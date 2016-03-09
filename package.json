@@ -2,8 +2,8 @@
   "name": "cloud-vision-explorer",
   "version": "1.0.0",
   "private": true,
-  "engines" : {
-    "node" : "5.x"
+  "engines": {
+    "node": "5.x"
   },
   "scripts": {
     "start": "node server.js",
