@@ -10,13 +10,36 @@ import 'stylesheets/RenderView'
 import _ from 'lodash'
 import $ from 'npm-zepto'
 
-const getJSON = (url) => {
-  return new Promise(function(resolve, reject) {
-    $.getJSON(url, (data) => {
-      resolve(data)
-    })
-  })
+const generateMockData = () => {
+  const numberOfMockGroups = _.random(50, 500)
+
+  // Mock data
+  const data = []
+  for (let i = 0; i < numberOfMockGroups; i++) {
+
+    const groupLocation = new THREE.Vector3(
+      _.random(-1000.0, 1000.0),
+      _.random(-1000.0, 1000.0),
+      _.random(-1000.0, 1000.0))
+
+    const groupSize = _.random(10.0, 500.0)
+
+    for (let j = 0; j < 100000/numberOfMockGroups; j++) {
+      data.push({
+        id: i,
+        x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
+        y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
+        z: groupLocation.z + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
+        g: i
+      })
+    }
+  }
+
+  return data
 }
+
+// Promise jQuery getJSON version
+const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
 export default React.createClass({
   render() {
@@ -30,48 +53,27 @@ export default React.createClass({
     console.log('shouldComponentUpdate')
     return false
   },
-  _generateMockData() {
-    const numberOfMockGroups = _.random(50, 500)
-
-    // Mock data
-    const data = []
-    for (let i = 0; i < numberOfMockGroups; i++) {
-
-      const groupLocation = new THREE.Vector3(
-        _.random(-1000.0, 1000.0),
-        _.random(-1000.0, 1000.0),
-        _.random(-1000.0, 1000.0))
-
-      const groupSize = _.random(10.0, 100.0)
-
-      for (let j = 0; j < 100000/numberOfMockGroups; j++) {
-        data.push({
-          id: i,
-          x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
-          y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
-          z: groupLocation.z + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
-          g: i
-        })
-      }
-    }
-
-    return data
-  },
   componentDidMount() {
 
-    console.log('componentDidMount')
+    // getJSON('/output.json').then((data) => {
+    //
+    //   // Normalize data
+    //   data.forEach((elem) => {
+    //     elem.x *= 1000.0
+    //     elem.y *= 1000.0
+    //     elem.z *= 1000.0
+    //   })
+    //
+    //   this._setupScene(data)
+    // })
 
-    getJSON('/output.json').then(this._setupScene)
+    {
+      const data = generateMockData()
+      this._setupScene(data)
+    }
 
   },
   _setupScene(data) {
-
-    // Normalize data
-    data.forEach((elem) => {
-      elem.x *= 1000.0
-      elem.y *= 1000.0
-      elem.z *= 1000.0
-    })
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
     camera.position.z = 1000
@@ -92,6 +94,7 @@ export default React.createClass({
       }
     })
 
+    // Extract a pure vector array
     const vertices = data.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
     const positions = new Float32Array(vertices.length * 3)
@@ -168,27 +171,26 @@ export default React.createClass({
 
     // To achieve an effect similar to the mocks, we need to shoot a line
     // at another node that is most near, except if node that was already drawn to
-    const nodesDrawnTo = {}
-
-    _.forEach(groupedData, (value, key) => {
+    _.forEach(groupedData, (value) => {
       const geometry = new THREE.Geometry()
 
       const lineMaterial = new THREE.LineBasicMaterial({
         color: value.color,
         blending:     THREE.AdditiveBlending,
         depthTest:    false,
-        transparent:  true
+        transparent:  true,
+        opacity: 0.2
       })
 
       const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
-      const findClosestVertex = (list, other) => {
+      const findClosestVertex = (list, other, closeNess=0) => {
         const clonedArr = _.without(_.clone(list), other)
         clonedArr.sort((a, b) => a.distanceToSquared(other) - b.distanceToSquared(other))
-        return clonedArr[0]
+        return clonedArr[closeNess]
       }
 
-      let allowedVerticesToSearch = _.clone(vertices)
+      const allowedVerticesToSearch = _.clone(vertices)
 
       const sortedVertices = []
 
