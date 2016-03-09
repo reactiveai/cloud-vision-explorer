@@ -73,8 +73,6 @@ export default React.createClass({
       elem.z *= 1000.0
     })
 
-    console.log(data)
-
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
     camera.position.z = 1000
 
@@ -184,13 +182,36 @@ export default React.createClass({
 
       const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
-      const sampleVertices = _.sampleSize(vertices, 200)
+      const findClosestVertex = (list, other) => {
+        const clonedArr = _.without(_.clone(list), other)
+        clonedArr.sort((a, b) => a.distanceToSquared(other) - b.distanceToSquared(other))
+        return clonedArr[0]
+      }
 
-      geometry.vertices = sampleVertices
+      let allowedVerticesToSearch = _.clone(vertices)
+
+      const sortedVertices = []
+
+      const doSearch = (list, v) => {
+        if (sortedVertices.length === 0) {
+          sortedVertices.push(v)
+        }
+
+        list = _.without(list, v)
+        const nextVertex = findClosestVertex(list, v)
+        if (nextVertex) {
+          sortedVertices.push(nextVertex)
+          doSearch(list, nextVertex)
+        }
+      }
+
+      doSearch(allowedVerticesToSearch, vertices[0])
+
+      geometry.vertices = sortedVertices
 
       const line = new THREE.Line( geometry, lineMaterial )
 
-      // group.add(line)
+      group.add(line)
     })
 
     scene.add(group)
