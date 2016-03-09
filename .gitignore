@@ -33,5 +33,6 @@ public/javascripts/bundle.js
 .env
 .envrc
 
-# Added by Reactive Inc.
 scripts/images/*.jpg
+public/bundle.js
+public/main.css
