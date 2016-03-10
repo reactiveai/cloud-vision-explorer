@@ -9,12 +9,9 @@ COPY . /opt/cloud-vision-explorer
 #RUN npm install --production
 RUN npm install
 
+ENV MYSQL_DATABASE vision_explorer
+ENV NODE_ENV production
 ENV PORT 80
-ENV MYSQL_SERVER xxx.xxx.xxx.xxx
-ENV MYSQL_USER xxx
-ENV MYSQL_PASSWORD xxx
-ENV MYSQL_DATABASE xxx
-
 EXPOSE 80
 
 CMD [ "npm", "start" ]
