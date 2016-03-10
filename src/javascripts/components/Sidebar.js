@@ -7,28 +7,6 @@ import IconButton from 'react-toolbox/lib/button'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 
-class MyTabs extends Tabs {
-  // Copied mainly from the original class, but modified some orders and styles
-  render () {
-    let className = tabStyle.root
-    const { headers, contents } = this.parseChildren()
-    if (this.props.className) className += ` ${this.props.className}`
-
-    return (
-      <div ref='tabs' data-react-toolbox='tabs' className={className}>
-        {this.renderContents(contents)}
-        <nav className={tabStyle.navigation} ref='navigation'>
-          {this.renderHeaders(headers)}
-        </nav>
-        <span
-          className={tabStyle.pointer}
-          style={_.omit(this.state.pointer, 'top')}
-        />
-      </div>
-    )
-  }
-}
-
 export default class Sidebar extends React.Component {
   static get propTypes() {
     return {
@@ -72,7 +50,7 @@ export default class Sidebar extends React.Component {
           <li className="col-xs"><FontIcon value='place' /></li>
           <li className="col-xs"><FontIcon value='photo' /></li>
         </ul>
-        <MyTabs
+        <SidebarTabs
           className="detail-tab"
           index={tabIndex}
           onChange={this.handleTabChange.bind(this)}
@@ -81,8 +59,30 @@ export default class Sidebar extends React.Component {
           <Tab label='Data' className={classForTab(1)}>
             <pre>{this.state.visionData}</pre>
           </Tab>
-        </MyTabs>
+        </SidebarTabs>
       </Drawer>
+    )
+  }
+}
+
+class SidebarTabs extends Tabs {
+  // Copied mainly from the original class, but modified some orders and styles
+  render () {
+    let className = tabStyle.root
+    const { headers, contents } = this.parseChildren()
+    if (this.props.className) className += ` ${this.props.className}`
+
+    return (
+      <div ref='tabs' data-react-toolbox='tabs' className={className}>
+        {this.renderContents(contents)}
+        <nav className={tabStyle.navigation} ref='navigation'>
+          {this.renderHeaders(headers)}
+        </nav>
+        <span
+          className={tabStyle.pointer}
+          style={_.omit(this.state.pointer, 'top')}
+        />
+      </div>
     )
   }
 }
