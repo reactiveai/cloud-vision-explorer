@@ -25,18 +25,33 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_DATABASE
 })
 
-const files = glob.sync(VisionPattern)
-
-_.each(files, (file, index) => {
+_.each(glob.sync(VisionPattern), (file, index, files) => {
   const id = path.basename(file, '.json')
-  if(id.length != ID_LENGTH) { return }
+  if(id.length != ID_LENGTH) {
+    console.log(`weird! ${file}`)
+    pool.end()
+    process.exit()
+    return
+  }
 
   const vision = fs.readFileSync(file, 'utf8')
   const thumb  = fs.readFileSync(`${ThumbDir}/${id}.jpg`)
 
   pool.query('REPLACE INTO entries SET ?', {id, vision, thumb}, (err, res) => {
-    console.log(id)
-    if(err){ console.log(err) }
-    if(index == (files.length - 1)) { pool.end() }
+    let count = index + 1
+    // console.log(id)
+    console.log(`${id} : ${count} / ${files.length}`)
+    if(err){
+      console.log(err)
+      pool.end()
+      process.exit()
+    }
+
+    if(count == files.length) {
+      _.defer(() => {
+        pool.end()
+        console.log('Done.')
+      })
+    }
   })
 })
