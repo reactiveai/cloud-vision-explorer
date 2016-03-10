@@ -1,6 +1,7 @@
-from sklearn.manifold.t_sne import TSNE
 import pickle
+
 import numpy as np
+from sklearn.manifold.t_sne import TSNE
 
 
 def pca(mat, n_components_after_pca):

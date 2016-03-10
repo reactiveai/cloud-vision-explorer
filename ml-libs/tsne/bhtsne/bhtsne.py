@@ -38,14 +38,14 @@ Version:    2013-01-22
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 from argparse import ArgumentParser, FileType
+from os import devnull
 from os.path import abspath, dirname, isfile, join as path_join
+from platform import system
 from shutil import rmtree
 from struct import calcsize, pack, unpack
 from subprocess import Popen
 from sys import stderr, stdin, stdout
 from tempfile import mkdtemp
-from platform import system
-from os import devnull
 
 ### Constants
 IS_WINDOWS = True if system() == 'Windows' else False

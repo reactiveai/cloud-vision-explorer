@@ -39,3 +39,5 @@ scripts/images/*.jpg
 *.pyc
 .DS_Store
 *.txt
+.idea
+*.zip
