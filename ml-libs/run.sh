@@ -11,5 +11,5 @@ fi
 
 echo "input file is input.json"
 chmod +x main.py 
-./main.py
+python main.py
 echo "file is output.json"
