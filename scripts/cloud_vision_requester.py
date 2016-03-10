@@ -63,7 +63,7 @@ class CloudVisionRequester(object):
         def to_response(path):
             with open(path, 'r') as f:
                 response = json.load(f)
-            response['image_id'] = os.path.basename(path).rstrip('.json')
+            response['imageId'] = os.path.basename(path).rstrip('.json')
             return response
 
         responses = map(to_response, glob.glob(options.pathname))
