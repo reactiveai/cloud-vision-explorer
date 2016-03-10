@@ -34,7 +34,9 @@ export default class Sidebar extends React.Component {
 
   render() {
     const { tabIndex } = this.state
-    const classForTab = index => tabIndex === index ? 'col-xs active' : 'col-xs'
+    const classForTab = (index) => {
+      return tabIndex === index ? 'col-xs active' : 'col-xs'
+    }
     return (
       <Drawer
         className="sidebar"
