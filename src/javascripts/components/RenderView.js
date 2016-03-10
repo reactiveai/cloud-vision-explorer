@@ -68,7 +68,7 @@ export default React.createClass({
     // })
 
     {
-      const data = generateMockData(1, 1000, 0)
+      const data = generateMockData()
       this._setupScene(data)
     }
 
@@ -171,6 +171,7 @@ export default React.createClass({
         }
       `,
       alphaTest: 0.9,
+      depthTest: false
     })
 
     const particles = new THREE.Points(geometry, material)
@@ -186,7 +187,7 @@ export default React.createClass({
         blending:     THREE.AdditiveBlending,
         depthTest:    false,
         transparent:  true,
-        opacity: 0.2
+        opacity: 0.18
       })
 
       const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
