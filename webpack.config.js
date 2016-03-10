@@ -36,10 +36,12 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style', 'css?sourceMap&modules&importLoaders=1!postcss!sass?sourceMap')
+        loader: ExtractTextPlugin.extract('style', 'css?sourceMap&modules&importLoaders=1!postcss!sass?sourceMap!toolbox')
       }
     ]
   },
+
+  toolbox: { theme: 'src/stylesheets/toolbox-theme.scss' },
 
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
