@@ -11,7 +11,7 @@ const ID_LENGTH = 32
 
 if(process.argv.length < 4) {
   console.log('usage  : load2sql <VisionPattern> <ThumbDir>')
-  console.log('example: load2sql "./vision_dir/*.jpg" ./thumb_dir')
+  console.log('example: load2sql "./vision_dir/*.json" ./thumb_dir')
   process.exit()
 }
 
