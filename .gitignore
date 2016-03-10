@@ -40,4 +40,3 @@ scripts/images/*.jpg
 .DS_Store
 ml-libs/data/*.txt
 .idea
-*.zip
