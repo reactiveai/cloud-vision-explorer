@@ -36,3 +36,8 @@ public/javascripts/bundle.js
 scripts/images/*.jpg
 public/bundle.js
 public/main.css
+*.mat
+*.pyc
+.DS_Store
+ml-libs/data/*.txt
+.idea
