@@ -38,6 +38,6 @@ scripts/images/*.jpg
 *.mat
 *.pyc
 .DS_Store
-*.txt
+ml-libs/data/*.txt
 .idea
 *.zip
