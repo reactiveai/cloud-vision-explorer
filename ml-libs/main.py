@@ -8,7 +8,7 @@ from clustering import kmeans
 from tsne import low_dim_mapper
 from util import utils
 
-no_clusters = 100  # TODO: modify it for better rendering
+no_clusters = 10  # TODO: modify it for better rendering
 input_filename = 'input.json'
 output_filename = 'output.json'
 
@@ -16,13 +16,13 @@ output_filename = 'output.json'
 [c_centers, X_assignments, _] = kmeans.tf_k_means_cluster(X_vectors, no_clusters=no_clusters)
 
 labels = []
-for i in xrange(no_clusters):
-    assignment = X_assignments[i]
-    center = c_centers[i]
-    indexes = [i for i, x in enumerate(X_assignments) if x == assignment]
-    dominant_labels = list(X_labels[i] for i in indexes)
-    dominant_label = Counter(dominant_labels).most_common()[0][0]
+for cluster_id in xrange(no_clusters):
+    data_points_in_cluster_indexes = [i for i, x in enumerate(X_assignments) if x == cluster_id]
+    dominant_labels = list(X_labels[data_point_idx] for data_point_idx in data_points_in_cluster_indexes)
+    most_common_labels = Counter(dominant_labels).most_common()
+    dominant_label = most_common_labels[0][0]
+    frequency_dominant_label = most_common_labels[0][1]
     labels.append(dominant_label)
-    print(assignment, '->', dominant_label, ', center=', center)
+    print(cluster_id, '->', dominant_label, '(', frequency_dominant_label, '), center=', c_centers[cluster_id])
 
 utils.convert_to_json(X_vectors, X_assignments, c_centers, labels, filename=output_filename)
