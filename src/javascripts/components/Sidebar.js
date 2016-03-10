@@ -10,15 +10,9 @@ import tabStyle from 'react-toolbox/lib/tabs/style'
 export default class Sidebar extends React.Component {
   static get propTypes() {
     return {
-      showSidebar: PropTypes.bool.isRequired,
-      handleSidebar: PropTypes.func.isRequired
-    }
-  }
-
-  constructor(props) {
-    super(props)
-    this.state = {
-      tabIndex: 1
+      sidebar: PropTypes.object.isRequired,
+      hideSidebar: PropTypes.func.isRequired,
+      changeTab: PropTypes.func.isRequired,
     }
   }
 
@@ -28,20 +22,16 @@ export default class Sidebar extends React.Component {
       _.assign(s, { visionData: JSON.stringify(dummy, null, 2) }))
   }
 
-  handleTabChange(tabIndex) {
-    this.setState(s => _.assign(s, { tabIndex }))
-  }
-
   render() {
-    const { tabIndex } = this.state
+    const { sidebar, hideSidebar, changeTab } = this.props
     const classForTab = (index) => {
-      return tabIndex === index ? 'col-xs active' : 'col-xs'
+      return sidebar.tabIndex === index ? 'col-xs active' : 'col-xs'
     }
     return (
       <Drawer
         className="sidebar"
-        active={this.props.showSidebar} type="right"
-        onOverlayClick={this.props.handleSidebar.bind(this, false)}
+        active={sidebar.isActive} type="right"
+        onOverlayClick={hideSidebar}
       >
         <ul className="feature-indicator row">
           <li className="col-xs active"><FontIcon value='label_outline' /></li>
@@ -54,8 +44,8 @@ export default class Sidebar extends React.Component {
         </ul>
         <SidebarTabs
           className="detail-tab"
-          index={tabIndex}
-          onChange={this.handleTabChange.bind(this)}
+          index={sidebar.tabIndex}
+          onChange={changeTab}
         >
           <Tab label='Graph' className={classForTab(0)}>test</Tab>
           <Tab label='Data' className={classForTab(1)}>

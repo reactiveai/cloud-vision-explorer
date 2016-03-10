@@ -1,39 +1,39 @@
-import React from 'react'
+import React, { Component, PropTypes } from 'react'
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
 import ToolboxApp from 'react-toolbox/lib/app'
 import RenderView from './RenderView'
 import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
 import _ from 'lodash'
-
+import { showSidebar } from '../actions/sidebar'
+import * as sidebarActionCreators from '../actions/sidebar'
 import 'stylesheets/FrontPage'
 
-export default class FrontPage extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      showSidebar: false
+class FrontPage extends Component {
+  static get propTypes() {
+    return {
+      sidebar: PropTypes.object.isRequired,
+      dispatch: PropTypes.func.isRequired
     }
   }
 
-  handleSidebar(showSidebar) {
-    this.setState(s => _.assign(s, { showSidebar }))
-  }
-
   render() {
+    const { sidebar, dispatch } = this.props
+    const sidebarBounds = bindActionCreators(sidebarActionCreators, dispatch)
     return (
-      <div>
-        <ToolboxApp>
-          <RenderView />
-          <Sidebar
-            showSidebar={this.state.showSidebar}
-            handleSidebar={this.handleSidebar.bind(this)}
-          />
-          <Button
-            label='Show Sidebar' accent
-            onClick={this.handleSidebar.bind(this, true)}
-          />
-        </ToolboxApp>
-      </div>
+      <ToolboxApp>
+        <RenderView />
+        <Sidebar sidebar={sidebar} {...sidebarBounds} />
+        <Button
+          label='Show Sidebar' accent onClick={sidebarBounds.showSidebar}
+        />
+      </ToolboxApp>
     )
   }
 }
+
+function mapStateToProps(state) {
+  return { sidebar: state.sidebar }
+}
+export default connect(mapStateToProps)(FrontPage)
