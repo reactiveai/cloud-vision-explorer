@@ -44,6 +44,12 @@ export default class Sidebar extends React.Component {
     }
   }
 
+  componentWillMount() {
+    const dummy = require('json!../data/sample1.json')
+    this.setState(s =>
+      _.assign(s, { visionData: JSON.stringify(dummy, null, 2) }))
+  }
+
   handleTabChange(tabIndex) {
     this.setState(s => _.assign(s, { tabIndex }))
   }
@@ -72,7 +78,9 @@ export default class Sidebar extends React.Component {
           onChange={this.handleTabChange.bind(this)}
         >
           <Tab label='Graph' className={classForTab(0)}>test</Tab>
-          <Tab label='Data' className={classForTab(1)}>test</Tab>
+          <Tab label='Data' className={classForTab(1)}>
+            <pre>{this.state.visionData}</pre>
+          </Tab>
         </MyTabs>
       </Drawer>
     )

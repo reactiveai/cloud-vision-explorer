@@ -3,8 +3,8 @@
 
   aside
     display: flex
-    height: 100%
     flex-direction: column
+    height: 100%
 
   .feature-indicator
     list-style-type: none
@@ -22,10 +22,18 @@
         color: #9FA8DA
 
   .detail-tab
+    padding: 10px 0
     flex-grow: 1
 
     section
-      flex-grow: 1
+      overflow-y: scroll
+      padding: 5px 10px
+      height: 500px
+
+      pre
+        color: #9E9E9E
+        margin: 0
+        padding: 0
 
     label
       background: #424242
