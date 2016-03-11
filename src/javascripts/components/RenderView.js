@@ -69,6 +69,9 @@ export default React.createClass({
     data.forEach((n) => {
       // Add a real THREE vector for easy access later
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
+
+      // Add a resolved promised so we can chain events to it
+      n._promise = Promise.resolve()
     })
 
     // First sort by the group ID ascending
@@ -209,50 +212,11 @@ export default React.createClass({
 
     const socket = io()
 
-    // Websocket image test
-    {
+    socket.on('connect', () => {
+      console.debug('connected')
+    })
 
-      socket.on('connect', () => {
-        console.debug('connected')
-
-        // socket.emit('vision', TARGET_IDS)
-
-      })
-
-      socket.on('thumbnail', (results) => {
-        // console.debug(`received ${results.length} thumbnail`)
-        console.debug(results)
-
-        _.each(results, (result) => {
-          // Magic here! (ArrayBuffer to Base64String)
-          const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
-          const image = new Image()
-          image.src = `data:image/jpeg;base64,${b64img}`
-
-          const texture = new THREE.Texture()
-          texture.image = image
-          image.onload = function() {
-            texture.needsUpdate = true
-          }
-
-          const spriteMaterial = new THREE.SpriteMaterial({
-            color: 0xffffff,
-            map: texture
-          })
-
-          const nearbyVector = _.find(data, (n) => n.i == result.id )
-
-          nearbyVector.plane = new THREE.Sprite(spriteMaterial)
-          nearbyVector.plane.position.copy(nearbyVector.vec)
-          nearbyVector.plane.scale.multiplyScalar(5)
-
-          group.add(nearbyVector.plane)
-        })
-      })
-    }
-
-
+    const sendAndAwait = (event, data) => new Promise((resolve) => { socket.emit(event, data, resolve) })
 
     window.addEventListener('resize', () => {
 
@@ -338,10 +302,17 @@ export default React.createClass({
         if (!_.includes(listOfNearbyVectors, nearbyVector)) {
           console.log('remove', nearbyVector)
 
-          // TODO mem leak
-          group.remove(nearbyVector.plane)
 
-          Reflect.deleteProperty(nearbyVector, 'plane')
+
+          nearbyVector._promise = nearbyVector._promise.then(() => {
+            nearbyVector.plane.material.map.dispose()
+            nearbyVector.plane.material.dispose()
+
+            group.remove(nearbyVector.plane)
+
+            Reflect.deleteProperty(nearbyVector, 'plane')
+          })
+
         }
       })
 
@@ -349,7 +320,34 @@ export default React.createClass({
         if (!_.includes(currentListOfNearbyVectors, nearbyVector)) {
           console.log('add', nearbyVector)
 
-          socket.emit('thumbnail', [nearbyVector.i])
+          nearbyVector._promise = nearbyVector._promise.then(() => {
+            return sendAndAwait('thumbnail', [nearbyVector.i]).then((thumbs) => {
+              thumbs.forEach((thumb) => {
+                // Magic here! (ArrayBuffer to Base64String)
+                const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+
+                const image = new Image()
+                image.src = `data:image/jpeg;base64,${b64img}`
+
+                const texture = new THREE.Texture()
+                texture.image = image
+                image.onload = function() {
+                  texture.needsUpdate = true
+                }
+
+                const spriteMaterial = new THREE.SpriteMaterial({
+                  color: 0xffffff,
+                  map: texture
+                })
+
+                nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+                nearbyVector.plane.position.copy(nearbyVector.vec)
+                nearbyVector.plane.scale.multiplyScalar(5)
+
+                group.add(nearbyVector.plane)
+              })
+            })
+          })
         }
       })
 
