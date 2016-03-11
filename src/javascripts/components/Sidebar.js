@@ -36,9 +36,9 @@ export default class Sidebar extends React.Component {
         <ul className="feature-indicator row">
           <li className="col-xs active"><FontIcon value='label_outline' /></li>
           <li className="col-xs active"><FontIcon value='translate' /></li>
-          <li className="col-xs"><FontIcon value='search' /></li>
+          <li className="col-xs active"><span className="custom-icon safesearch" /></li>
           <li className="col-xs active"><FontIcon value='face' /></li>
-          <li className="col-xs"><FontIcon value='donut_small' /></li>
+          <li className="col-xs"><span className="custom-icon logo_detection" /></li>
           <li className="col-xs"><FontIcon value='place' /></li>
           <li className="col-xs"><FontIcon value='photo' /></li>
         </ul>

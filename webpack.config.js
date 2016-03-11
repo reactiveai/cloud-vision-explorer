@@ -37,6 +37,10 @@ module.exports = {
       {
         test: /\.scss$/,
         loader: ExtractTextPlugin.extract('style', 'css?sourceMap&modules&importLoaders=1!postcss!sass?sourceMap!toolbox')
+      },
+      {
+        test: /\.svg$/,
+        loader: 'url?limit=10000'
       }
     ]
   },

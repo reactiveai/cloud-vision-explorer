@@ -1,4 +1,3 @@
-
 .sidebar
   background: #212121
 
@@ -31,6 +30,19 @@
       &.active
         background: #3949AB
         color: #9FA8DA
+
+      .custom-icon
+        width: 21px
+        height: 21px
+        display: inline-block
+        margin-top: 2px
+        background-color: currentColor
+
+        &.logo_detection
+          -webkit-mask-image: url(../images/icon/logo_detection.svg)
+
+        &.safesearch
+          -webkit-mask-image: url(../images/icon/safesearch.svg)
 
   .detail-tab
     flex-grow: 1
