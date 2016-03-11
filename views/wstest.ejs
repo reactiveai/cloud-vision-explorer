@@ -2,11 +2,23 @@
 <html>
   <head>
     <title>Websocket Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.6.1/lodash.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <h1>Websocket Test</h1>
+    <p>See the source code and dev console</p>
+
+    <div id="images"></div>
+
     <script>
       const TARGET_IDS = [
         '02dfc015067fedf36e0b5f2f4d8c903a',
-        '1b1035c01f2d8df490c146a76080b41a'
+        '1b1035c01f2d8df490c146a76080b41a',
+        'd0fb2cbb959322315c5fdcea93fa61c7',
+        'f9bda71857c4b5dd47ca1ed50e3ff04e',
+        'edc5f5df5b877ed4131c01ee6a369ff0',
+        'a1c6f157ab8e9967204fc61a26985632'
       ]
 
       const socket = io()
@@ -14,6 +26,18 @@
       socket.on('thumbnail', (results) => {
         console.debug(`received ${results.length} thumbnail`)
         console.debug(results)
+
+        _.each(results, (result) => {
+          // Magic here! (ArrayBuffer to Base64String)
+          // Maybe better use https://github.com/beatgammit/base64-js
+          const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},''))
+
+          const img = document.createElement('img');
+          img.src = `data:image/jpeg;base64,${b64img}`
+
+          const imgDiv = document.getElementById('images')
+          imgDiv.appendChild(img)
+        })
       })
 
       socket.on('vision', (results) => {
@@ -27,9 +51,5 @@
         socket.emit('vision', TARGET_IDS)
       })
     </script>
-  </head>
-  <body>
-    <h1>Websocket Test</h1>
-    <p>See the source code and dev console</p>
   </body>
 </html>
