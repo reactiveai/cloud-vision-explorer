@@ -3,7 +3,7 @@ const _ = require('lodash')
 const express      = require('express')
 const io           = require('socket.io')
 const mysql        = require('mysql')
-// const favicon      = require('serve-favicon')
+const favicon      = require('serve-favicon')
 const logger       = require('morgan')
 const cookieParser = require('cookie-parser')
 const bodyParser   = require('body-parser')
@@ -22,7 +22,7 @@ app.set('views', './views')
 app.set('view engine', 'ejs')
 
 // Middlewares
-// app.use(favicon('./public/favicon.ico'))
+app.use(favicon('./public/favicon.ico'))
 if(!_.isEqual(app.get('env'), 'test')) {
   app.use(logger('dev'))
 }
