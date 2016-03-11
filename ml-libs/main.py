@@ -39,6 +39,10 @@ def arg_parse():
 
 if __name__ == "__main__":
 
+    print('#######################')
+    print('# Program has started #')
+    print('#######################')
+
     start_time = time.time()
     arg_p = arg_parse().parse_args(argv[1:])
     print('[ArgumentParser]', arg_p)
