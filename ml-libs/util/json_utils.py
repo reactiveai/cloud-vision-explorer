@@ -1,7 +1,6 @@
+from __future__ import print_function
 import json
-
 import numpy as np
-
 import word2vec
 
 
@@ -10,14 +9,14 @@ def scale_max_abs(ax):
     return ax / normalised_constant
 
 
-def convert_to_json(x_norm, assignments, centers, labels, filename):
+def convert_to_json(x_norm, assignments, centers, labels, ids, filename):
     data_x = []
     for i in xrange(len(assignments)):
         elt = {
             'x': x_norm[i, 0],
             'y': x_norm[i, 1],
             'z': x_norm[i, 2],
-            'i': str(i).zfill(33),  # TODO: change it to real id
+            'i': ids[i],
             'g': assignments[i]
         }
         data_x.append(elt)
@@ -39,6 +38,7 @@ def convert_to_json(x_norm, assignments, centers, labels, filename):
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile)
+        print('wrote output to', filename)
 
 
 def enrich_map_with_word2vec(label_map, w2v):
@@ -50,19 +50,51 @@ def enrich_map_with_word2vec(label_map, w2v):
 
 
 def generate_label_map(json_input_filename):
+    count = 0
     with open(json_input_filename) as data_file:
-        label_map = {}
-        data = json.load(data_file)['responses']
-        for idx, record in enumerate(data):
+        label_map = dict()
+        data = json.load(data_file)
+        for i, record in enumerate(data):
             try:
+                idx = str(record['imageId'])
                 label_map[idx] = record['labelAnnotations']
-            except KeyError:
+                count += 1
+            except Exception:
                 pass
+    print("loaded", count, "images")
     return label_map
 
 
 def load_json(json_input_filename):
     w2v = word2vec.load_glove(50)
+    print('reading from', json_input_filename)
     label_map = generate_label_map(json_input_filename)
     enrich_map_with_word2vec(label_map, w2v)
     return label_map
+
+'''
+from scipy.io import savemat
+import pickle
+import string
+if __name__ == "__main__":
+    vecs = []
+    label_names = []
+    label_map = load_json('../input.json')
+    for label in label_map.values():
+        # print("______________")
+        for val in label:  # use scores in a later version.
+            vec = val['word2vec']
+            score = val['score']
+            desc = str(''.join(c for c in val['description'] if c in string.printable))
+
+            label_names.append(desc)
+            vecs.append(vec)
+
+    matlab_dict = dict()
+    matlab_dict['data'] = vecs
+    matlab_dict['label'] = label_names
+    savemat(file_name="tsne.mat", appendmat=False, do_compression=False, oned_as='row', mdict=matlab_dict)
+    tsne_python_file = open('tsne_data.dat', 'w')
+    pickle.dump(obj=matlab_dict, file=tsne_python_file)
+    np.savetxt('tsne_data.txt', vecs)
+'''
