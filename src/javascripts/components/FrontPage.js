@@ -22,13 +22,16 @@ class FrontPage extends Component {
     const { sidebar, dispatch } = this.props
     const sidebarBounds = bindActionCreators(sidebarActionCreators, dispatch)
     return (
-      <ToolboxApp>
+      <div>
+        <ToolboxApp>
+          <Sidebar sidebar={sidebar} {...sidebarBounds} />
+          <Button
+            label='Show Sidebar' accent onClick={sidebarBounds.showSidebar}
+            style={{ top: '45px' }}
+          />
+        </ToolboxApp>
         <RenderView />
-        <Sidebar sidebar={sidebar} {...sidebarBounds} />
-        <Button
-          label='Show Sidebar' accent onClick={sidebarBounds.showSidebar}
-        />
-      </ToolboxApp>
+      </div>
     )
   }
 }
