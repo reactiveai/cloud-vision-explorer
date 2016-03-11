@@ -40,6 +40,7 @@ Version:    2016-03-08
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+from __future__ import print_function
 from argparse import ArgumentParser, FileType
 import numpy as np
 from tempfile import mkdtemp
@@ -105,6 +106,11 @@ def _read_unpack(fmt, fh):
 def bh_tsne(samples, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAULT_OUTPUT_DIMS,
             perplexity=DEFAULT_PERPLEXITY,
             theta=DEFAULT_THETA, randseed=EMPTY_SEED, verbose=DEFAULT_VERBOSE):
+
+    samples = np.array(samples)
+    print('[bhtsne] shape of tensor before PCA', samples.shape)
+    print('[bhtsne] perform the initial dimensionality reduction using PCA. output dimension is', initial_dims)
+
     # Perform the initial dimensionality reduction using PCA
     samples -= np.mean(samples, axis=0)
     cov_x = np.dot(np.transpose(samples), samples)
@@ -121,6 +127,9 @@ def bh_tsne(samples, initial_dims=DEFAULT_INITIAL_DIMS_AFTER_PCA, no_dims=DEFAUL
 
     sample_dim = len(samples[0])
     sample_count = len(samples)
+
+    print('[bhtsne] shape of tensor after PCA ', samples.shape)
+    print('[bhtsne] executing C++ source code')
 
     # bh_tsne works with fixed input and output paths, give it a temporary
     #   directory to work in so we don't clutter the filesystem
@@ -198,4 +207,4 @@ if __name__ == "__main__":
     python_dict = pickle.load(tsne_python_file)
     X = np.array(python_dict['data'])
     for result in bh_tsne(X):
-        print result
+        print(result)

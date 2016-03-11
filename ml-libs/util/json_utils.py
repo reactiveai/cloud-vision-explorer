@@ -61,13 +61,13 @@ def generate_label_map(json_input_filename):
                 count += 1
             except Exception:
                 pass
-    print("loaded", count, "images")
+    print("[utils] loaded", count, "images")
     return label_map
 
 
-def load_json(json_input_filename):
-    w2v = word2vec.load_glove(50)
-    print('reading from', json_input_filename)
+def load_json(json_input_filename, w2v_dim=50):
+    w2v = word2vec.load_glove(w2v_dim)
+    print('[utils] reading from', json_input_filename)
     label_map = generate_label_map(json_input_filename)
     enrich_map_with_word2vec(label_map, w2v)
     return label_map

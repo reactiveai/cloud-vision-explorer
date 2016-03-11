@@ -1,16 +1,17 @@
 from __future__ import print_function
 
 import string
-from util import word2vec
-from util import json_utils
+
 from bhtsne import bh_tsne
+from util import json_utils
+from util import word2vec
 
 
-def generate_vectors(json_input_filename, dim=2):
+def generate_vectors(json_input_filename, w2v_dim, perplexity, theta, pca_dims, dim=2):
     vectors = []
     most_dominant_labels = []
     image_ids = []
-    label_map = json_utils.load_json(json_input_filename)
+    label_map = json_utils.load_json(json_input_filename, w2v_dim)
     for image_id, label in label_map.iteritems():
         label_vectors = []
         label_scores = []
@@ -26,7 +27,10 @@ def generate_vectors(json_input_filename, dim=2):
         image_ids.append(image_id)
 
     embeddings = []
-    for result in bh_tsne(vectors):
+    for result in bh_tsne(vectors,
+                          perplexity=perplexity,
+                          initial_dims=pca_dims,
+                          theta=theta):
         embeddings.append(result)
 
     embeddings = json_utils.scale_max_abs(embeddings)
