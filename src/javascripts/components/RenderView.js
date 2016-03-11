@@ -33,22 +33,22 @@ export default React.createClass({
   },
   componentDidMount() {
 
-    // getJSON('/output.json').then((data) => {
-    //
-    //   // Normalize data
-    //   data.forEach((elem) => {
-    //     elem.x *= 1000.0
-    //     elem.y *= 1000.0
-    //     elem.z *= 1000.0
-    //   })
-    //
-    //   this._setupScene(data)
-    // })
+    getJSON('/output_5k.json').then((data) => {
 
-    {
-      const data = generateMockData(1, 100, 0)
-      this._setupScene(data)
-    }
+      // Normalize data
+      data.points.forEach((elem) => {
+        elem.x *= 1000.0
+        elem.y *= 1000.0
+        elem.z *= 1000.0
+      })
+
+      this._setupScene(data.points)
+    })
+
+    // {
+    //   const data = generateMockData(1, 100, 0)
+    //   this._setupScene(data)
+    // }
 
   },
   _setupScene(data) {
@@ -65,6 +65,12 @@ export default React.createClass({
 
     const mouse = new THREE.Vector2()
 
+    // Do some post-processing
+    data.forEach((n) => {
+      // Add a real THREE vector for easy access later
+      n.vec = new THREE.Vector3(n.x, n.y, n.z)
+    })
+
     // First sort by the group ID ascending
     const sortedData = _.orderBy(data, ['g'], ['asc'])
 
@@ -80,7 +86,7 @@ export default React.createClass({
     })
 
     // Extract a pure vector array
-    const vertices = data.map((p) => new THREE.Vector3(p.x, p.y, p.z))
+    const vertices = data.map((p) => p.vec)
 
     const positions = new Float32Array(vertices.length * 3)
     const colors = new Float32Array(vertices.length * 3)
@@ -201,60 +207,49 @@ export default React.createClass({
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
     }, false)
 
+    const socket = io()
 
     // Websocket image test
     {
 
-      const imageIds = [
-        '1b1035c01f2d8df490c146a76080b41a',
-        // 'd0fb2cbb959322315c5fdcea93fa61c7',
-        // 'f9bda71857c4b5dd47ca1ed50e3ff04e',
-        // 'edc5f5df5b877ed4131c01ee6a369ff0',
-        // 'a1c6f157ab8e9967204fc61a26985632'
-      ]
-
-      const socket = io()
-
-
       socket.on('connect', () => {
         console.debug('connected')
 
-        socket.emit('thumbnail', imageIds)
         // socket.emit('vision', TARGET_IDS)
 
       })
 
       socket.on('thumbnail', (results) => {
-        console.debug(`received ${results.length} thumbnail`)
+        // console.debug(`received ${results.length} thumbnail`)
         console.debug(results)
 
         _.each(results, (result) => {
           // Magic here! (ArrayBuffer to Base64String)
           const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-          console.log(b64img)
-          // const img = document.createElement('img')
-          // img.src = `data:image/jpeg;base64,${b64img}`
 
-          // const imgDiv = document.getElementById('images')
-          // imgDiv.appendChild(img)
+          const image = new Image()
+          image.src = `data:image/jpeg;base64,${b64img}`
+
+          const texture = new THREE.Texture()
+          texture.image = image
+          image.onload = function() {
+            texture.needsUpdate = true
+          }
+
+          const spriteMaterial = new THREE.SpriteMaterial({
+            color: 0xffffff,
+            map: texture
+          })
+
+          const nearbyVector = _.find(data, (n) => n.i == result.id )
+
+          nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+          nearbyVector.plane.position.copy(nearbyVector.vec)
+          nearbyVector.plane.scale.multiplyScalar(5)
+
+          group.add(nearbyVector.plane)
         })
       })
-
-      // socket.on('vision', (results) => {
-      //   console.debug(`received ${results.length} vision`)
-      //   console.debug(results)
-      // })
-      //
-      // imageIds.forEach((imgId) => {
-      //   const texture = new THREE.TextureLoader().load( 'images/disc.png' )
-      //
-      //   const geometry = new THREE.BoxGeometry( 200, 200, 200 )
-      //   const material = new THREE.MeshBasicMaterial( { map: texture } )
-      //
-      //   const mesh = new THREE.Mesh( geometry, material )
-      //   scene.add( mesh )
-      // })
-
     }
 
 
@@ -272,9 +267,13 @@ export default React.createClass({
 
     let lastIntersectIndex = null
 
+    let currentListOfNearbyVectors = []
+
     const tick = () => {
-      group.rotation.x += 0.00005
-      group.rotation.y += 0.0001
+
+      // TODO fix absolute coords for nodes
+      // group.rotation.x += 0.00005
+      // group.rotation.y += 0.0001
 
       const geometry = particles.geometry
       const attributes = geometry.attributes
@@ -321,6 +320,40 @@ export default React.createClass({
         lastIntersectIndex = null
 
       }
+
+
+
+      // Keep track of particles that are within our range, and particles
+      // that are outside our range. Add images for the ones that are near
+      const listOfNearbyVectors = []
+      data.forEach((n) => {
+        // console.log(n.vec)
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
+          listOfNearbyVectors.push(n)
+        }
+
+      })
+
+      currentListOfNearbyVectors.forEach((nearbyVector) => {
+        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
+          console.log('remove', nearbyVector)
+
+          // TODO mem leak
+          group.remove(nearbyVector.plane)
+
+          Reflect.deleteProperty(nearbyVector, 'plane')
+        }
+      })
+
+      listOfNearbyVectors.forEach((nearbyVector) => {
+        if (!_.includes(currentListOfNearbyVectors, nearbyVector)) {
+          console.log('add', nearbyVector)
+
+          socket.emit('thumbnail', [nearbyVector.i])
+        }
+      })
+
+      currentListOfNearbyVectors = listOfNearbyVectors
 
     }
 
