@@ -1,0 +1,44 @@
+.sidebar
+  background: #212121
+
+  aside
+    display: flex
+    flex-direction: column
+    height: 100%
+
+  .feature-indicator
+    list-style-type: none
+    padding: 0
+    margin: 0
+
+    li
+      text-align: center
+      padding: 10px 5px
+      background: #424242
+      color: #757575
+
+      &.active
+        background: #3949AB
+        color: #9FA8DA
+
+  .detail-tab
+    flex-grow: 1
+
+    section
+      overflow-y: scroll
+      padding: 10px 10px
+      height: 500px
+
+      pre
+        color: #9E9E9E
+        margin: 0
+        padding: 0
+
+    label
+      background: #424242
+      color: #757575
+      text-align: center
+
+      &.active
+        background: #3949AB
+        color: #9FA8DA
