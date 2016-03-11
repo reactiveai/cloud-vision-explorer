@@ -10,13 +10,14 @@ import 'stylesheets/RenderView'
 import _ from 'lodash'
 import $ from 'npm-zepto'
 
-const getJSON = (url) => {
-  return new Promise(function(resolve, reject) {
-    $.getJSON(url, (data) => {
-      resolve(data)
-    })
-  })
-}
+import Shaders from '../misc/Shaders.js'
+
+import { generateMockData } from '../misc/Util.js'
+
+import io from 'socket.io-client'
+
+// Promise jQuery getJSON version
+const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
 export default React.createClass({
   render() {
@@ -30,55 +31,45 @@ export default React.createClass({
     console.log('shouldComponentUpdate')
     return false
   },
-  _generateMockData() {
-    const numberOfMockGroups = _.random(50, 500)
-
-    // Mock data
-    const data = []
-    for (let i = 0; i < numberOfMockGroups; i++) {
-
-      const groupLocation = new THREE.Vector3(
-        _.random(-1000.0, 1000.0),
-        _.random(-1000.0, 1000.0),
-        _.random(-1000.0, 1000.0))
-
-      const groupSize = _.random(10.0, 100.0)
-
-      for (let j = 0; j < 100000/numberOfMockGroups; j++) {
-        data.push({
-          id: i,
-          x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
-          y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
-          z: groupLocation.z + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
-          g: i
-        })
-      }
-    }
-
-    return data
-  },
   componentDidMount() {
 
-    console.log('componentDidMount')
+    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_5k.json').then((data) => {
 
-    getJSON('/output.json').then(this._setupScene)
+      // Normalize data
+      data.points.forEach((elem) => {
+        elem.x *= 1000.0
+        elem.y *= 1000.0
+        elem.z *= 1000.0
+      })
+
+      this._setupScene(data.points)
+    })
+
+    // {
+    //   const data = generateMockData(1, 100, 0)
+    //   this._setupScene(data)
+    // }
 
   },
   _setupScene(data) {
 
-    // Normalize data
-    data.forEach((elem) => {
-      elem.x *= 1000.0
-      elem.y *= 1000.0
-      elem.z *= 1000.0
-    })
-
-    console.log(data)
-
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.position.z = 1000
+    camera.position.z = 3000
 
     const scene = new THREE.Scene()
+
+    const raycaster = new THREE.Raycaster()
+
+    // Increase the default mouseover detection radius of points
+    raycaster.params.Points.threshold = 5
+
+    const mouse = new THREE.Vector2()
+
+    // Do some post-processing
+    data.forEach((n) => {
+      // Add a real THREE vector for easy access later
+      n.vec = new THREE.Vector3(n.x, n.y, n.z)
+    })
 
     // First sort by the group ID ascending
     const sortedData = _.orderBy(data, ['g'], ['asc'])
@@ -94,13 +85,14 @@ export default React.createClass({
       }
     })
 
-    const vertices = data.map((p) => new THREE.Vector3(p.x, p.y, p.z))
+    // Extract a pure vector array
+    const vertices = data.map((p) => p.vec)
 
     const positions = new Float32Array(vertices.length * 3)
     const colors = new Float32Array(vertices.length * 3)
     const sizes = new Float32Array(vertices.length)
 
-    const PARTICLE_SIZE = 40
+    const PARTICLE_SIZE = 20
 
     const color = new THREE.Color()
 
@@ -114,7 +106,7 @@ export default React.createClass({
       color.setHex(groupedData[data[i].g].color)
       color.toArray(colors, i * 3)
 
-      sizes[i] = PARTICLE_SIZE * 0.5
+      sizes[i] = PARTICLE_SIZE
 
     }
 
@@ -128,41 +120,10 @@ export default React.createClass({
         color:   { type: 'c', value: new THREE.Color( 0xffffff ) },
         texture: { type: 't', value: new THREE.TextureLoader().load( 'images/disc.png' ) }
       },
-      vertexShader: `
-        attribute float size;
-        attribute vec3 customColor;
-
-        varying vec3 vColor;
-
-        void main() {
-
-          vColor = customColor;
-
-          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-
-          gl_PointSize = size * ( 300.0 / -mvPosition.z );
-
-          gl_Position = projectionMatrix * mvPosition;
-
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 color;
-        uniform sampler2D texture;
-
-        varying vec3 vColor;
-
-        void main() {
-
-          gl_FragColor = vec4( color * vColor, 1.0 );
-
-          gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-
-          if ( gl_FragColor.a < ALPHATEST ) discard;
-
-        }
-      `,
+      vertexShader: Shaders.points.vertexShader,
+      fragmentShader: Shaders.points.fragmentShader,
       alphaTest: 0.9,
+      depthTest: false
     })
 
     const particles = new THREE.Points(geometry, material)
@@ -170,27 +131,49 @@ export default React.createClass({
 
     // To achieve an effect similar to the mocks, we need to shoot a line
     // at another node that is most near, except if node that was already drawn to
-    const nodesDrawnTo = {}
-
-    _.forEach(groupedData, (value, key) => {
+    _.forEach(groupedData, (value) => {
       const geometry = new THREE.Geometry()
 
       const lineMaterial = new THREE.LineBasicMaterial({
         color: value.color,
         blending:     THREE.AdditiveBlending,
         depthTest:    false,
-        transparent:  true
+        transparent:  true,
+        opacity: 0.18
       })
 
       const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
 
-      const sampleVertices = _.sampleSize(vertices, 200)
+      const findClosestVertex = (list, other, closeNess=0) => {
+        const clonedArr = _.without(_.clone(list), other)
+        clonedArr.sort((a, b) => a.distanceToSquared(other) - b.distanceToSquared(other))
+        return clonedArr[closeNess]
+      }
 
-      geometry.vertices = sampleVertices
+      const allowedVerticesToSearch = _.clone(vertices)
+
+      const sortedVertices = []
+
+      const doSearch = (list, v) => {
+        if (sortedVertices.length === 0) {
+          sortedVertices.push(v)
+        }
+
+        list = _.without(list, v)
+        const nextVertex = findClosestVertex(list, v)
+        if (nextVertex) {
+          sortedVertices.push(nextVertex)
+          doSearch(list, nextVertex)
+        }
+      }
+
+      doSearch(allowedVerticesToSearch, vertices[0])
+
+      geometry.vertices = sortedVertices
 
       const line = new THREE.Line( geometry, lineMaterial )
 
-      // group.add(line)
+      group.add(line)
     })
 
     scene.add(group)
@@ -219,6 +202,58 @@ export default React.createClass({
     stats.domElement.style.top = '0px'
     this._container.appendChild(stats.domElement)
 
+    document.addEventListener( 'mousemove', () => {
+      mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
+      mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
+    }, false)
+
+    const socket = io()
+
+    // Websocket image test
+    {
+
+      socket.on('connect', () => {
+        console.debug('connected')
+
+        // socket.emit('vision', TARGET_IDS)
+
+      })
+
+      socket.on('thumbnail', (results) => {
+        // console.debug(`received ${results.length} thumbnail`)
+        console.debug(results)
+
+        _.each(results, (result) => {
+          // Magic here! (ArrayBuffer to Base64String)
+          const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+
+          const image = new Image()
+          image.src = `data:image/jpeg;base64,${b64img}`
+
+          const texture = new THREE.Texture()
+          texture.image = image
+          image.onload = function() {
+            texture.needsUpdate = true
+          }
+
+          const spriteMaterial = new THREE.SpriteMaterial({
+            color: 0xffffff,
+            map: texture
+          })
+
+          const nearbyVector = _.find(data, (n) => n.i == result.id )
+
+          nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+          nearbyVector.plane.position.copy(nearbyVector.vec)
+          nearbyVector.plane.scale.multiplyScalar(5)
+
+          group.add(nearbyVector.plane)
+        })
+      })
+    }
+
+
+
     window.addEventListener('resize', () => {
 
       camera.aspect = window.innerWidth / window.innerHeight
@@ -230,6 +265,98 @@ export default React.createClass({
 
     }, false)
 
+    let lastIntersectIndex = null
+
+    let currentListOfNearbyVectors = []
+
+    const tick = () => {
+
+      // TODO fix absolute coords for nodes
+      // group.rotation.x += 0.00005
+      // group.rotation.y += 0.0001
+
+      const geometry = particles.geometry
+      const attributes = geometry.attributes
+
+      raycaster.setFromCamera( mouse, camera )
+
+      const intersects = raycaster.intersectObject(particles)
+
+      if ( intersects.length > 0 ) {
+
+        if ( lastIntersectIndex != intersects[ 0 ].index ) {
+
+          if (lastIntersectIndex) {
+            attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
+
+            const color = new THREE.Color()
+            color.setHex(groupedData[data[lastIntersectIndex].g].color)
+            color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
+          }
+
+          lastIntersectIndex = intersects[ 0 ].index
+
+          attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
+          attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
+          attributes.size.needsUpdate = true
+
+          color.setRGB(255, 255, 255)
+          color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
+
+          attributes.customColor.needsUpdate = true
+
+        }
+
+      } else if ( lastIntersectIndex !== null ) {
+
+        attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
+        attributes.size.needsUpdate = true
+
+        const color = new THREE.Color()
+        color.setHex(groupedData[data[lastIntersectIndex].g].color)
+        color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
+        attributes.customColor.needsUpdate = true
+
+        lastIntersectIndex = null
+
+      }
+
+
+
+      // Keep track of particles that are within our range, and particles
+      // that are outside our range. Add images for the ones that are near
+      const listOfNearbyVectors = []
+      data.forEach((n) => {
+        // console.log(n.vec)
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
+          listOfNearbyVectors.push(n)
+        }
+
+      })
+
+      currentListOfNearbyVectors.forEach((nearbyVector) => {
+        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
+          console.log('remove', nearbyVector)
+
+          // TODO mem leak
+          group.remove(nearbyVector.plane)
+
+          Reflect.deleteProperty(nearbyVector, 'plane')
+        }
+      })
+
+      listOfNearbyVectors.forEach((nearbyVector) => {
+        if (!_.includes(currentListOfNearbyVectors, nearbyVector)) {
+          console.log('add', nearbyVector)
+
+          socket.emit('thumbnail', [nearbyVector.i])
+        }
+      })
+
+      currentListOfNearbyVectors = listOfNearbyVectors
+
+    }
+
     const animate = () => {
 
       stats.begin()
@@ -238,8 +365,7 @@ export default React.createClass({
 
       requestAnimationFrame(animate)
 
-      group.rotation.x += 0.00005
-      group.rotation.y += 0.0001
+      tick()
 
       stats.end()
 
