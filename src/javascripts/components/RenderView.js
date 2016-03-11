@@ -33,7 +33,7 @@ export default React.createClass({
   },
   componentDidMount() {
 
-    getJSON('/output_5k.json').then((data) => {
+    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_5k.json').then((data) => {
 
       // Normalize data
       data.points.forEach((elem) => {
