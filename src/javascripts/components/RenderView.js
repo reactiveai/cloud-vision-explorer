@@ -14,6 +14,8 @@ import Shaders from '../misc/Shaders.js'
 
 import { generateMockData } from '../misc/Util.js'
 
+import io from 'socket.io-client'
+
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
@@ -44,7 +46,7 @@ export default React.createClass({
     // })
 
     {
-      const data = generateMockData()
+      const data = generateMockData(1, 100, 0)
       this._setupScene(data)
     }
 
@@ -198,6 +200,64 @@ export default React.createClass({
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
     }, false)
+
+
+    // Websocket image test
+    {
+
+      const imageIds = [
+        '1b1035c01f2d8df490c146a76080b41a',
+        // 'd0fb2cbb959322315c5fdcea93fa61c7',
+        // 'f9bda71857c4b5dd47ca1ed50e3ff04e',
+        // 'edc5f5df5b877ed4131c01ee6a369ff0',
+        // 'a1c6f157ab8e9967204fc61a26985632'
+      ]
+
+      const socket = io()
+
+
+      socket.on('connect', () => {
+        console.debug('connected')
+
+        socket.emit('thumbnail', imageIds)
+        // socket.emit('vision', TARGET_IDS)
+
+      })
+
+      socket.on('thumbnail', (results) => {
+        console.debug(`received ${results.length} thumbnail`)
+        console.debug(results)
+
+        _.each(results, (result) => {
+          // Magic here! (ArrayBuffer to Base64String)
+          const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+          console.log(b64img)
+          // const img = document.createElement('img')
+          // img.src = `data:image/jpeg;base64,${b64img}`
+
+          // const imgDiv = document.getElementById('images')
+          // imgDiv.appendChild(img)
+        })
+      })
+
+      // socket.on('vision', (results) => {
+      //   console.debug(`received ${results.length} vision`)
+      //   console.debug(results)
+      // })
+      //
+      // imageIds.forEach((imgId) => {
+      //   const texture = new THREE.TextureLoader().load( 'images/disc.png' )
+      //
+      //   const geometry = new THREE.BoxGeometry( 200, 200, 200 )
+      //   const material = new THREE.MeshBasicMaterial( { map: texture } )
+      //
+      //   const mesh = new THREE.Mesh( geometry, material )
+      //   scene.add( mesh )
+      // })
+
+    }
+
+
 
     window.addEventListener('resize', () => {
 
