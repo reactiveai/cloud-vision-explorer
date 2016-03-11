@@ -1,5 +1,16 @@
 .sidebar
   background: #212121
+  border: none !important
+
+  ::-webkit-scrollbar
+    width: 1em
+    background: #616161
+
+  ::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3)
+
+  ::-webkit-scrollbar-thumb
+    background: #BDBDBD
 
   aside
     display: flex
@@ -20,6 +31,19 @@
       &.active
         background: #3949AB
         color: #9FA8DA
+
+      .custom-icon
+        width: 21px
+        height: 21px
+        display: inline-block
+        margin-top: 2px
+        background-color: currentColor
+
+        &.logo_detection
+          -webkit-mask-image: url(../images/icon/logo_detection.svg)
+
+        &.safesearch
+          -webkit-mask-image: url(../images/icon/safesearch.svg)
 
   .detail-tab
     flex-grow: 1
