@@ -39,7 +39,6 @@ _.each(glob.sync(VisionPattern), (file, index, files) => {
 
   pool.query('REPLACE INTO entries SET ?', {id, vision, thumb}, (err, res) => {
     let count = index + 1
-    // console.log(id)
     console.log(`${id} : ${count} / ${files.length}`)
     if(err){
       console.log(err)

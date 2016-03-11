@@ -1,13 +1,15 @@
+#!/usr/bin/env ruby
 require 'json'
 
-# f = File.open('/mnt/imagedisk/vision/vision_api.json', 'w')
-f = File.open('/mnt/imagedisk/vision/vision_api.json', 'w')
+f = File.open("#{ARGV[0]}/vision_api.json", 'w')
 
 records = []
-Dir.glob('./x/*.json').each{|file|
+p "#{ARGV[0]}/result/*.json"
+Dir.glob("#{ARGV[0]}/result/*.json").each{|file|
   image_id = File.basename(file, '.json')
-  record = JSON.parse(File.read(file)).first
+  puts image_id
 
+  record = JSON.parse(File.read(file)).first
   record['imageId'] = image_id
   records << JSON.dump(record)
 }
