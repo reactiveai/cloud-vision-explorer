@@ -1,22 +1,21 @@
 const _       = require('lodash')
 const numeral = require('numeral')
 
-const emitThumb = (sock, db, ids, fieldName) => {
+const fetchThumb = (sock, db, ids, fieldName) => {
   return new Promise((resolve, reject) => {
-    const queryStr = 'SELECT id, ?? FROM entries WHERE id IN (?)'
-    const columns = ['id', fieldName]
+    const queryStr = 'SELECT ?? FROM entries WHERE id IN (?)'
+    const columns = [fieldName]
     db.query(queryStr, [columns, ids], (err, rows) => {
       if(err) { return reject(err) }
 
       const data = _.map(rows, (row) => {
         console.log(`${fieldName} : ${row.id} / ${numeral(row[fieldName].byteLength).format('0.0 b')}`)
         return {
-          id: row['id'],
+          id: row.id,
           thumb: row[fieldName]
         }
       })
 
-      sock.emit(fieldName, data)
       resolve(data)
     })
   })
@@ -27,7 +26,8 @@ const onConnection = (sock, db) => {
 
   _.each(['thumb32', 'thumb64', 'thumb128'], (field) => {
     sock.on(field, (ids) => {
-      emitThumb(sock, db, ids, field)
+      fetchThumb(sock, db, ids, field)
+      .then((data) => { sock.emit(field, data)})
       .catch((err) => { console.log(`ERROR : ${err}]`) })
     })
   })
