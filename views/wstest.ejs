@@ -9,21 +9,24 @@
     <h1>Websocket Test</h1>
     <p>See the source code and dev console</p>
 
-    <div id="images"></div>
+    <div id="images32"></div>
+    <div id="images64"></div>
+    <div id="images128"></div>
+    <div id="images256"></div>
+    <div id="vision"></div>
 
     <script>
       const TARGET_IDS = [
         '02dfc015067fedf36e0b5f2f4d8c903a',
         '1b1035c01f2d8df490c146a76080b41a',
-        'd0fb2cbb959322315c5fdcea93fa61c7',
+        '0005b828193b25c61f600cf4e082446a',
         'f9bda71857c4b5dd47ca1ed50e3ff04e',
-        'edc5f5df5b877ed4131c01ee6a369ff0',
-        'a1c6f157ab8e9967204fc61a26985632'
+        '0006f130d6bcdf06b2a36ee680b171c1',
+        'f795f9e9e129ae5446eeb923626ac707',
+        'ffff814fca5de11caa543f33af84d937'
       ]
 
-      const socket = io()
-
-      socket.on('thumbnail', (results) => {
+      const imageLoader = (results, element) => {
         console.debug(`received ${results.length} thumbnail`)
         console.debug(results)
 
@@ -35,19 +38,40 @@
           const img = document.createElement('img');
           img.src = `data:image/jpeg;base64,${b64img}`
 
-          const imgDiv = document.getElementById('images')
+          const imgDiv = document.getElementById(element)
           imgDiv.appendChild(img)
         })
-      })
+      }
+
+      const socket = io()
+
+      socket.on('thumb32', (results) => { imageLoader(results, 'images32') })
+      socket.on('thumb64', (results) => { imageLoader(results, 'images64') })
+      socket.on('thumb128', (results) => { imageLoader(results, 'images128') })
 
       socket.on('vision', (results) => {
+        const visionDiv = document.getElementById('vision')
+
+        _.each(results, (result) => {
+          // result.vision should be an Object instead of Array. Will be fixed
+          const codeDiv = document.createElement('code');
+          codeDiv.innerHTML = result.id + "\n"
+          codeDiv.innerHTML += JSON.stringify(result.vision[0], null, 2)
+
+          const preDiv = document.createElement('pre');
+          preDiv.appendChild(codeDiv)
+          visionDiv.appendChild(preDiv)
+        })
+
         console.debug(`received ${results.length} vision`)
         console.debug(results)
       })
 
       socket.on('connect', () => {
-        console.debug('connected')
-        socket.emit('thumbnail', TARGET_IDS)
+        socket.emit('thumb32', TARGET_IDS)
+        socket.emit('thumb64', TARGET_IDS)
+        socket.emit('thumb128', TARGET_IDS)
+        socket.emit('thumb256', TARGET_IDS)
         socket.emit('vision', TARGET_IDS)
       })
     </script>
