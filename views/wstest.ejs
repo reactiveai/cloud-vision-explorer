@@ -13,7 +13,6 @@
     <div id="images64"></div>
     <div id="images128"></div>
     <div id="images256"></div>
-    <div id="vision"></div>
 
     <script>
       const TARGET_IDS = [
@@ -49,30 +48,11 @@
       socket.on('thumb64', (results) => { imageLoader(results, 'images64') })
       socket.on('thumb128', (results) => { imageLoader(results, 'images128') })
 
-      socket.on('vision', (results) => {
-        const visionDiv = document.getElementById('vision')
-
-        _.each(results, (result) => {
-          // result.vision should be an Object instead of Array. Will be fixed
-          const codeDiv = document.createElement('code');
-          codeDiv.innerHTML = result.id + "\n"
-          codeDiv.innerHTML += JSON.stringify(result.vision[0], null, 2)
-
-          const preDiv = document.createElement('pre');
-          preDiv.appendChild(codeDiv)
-          visionDiv.appendChild(preDiv)
-        })
-
-        console.debug(`received ${results.length} vision`)
-        console.debug(results)
-      })
-
       socket.on('connect', () => {
         socket.emit('thumb32', TARGET_IDS)
         socket.emit('thumb64', TARGET_IDS)
         socket.emit('thumb128', TARGET_IDS)
         socket.emit('thumb256', TARGET_IDS)
-        socket.emit('vision', TARGET_IDS)
       })
     </script>
   </body>
