@@ -1,6 +1,7 @@
 import React from 'react'
 
 import THREE from 'three'
+import TWEEN from 'tween.js'
 import Stats from 'three/examples/js/libs/stats.min'
 
 require('../misc/TrackballControls.js')(THREE)
@@ -19,6 +20,19 @@ import io from 'socket.io-client'
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
+
+// Promise TWEEN
+const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
+  return new Promise((resolve) => {
+    new TWEEN.Tween(start)
+      .to(end, duration)
+      .start()
+      .easing(easingFn)
+      .onUpdate(onUpdateFn) // Can't use arrow functions here as 'this' would be undefined
+      .onComplete(resolve)
+  })
+}
+
 export default React.createClass({
   render() {
     return (
@@ -26,6 +40,11 @@ export default React.createClass({
 </div>
     )
   },
+
+  propTypes: {
+    emitter: React.PropTypes.object.isRequired
+  },
+
   // Perhaps this is added for performance reasons?
   shouldComponentUpdate() {
     console.log('shouldComponentUpdate')
@@ -33,7 +52,7 @@ export default React.createClass({
   },
   componentDidMount() {
 
-    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_5k.json').then((data) => {
+    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_1k.json').then((data) => {
 
       // Normalize data
       data.points.forEach((elem) => {
@@ -66,9 +85,18 @@ export default React.createClass({
     const mouse = new THREE.Vector2()
 
     // Do some post-processing
-    data.forEach((n) => {
+    data.forEach((n, i) => {
       // Add a real THREE vector for easy access later
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
+
+      // Add a real THREE color
+      n.color = new THREE.Color()
+
+      // Add the index too for easy post-processing
+      n.index = i
+
+      // Add a resolved promised so we can chain events to it
+      n._promise = Promise.resolve()
     })
 
     // First sort by the group ID ascending
@@ -85,29 +113,23 @@ export default React.createClass({
       }
     })
 
-    // Extract a pure vector array
-    const vertices = data.map((p) => p.vec)
+    const positions = new Float32Array(data.length * 3)
+    const colors = new Float32Array(data.length * 3)
+    const sizes = new Float32Array(data.length)
 
-    const positions = new Float32Array(vertices.length * 3)
-    const colors = new Float32Array(vertices.length * 3)
-    const sizes = new Float32Array(vertices.length)
-
-    const PARTICLE_SIZE = 20
-
-    const color = new THREE.Color()
+    const PARTICLE_SIZE = 10
 
     const group = new THREE.Group()
 
-    for (let i = 0, l = vertices.length; i < l; i++) {
+    for (let i = 0, l = data.length; i < l; i++) {
 
-      const vertex = vertices[ i ]
+      const vertex = data[ i ].vec
       vertex.toArray(positions, i * 3)
 
-      color.setHex(groupedData[data[i].g].color)
-      color.toArray(colors, i * 3)
+      data[i].color.setHex(groupedData[data[i].g].color)
+      data[i].color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE
-
     }
 
     const geometry = new THREE.BufferGeometry()
@@ -122,7 +144,7 @@ export default React.createClass({
       },
       vertexShader: Shaders.points.vertexShader,
       fragmentShader: Shaders.points.fragmentShader,
-      alphaTest: 0.9,
+      alphaTest: 0.5,
       depthTest: false
     })
 
@@ -209,50 +231,11 @@ export default React.createClass({
 
     const socket = io()
 
-    // Websocket image test
-    {
+    socket.on('connect', () => {
+      console.debug('connected')
+    })
 
-      socket.on('connect', () => {
-        console.debug('connected')
-
-        // socket.emit('vision', TARGET_IDS)
-
-      })
-
-      socket.on('thumbnail', (results) => {
-        // console.debug(`received ${results.length} thumbnail`)
-        console.debug(results)
-
-        _.each(results, (result) => {
-          // Magic here! (ArrayBuffer to Base64String)
-          const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
-          const image = new Image()
-          image.src = `data:image/jpeg;base64,${b64img}`
-
-          const texture = new THREE.Texture()
-          texture.image = image
-          image.onload = function() {
-            texture.needsUpdate = true
-          }
-
-          const spriteMaterial = new THREE.SpriteMaterial({
-            color: 0xffffff,
-            map: texture
-          })
-
-          const nearbyVector = _.find(data, (n) => n.i == result.id )
-
-          nearbyVector.plane = new THREE.Sprite(spriteMaterial)
-          nearbyVector.plane.position.copy(nearbyVector.vec)
-          nearbyVector.plane.scale.multiplyScalar(5)
-
-          group.add(nearbyVector.plane)
-        })
-      })
-    }
-
-
+    const sendAndAwait = (event, data) => new Promise((resolve) => { socket.emit(event, data, resolve) })
 
     window.addEventListener('resize', () => {
 
@@ -265,9 +248,155 @@ export default React.createClass({
 
     }, false)
 
+    let lastClickedNodeIndex = null
     let lastIntersectIndex = null
 
     let currentListOfNearbyVectors = []
+
+    const updateNodeColor = (r, g, b, index) => {
+      const attributes = geometry.attributes
+
+      const color = new THREE.Color(r, g, b)
+      color.toArray(attributes.customColor.array, index * 3)
+      attributes.customColor.needsUpdate = true
+    }
+
+
+    const checkForImagesThatCanBeDownloaded = _.throttle(() => {
+      // Keep track of particles that are within our range, and particles
+      // that are outside our range. Add images for the ones that are near
+      const listOfNearbyVectors = []
+      data.forEach((n) => {
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
+          listOfNearbyVectors.push(n)
+        }
+      })
+
+      currentListOfNearbyVectors.forEach((nearbyVector) => {
+        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
+          nearbyVector._promise = nearbyVector._promise
+          .then(() => {
+            return tween({
+              o: 1.0
+            }, {
+              o: 0.0
+            }, 1000, function () {
+              nearbyVector.plane.material.opacity = this.o
+            })
+          })
+          .then(() => {
+            nearbyVector.plane.material.map.dispose()
+            nearbyVector.plane.material.dispose()
+
+            group.remove(nearbyVector.plane)
+
+            delete nearbyVector.plane
+          })
+          .then(() => {
+            return tween({
+              r: 0,
+              g: 0,
+              b: 0
+            }, {
+              r: nearbyVector.color.r,
+              g: nearbyVector.color.g,
+              b: nearbyVector.color.b
+            }, 1000, function () {
+              updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+            })
+          })
+
+        }
+      })
+
+      const listOfNewNearbyVectors = listOfNearbyVectors.filter((nearbyVector) => {
+        return !_.includes(currentListOfNearbyVectors, nearbyVector)
+      })
+
+      listOfNewNearbyVectors.forEach((nearbyVector) => {
+        nearbyVector._promise = nearbyVector._promise
+        .then(() => {
+          return tween({
+            r: nearbyVector.color.r,
+            g: nearbyVector.color.g,
+            b: nearbyVector.color.b
+          }, {
+            r: 0,
+            g: 0,
+            b: 0
+          }, 1000, function () {
+            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+          })
+        })
+      })
+
+      const listOfNewNearbyVectorsIds = listOfNewNearbyVectors.map((v) => v.i)
+
+      // Only request thumbs if there are any vectors nearby at all
+      if (listOfNewNearbyVectorsIds.length) {
+        const getAllImagesPromise = sendAndAwait('thumb64', listOfNewNearbyVectorsIds)
+        .then((thumbs) => {
+          thumbs.forEach((thumb, i) => {
+
+            const nearbyVector = listOfNewNearbyVectors[i]
+
+            nearbyVector._promise = nearbyVector._promise.then(() => {
+              // Magic here! (ArrayBuffer to Base64String)
+              const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+
+              const image = new Image()
+              image.src = `data:image/jpeg;base64,${b64img}`
+
+              const texture = new THREE.Texture()
+              texture.image = image
+              image.onload = function() {
+                texture.needsUpdate = true
+              }
+
+              const spriteMaterial = new THREE.SpriteMaterial({
+                // color: 0xff0000,
+                transparent: true,
+                opacity: 0,
+                map: texture
+              })
+
+              nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+              nearbyVector.plane.position.copy(nearbyVector.vec)
+              nearbyVector.plane.scale.multiplyScalar(5)
+
+              group.add(nearbyVector.plane)
+            })
+            .then(() => {
+              return tween({
+                o: 0
+              }, {
+                o: 1.0
+              }, 1000, function () {
+                nearbyVector.plane.material.opacity = this.o
+              })
+            })
+
+          })
+        })
+
+      }
+
+      currentListOfNearbyVectors = listOfNearbyVectors
+    }, 1000)
+
+    document.addEventListener( 'mouseup', (e) => {
+      e.preventDefault()
+
+      raycaster.setFromCamera( mouse, camera )
+      const intersects = raycaster.intersectObject(particles)
+
+      if ( intersects.length > 0 ) {
+        if ( lastClickedNodeIndex != intersects[ 0 ].index ) {
+          lastClickedNodeIndex = intersects[ 0 ].index
+          this.props.emitter.emit('showSidebar', data[lastClickedNodeIndex].i)
+        }
+      }
+    }, false)
 
     const tick = () => {
 
@@ -282,78 +411,38 @@ export default React.createClass({
 
       const intersects = raycaster.intersectObject(particles)
 
+      // If our mouse hovers over something
       if ( intersects.length > 0 ) {
 
+        // If the object we're hovering over is different from what we last hovered over
         if ( lastIntersectIndex != intersects[ 0 ].index ) {
 
+          // If we have hovered over something before
           if (lastIntersectIndex) {
-            attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
 
-            const color = new THREE.Color()
-            color.setHex(groupedData[data[lastIntersectIndex].g].color)
-            color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
           }
 
           lastIntersectIndex = intersects[ 0 ].index
 
-          attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
-          attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
-          attributes.size.needsUpdate = true
 
-          color.setRGB(255, 255, 255)
-          color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
 
-          attributes.customColor.needsUpdate = true
 
         }
 
-      } else if ( lastIntersectIndex !== null ) {
-
-        attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
-        attributes.size.needsUpdate = true
-
-        const color = new THREE.Color()
-        color.setHex(groupedData[data[lastIntersectIndex].g].color)
-        color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
-        attributes.customColor.needsUpdate = true
-
-        lastIntersectIndex = null
 
       }
+      // If we're not hovering over something
+      else {
+        // If we were hovering over an object before
+        if ( lastIntersectIndex !== null ) {
 
 
+          lastIntersectIndex = null
 
-      // Keep track of particles that are within our range, and particles
-      // that are outside our range. Add images for the ones that are near
-      const listOfNearbyVectors = []
-      data.forEach((n) => {
-        // console.log(n.vec)
-        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
-          listOfNearbyVectors.push(n)
         }
+      }
 
-      })
-
-      currentListOfNearbyVectors.forEach((nearbyVector) => {
-        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
-          console.log('remove', nearbyVector)
-
-          // TODO mem leak
-          group.remove(nearbyVector.plane)
-
-          Reflect.deleteProperty(nearbyVector, 'plane')
-        }
-      })
-
-      listOfNearbyVectors.forEach((nearbyVector) => {
-        if (!_.includes(currentListOfNearbyVectors, nearbyVector)) {
-          console.log('add', nearbyVector)
-
-          socket.emit('thumbnail', [nearbyVector.i])
-        }
-      })
-
-      currentListOfNearbyVectors = listOfNearbyVectors
+      checkForImagesThatCanBeDownloaded()
 
     }
 
@@ -364,6 +453,8 @@ export default React.createClass({
       controls.update()
 
       requestAnimationFrame(animate)
+
+      TWEEN.update()
 
       tick()
 
