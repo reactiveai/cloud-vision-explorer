@@ -125,7 +125,7 @@ export default React.createClass({
       },
       vertexShader: Shaders.points.vertexShader,
       fragmentShader: Shaders.points.fragmentShader,
-      alphaTest: 0.9,
+      alphaTest: 0.5,
       depthTest: false
     })
 
