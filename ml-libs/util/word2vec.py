@@ -1,5 +1,4 @@
 from __future__ import print_function
-
 import numpy as np
 
 
@@ -9,7 +8,7 @@ def linear_combination_vectors(vectors, coefficients):
 
 def load_glove(dim):
     word2vec = {}
-    print("[Word2vec] loading glove")
+    print('[Word2vec] loading glove with', dim, 'dimensions')
     with open("data/glove.6B." + str(dim) + "d.txt") as f:
         for line in f:
             l = line.split()
