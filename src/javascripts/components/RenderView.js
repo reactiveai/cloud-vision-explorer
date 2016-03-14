@@ -233,6 +233,74 @@ export default React.createClass({
 
     let currentListOfNearbyVectors = []
 
+
+    const checkForImagesThatCanBeDownloaded = _.throttle(() => {
+      // Keep track of particles that are within our range, and particles
+      // that are outside our range. Add images for the ones that are near
+      const listOfNearbyVectors = []
+      data.forEach((n) => {
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
+          listOfNearbyVectors.push(n)
+        }
+      })
+
+      currentListOfNearbyVectors.forEach((nearbyVector) => {
+        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
+          nearbyVector._promise = nearbyVector._promise.then(() => {
+            nearbyVector.plane.material.map.dispose()
+            nearbyVector.plane.material.dispose()
+
+            group.remove(nearbyVector.plane)
+
+            delete nearbyVector.plane
+          })
+
+        }
+      })
+
+      const listOfNearbyVectorsToRequestImagesFor = listOfNearbyVectors.filter((nearbyVector) => {
+        return !_.includes(currentListOfNearbyVectors, nearbyVector)
+      })
+
+      const listOfNearbyVectorsToRequestImagesForIds = listOfNearbyVectorsToRequestImagesFor.map((v) => v.i)
+
+      const getAllImagesPromise = sendAndAwait('thumb32', listOfNearbyVectorsToRequestImagesForIds)
+      .then((thumbs) => {
+        thumbs.forEach((thumb, i) => {
+          // Magic here! (ArrayBuffer to Base64String)
+          const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+
+          const image = new Image()
+          image.src = `data:image/jpeg;base64,${b64img}`
+
+          const texture = new THREE.Texture()
+          texture.image = image
+          image.onload = function() {
+            texture.needsUpdate = true
+          }
+
+          const spriteMaterial = new THREE.SpriteMaterial({
+            color: 0xffffff,
+            map: texture
+          })
+
+          const nearbyVector = listOfNearbyVectorsToRequestImagesFor[i]
+
+          nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+          nearbyVector.plane.position.copy(nearbyVector.vec)
+          nearbyVector.plane.scale.multiplyScalar(5)
+
+          group.add(nearbyVector.plane)
+        })
+      })
+
+      listOfNearbyVectorsToRequestImagesFor.forEach((nearbyVector) => {
+        nearbyVector._promise = nearbyVector._promise.then(() => getAllImagesPromise)
+      })
+
+      currentListOfNearbyVectors = listOfNearbyVectors
+    }, 1000)
+
     const tick = () => {
 
       // TODO fix absolute coords for nodes
@@ -285,73 +353,7 @@ export default React.createClass({
 
       }
 
-
-
-      // Keep track of particles that are within our range, and particles
-      // that are outside our range. Add images for the ones that are near
-      const listOfNearbyVectors = []
-      data.forEach((n) => {
-        // console.log(n.vec)
-        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
-          listOfNearbyVectors.push(n)
-        }
-
-      })
-
-      currentListOfNearbyVectors.forEach((nearbyVector) => {
-        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
-          console.log('remove', nearbyVector)
-
-
-
-          nearbyVector._promise = nearbyVector._promise.then(() => {
-            nearbyVector.plane.material.map.dispose()
-            nearbyVector.plane.material.dispose()
-
-            group.remove(nearbyVector.plane)
-
-            delete nearbyVector.plane
-          })
-
-        }
-      })
-
-      listOfNearbyVectors.forEach((nearbyVector) => {
-        if (!_.includes(currentListOfNearbyVectors, nearbyVector)) {
-          console.log('add', nearbyVector)
-
-          nearbyVector._promise = nearbyVector._promise.then(() => {
-            return sendAndAwait('thumbnail', [nearbyVector.i]).then((thumbs) => {
-              thumbs.forEach((thumb) => {
-                // Magic here! (ArrayBuffer to Base64String)
-                const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
-                const image = new Image()
-                image.src = `data:image/jpeg;base64,${b64img}`
-
-                const texture = new THREE.Texture()
-                texture.image = image
-                image.onload = function() {
-                  texture.needsUpdate = true
-                }
-
-                const spriteMaterial = new THREE.SpriteMaterial({
-                  color: 0xffffff,
-                  map: texture
-                })
-
-                nearbyVector.plane = new THREE.Sprite(spriteMaterial)
-                nearbyVector.plane.position.copy(nearbyVector.vec)
-                nearbyVector.plane.scale.multiplyScalar(5)
-
-                group.add(nearbyVector.plane)
-              })
-            })
-          })
-        }
-      })
-
-      currentListOfNearbyVectors = listOfNearbyVectors
+      checkForImagesThatCanBeDownloaded()
 
     }
 

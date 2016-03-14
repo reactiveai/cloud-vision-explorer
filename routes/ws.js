@@ -10,10 +10,7 @@ const fetchThumb = (db, ids, fieldName) => {
 
       const data = _.map(rows, (row) => {
         console.log(`${fieldName} : ${row['id']} / ${numeral(row[fieldName].byteLength).format('0.0 b')}`)
-        return {
-          id: row['id'],
-          thumb: row[fieldName]
-        }
+        return row[fieldName]
       })
 
       resolve(data)
@@ -25,9 +22,9 @@ const onConnection = (sock, db) => {
   console.log('connected')
 
   _.each(['thumb32', 'thumb64', 'thumb128'], (field) => {
-    sock.on(field, (ids) => {
+    sock.on(field, (ids, callback) => {
       fetchThumb(db, ids, field)
-      .then((data) => { sock.emit(field, data) })
+      .then((data) => callback(data))
       .catch((err) => { console.log(`ERROR : ${err}]`) })
     })
   })
