@@ -1,6 +1,7 @@
 import React from 'react'
 
 import THREE from 'three'
+import TWEEN from 'tween.js'
 import Stats from 'three/examples/js/libs/stats.min'
 
 require('../misc/TrackballControls.js')(THREE)
@@ -66,9 +67,12 @@ export default React.createClass({
     const mouse = new THREE.Vector2()
 
     // Do some post-processing
-    data.forEach((n) => {
+    data.forEach((n, i) => {
       // Add a real THREE vector for easy access later
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
+
+      // Add the index too for easy post-processing
+      n.index = i
 
       // Add a resolved promised so we can chain events to it
       n._promise = Promise.resolve()
@@ -95,7 +99,7 @@ export default React.createClass({
     const colors = new Float32Array(vertices.length * 3)
     const sizes = new Float32Array(vertices.length)
 
-    const PARTICLE_SIZE = 20
+    const PARTICLE_SIZE = 10
 
     const color = new THREE.Color()
 
@@ -233,6 +237,14 @@ export default React.createClass({
 
     let currentListOfNearbyVectors = []
 
+    const updateNodeColor = (newColor, index) => {
+      const attributes = geometry.attributes
+
+      const color = new THREE.Color(newColor)
+      color.toArray(attributes.customColor.array, index * 3)
+      attributes.customColor.needsUpdate = true
+    }
+
 
     const checkForImagesThatCanBeDownloaded = _.throttle(() => {
       // Keep track of particles that are within our range, and particles
@@ -247,26 +259,26 @@ export default React.createClass({
       currentListOfNearbyVectors.forEach((nearbyVector) => {
         if (!_.includes(listOfNearbyVectors, nearbyVector)) {
           nearbyVector._promise = nearbyVector._promise.then(() => {
-            nearbyVector.plane.material.map.dispose()
-            nearbyVector.plane.material.dispose()
-
-            group.remove(nearbyVector.plane)
-
-            delete nearbyVector.plane
+            // nearbyVector.plane.material.map.dispose()
+            // nearbyVector.plane.material.dispose()
+            //
+            // group.remove(nearbyVector.plane)
+            //
+            // delete nearbyVector.plane
           })
 
         }
       })
 
-      const listOfNearbyVectorsToRequestImagesFor = listOfNearbyVectors.filter((nearbyVector) => {
+      const listOfNewNearbyVectors = listOfNearbyVectors.filter((nearbyVector) => {
         return !_.includes(currentListOfNearbyVectors, nearbyVector)
       })
-
-      const listOfNearbyVectorsToRequestImagesForIds = listOfNearbyVectorsToRequestImagesFor.map((v) => v.i)
+      
+      const listOfNewNearbyVectorsIds = listOfNewNearbyVectors.map((v) => v.i)
 
       // Only request thumbs if there are any vectors nearby at all
-      if (listOfNearbyVectorsToRequestImagesForIds.length) {
-        const getAllImagesPromise = sendAndAwait('thumb32', listOfNearbyVectorsToRequestImagesForIds)
+      if (listOfNewNearbyVectorsIds.length && false) {
+        const getAllImagesPromise = sendAndAwait('thumb32', listOfNewNearbyVectorsIds)
         .then((thumbs) => {
           thumbs.forEach((thumb, i) => {
             // Magic here! (ArrayBuffer to Base64String)
@@ -286,7 +298,7 @@ export default React.createClass({
               map: texture
             })
 
-            const nearbyVector = listOfNearbyVectorsToRequestImagesFor[i]
+            const nearbyVector = listOfNewNearbyVectors[i]
 
             nearbyVector.plane = new THREE.Sprite(spriteMaterial)
             nearbyVector.plane.position.copy(nearbyVector.vec)
@@ -296,7 +308,7 @@ export default React.createClass({
           })
         })
 
-        listOfNearbyVectorsToRequestImagesFor.forEach((nearbyVector) => {
+        listOfNewNearbyVectors.forEach((nearbyVector) => {
           nearbyVector._promise = nearbyVector._promise.then(() => getAllImagesPromise)
         })
       }
@@ -367,6 +379,8 @@ export default React.createClass({
       controls.update()
 
       requestAnimationFrame(animate)
+
+      TWEEN.update()
 
       tick()
 
