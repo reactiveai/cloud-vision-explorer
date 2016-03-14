@@ -40,6 +40,11 @@ export default React.createClass({
 </div>
     )
   },
+
+  propTypes: {
+    emitter: React.PropTypes.object.isRequired
+  },
+
   // Perhaps this is added for performance reasons?
   shouldComponentUpdate() {
     console.log('shouldComponentUpdate')
@@ -379,7 +384,7 @@ export default React.createClass({
       currentListOfNearbyVectors = listOfNearbyVectors
     }, 1000)
 
-    document.addEventListener( 'mousedown', (e) => {
+    document.addEventListener( 'mouseup', (e) => {
       e.preventDefault()
 
       raycaster.setFromCamera( mouse, camera )
@@ -387,15 +392,11 @@ export default React.createClass({
 
       if ( intersects.length > 0 ) {
         if ( lastClickedNodeIndex != intersects[ 0 ].index ) {
-          // this.props.emitter.emit('openSidebar', data[lastClickedNodeIndex].i)
           lastClickedNodeIndex = intersects[ 0 ].index
-          console.log(data[lastClickedNodeIndex].i)          
+          this.props.emitter.emit('showSidebar', data[lastClickedNodeIndex].i)
         }
       }
     }, false)
-
-
-
 
     const tick = () => {
 
