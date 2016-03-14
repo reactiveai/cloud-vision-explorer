@@ -264,39 +264,42 @@ export default React.createClass({
 
       const listOfNearbyVectorsToRequestImagesForIds = listOfNearbyVectorsToRequestImagesFor.map((v) => v.i)
 
-      const getAllImagesPromise = sendAndAwait('thumb32', listOfNearbyVectorsToRequestImagesForIds)
-      .then((thumbs) => {
-        thumbs.forEach((thumb, i) => {
-          // Magic here! (ArrayBuffer to Base64String)
-          const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+      // Only request thumbs if there are any vectors nearby at all
+      if (listOfNearbyVectorsToRequestImagesForIds.length) {
+        const getAllImagesPromise = sendAndAwait('thumb32', listOfNearbyVectorsToRequestImagesForIds)
+        .then((thumbs) => {
+          thumbs.forEach((thumb, i) => {
+            // Magic here! (ArrayBuffer to Base64String)
+            const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
 
-          const image = new Image()
-          image.src = `data:image/jpeg;base64,${b64img}`
+            const image = new Image()
+            image.src = `data:image/jpeg;base64,${b64img}`
 
-          const texture = new THREE.Texture()
-          texture.image = image
-          image.onload = function() {
-            texture.needsUpdate = true
-          }
+            const texture = new THREE.Texture()
+            texture.image = image
+            image.onload = function() {
+              texture.needsUpdate = true
+            }
 
-          const spriteMaterial = new THREE.SpriteMaterial({
-            color: 0xffffff,
-            map: texture
+            const spriteMaterial = new THREE.SpriteMaterial({
+              color: 0xffffff,
+              map: texture
+            })
+
+            const nearbyVector = listOfNearbyVectorsToRequestImagesFor[i]
+
+            nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+            nearbyVector.plane.position.copy(nearbyVector.vec)
+            nearbyVector.plane.scale.multiplyScalar(5)
+
+            group.add(nearbyVector.plane)
           })
-
-          const nearbyVector = listOfNearbyVectorsToRequestImagesFor[i]
-
-          nearbyVector.plane = new THREE.Sprite(spriteMaterial)
-          nearbyVector.plane.position.copy(nearbyVector.vec)
-          nearbyVector.plane.scale.multiplyScalar(5)
-
-          group.add(nearbyVector.plane)
         })
-      })
 
-      listOfNearbyVectorsToRequestImagesFor.forEach((nearbyVector) => {
-        nearbyVector._promise = nearbyVector._promise.then(() => getAllImagesPromise)
-      })
+        listOfNearbyVectorsToRequestImagesFor.forEach((nearbyVector) => {
+          nearbyVector._promise = nearbyVector._promise.then(() => getAllImagesPromise)
+        })
+      }
 
       currentListOfNearbyVectors = listOfNearbyVectors
     }, 1000)

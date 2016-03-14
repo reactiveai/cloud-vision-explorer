@@ -3,6 +3,10 @@ const numeral = require('numeral')
 
 const fetchThumb = (db, ids, fieldName) => {
   return new Promise((resolve, reject) => {
+    if (!ids.length) {
+      return reject('No ids given')
+    }
+
     const queryStr = 'SELECT ?? FROM entries WHERE id IN (?)'
     const columns = ['id', fieldName]
     db.query(queryStr, [columns, ids], (err, rows) => {
@@ -25,7 +29,7 @@ const onConnection = (sock, db) => {
     sock.on(field, (ids, callback) => {
       fetchThumb(db, ids, field)
       .then((data) => callback(data))
-      .catch((err) => { console.log(`ERROR : ${err}]`) })
+      .catch((err) => { console.log(`ERROR : ${err}`) })
     })
   })
 }
