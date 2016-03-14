@@ -12,8 +12,10 @@ export default class Sidebar extends React.Component {
   static get propTypes() {
     return {
       sidebar: PropTypes.object.isRequired,
+      showSidebar: PropTypes.func.isRequired,
       hideSidebar: PropTypes.func.isRequired,
       changeTab: PropTypes.func.isRequired,
+      emitter: PropTypes.object.isRequired
     }
   }
 
@@ -22,6 +24,17 @@ export default class Sidebar extends React.Component {
     this.setState(s =>
       _.assign(s, { visionData: JSON.stringify(dummy, null, 2) }))
 
+    // Listening on event
+    console.log('Listening....')
+    this.props.emitter.addListener('showSidebar', (id) => {
+      console.log(`Displaying : ${id}`)
+      this.props.showSidebar()
+    })
+  }
+
+  componentWillUnmount() {
+    console.log('Removing Listeners....')
+    this.props.emitter.removeAllListeners()
   }
 
   getVisionData() {
@@ -76,11 +89,10 @@ export default class Sidebar extends React.Component {
     )
 
     return (
-      <Drawer
-        className="sidebar"
-        active={sidebar.isActive} type="right"
-        onOverlayClick={hideSidebar}
-      >
+      <Drawer className="sidebar"
+              active={sidebar.isActive} type="right"
+              onOverlayClick={hideSidebar}>
+
         <ul className="feature-indicator row">
           <li className="col-xs active"><FontIcon value='label_outline' /></li>
           <li className="col-xs"><FontIcon value='translate' /></li>
@@ -90,11 +102,10 @@ export default class Sidebar extends React.Component {
           <li className="col-xs"><FontIcon value='place' /></li>
           <li className="col-xs active"><FontIcon value='photo' /></li>
         </ul>
-        <SidebarTabs
-          className="detail-tab"
-          index={sidebar.tabIndex}
-          onChange={changeTab}
-        >
+
+        <SidebarTabs className="detail-tab"
+                     index={sidebar.tabIndex}
+                     onChange={changeTab}>
           <Tab label='Graph' className={classForTab(0)}>{graphTabContent}</Tab>
           <Tab label='Data' className={classForTab(1)}>
             <pre>{this.state.visionData}</pre>
@@ -118,10 +129,8 @@ class SidebarTabs extends Tabs {
         <nav className={tabStyle.navigation} ref='navigation'>
           {this.renderHeaders(headers)}
         </nav>
-        <span
-          className={tabStyle.pointer}
-          style={_.omit(this.state.pointer, 'top')}
-        />
+        <span className={tabStyle.pointer}
+              style={_.omit(this.state.pointer, 'top')} />
       </div>
     )
   }
