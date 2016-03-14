@@ -7,12 +7,10 @@
   </head>
   <body>
     <h1>Websocket Test</h1>
-    <p>See the source code and dev console</p>
 
     <div id="images32"></div>
     <div id="images64"></div>
     <div id="images128"></div>
-    <div id="images256"></div>
 
     <script>
       const TARGET_IDS = [
@@ -32,7 +30,7 @@
         _.each(results, (result) => {
           // Magic here! (ArrayBuffer to Base64String)
           // Maybe better use https://github.com/beatgammit/base64-js
-          const b64img = btoa([].reduce.call(new Uint8Array(result.thumb),(p,c) => {return p+String.fromCharCode(c)},''))
+          const b64img = btoa([].reduce.call(new Uint8Array(result),(p,c) => {return p+String.fromCharCode(c)},''))
 
           const img = document.createElement('img');
           img.src = `data:image/jpeg;base64,${b64img}`

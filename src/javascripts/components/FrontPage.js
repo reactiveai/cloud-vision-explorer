@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import ToolboxApp from 'react-toolbox/lib/app'
+import ImageView from './ImageView'
 import RenderView from './RenderView'
 import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
@@ -27,6 +28,7 @@ class FrontPage extends Component {
     return (
       <div>
         <ToolboxApp>
+          <ImageView emitter={emitter} />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
         </ToolboxApp>
         <RenderView emitter={emitter} />
