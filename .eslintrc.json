@@ -24,7 +24,7 @@
     "prefer-const": 1,
     "prefer-spread": 1,
     "prefer-template": 2,
-    "prefer-reflect": 1,
+    "prefer-reflect": 0,
     "prefer-arrow-callback": 1,
     "require-yield": 2,
     "template-curly-spacing": 2,

@@ -310,7 +310,7 @@ export default React.createClass({
 
             group.remove(nearbyVector.plane)
 
-            Reflect.deleteProperty(nearbyVector, 'plane')
+            delete nearbyVector.plane
           })
 
         }
