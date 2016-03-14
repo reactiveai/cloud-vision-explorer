@@ -243,6 +243,7 @@ export default React.createClass({
 
     }, false)
 
+    let lastClickedNodeIndex = null
     let lastIntersectIndex = null
 
     let currentListOfNearbyVectors = []
@@ -378,6 +379,24 @@ export default React.createClass({
       currentListOfNearbyVectors = listOfNearbyVectors
     }, 1000)
 
+    document.addEventListener( 'mousedown', (e) => {
+      e.preventDefault()
+
+      raycaster.setFromCamera( mouse, camera )
+      const intersects = raycaster.intersectObject(particles)
+
+      if ( intersects.length > 0 ) {
+        if ( lastClickedNodeIndex != intersects[ 0 ].index ) {
+          // this.props.emitter.emit('openSidebar', data[lastClickedNodeIndex].i)
+          lastClickedNodeIndex = intersects[ 0 ].index
+          console.log(data[lastClickedNodeIndex].i)          
+        }
+      }
+    }, false)
+
+
+
+
     const tick = () => {
 
       // TODO fix absolute coords for nodes
@@ -391,43 +410,35 @@ export default React.createClass({
 
       const intersects = raycaster.intersectObject(particles)
 
+      // If our mouse hovers over something
       if ( intersects.length > 0 ) {
 
+        // If the object we're hovering over is different from what we last hovered over
         if ( lastIntersectIndex != intersects[ 0 ].index ) {
 
+          // If we have hovered over something before
           if (lastIntersectIndex) {
-            // attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
 
-            // const color = new THREE.Color()
-            // color.setHex(groupedData[data[lastIntersectIndex].g].color)
-            // color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
           }
 
           lastIntersectIndex = intersects[ 0 ].index
 
-          // attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
-          // attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE * 2
-          // attributes.size.needsUpdate = true
-          //
-          // color.setRGB(255, 255, 255)
-          // color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
-          //
-          // attributes.customColor.needsUpdate = true
+
+
 
         }
 
-      } else if ( lastIntersectIndex !== null ) {
 
-        // attributes.size.array[ lastIntersectIndex ] = PARTICLE_SIZE
-        // attributes.size.needsUpdate = true
-        //
-        // const color = new THREE.Color()
-        // color.setHex(groupedData[data[lastIntersectIndex].g].color)
-        // color.toArray(attributes.customColor.array, lastIntersectIndex * 3)
-        // attributes.customColor.needsUpdate = true
+      }
+      // If we're not hovering over something
+      else {
+        // If we were hovering over an object before
+        if ( lastIntersectIndex !== null ) {
 
-        lastIntersectIndex = null
 
+          lastIntersectIndex = null
+
+        }
       }
 
       checkForImagesThatCanBeDownloaded()
