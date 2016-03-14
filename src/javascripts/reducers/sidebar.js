@@ -6,7 +6,7 @@ import {
 } from '../actions/sidebar'
 
 const initialState = {
-  isActive: true,
+  isActive: false,
   tabIndex: 0
 }
 

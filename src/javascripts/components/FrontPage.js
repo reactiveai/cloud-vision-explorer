@@ -6,9 +6,11 @@ import RenderView from './RenderView'
 import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
 import _ from 'lodash'
-import { showSidebar } from '../actions/sidebar'
 import * as sidebarActionCreators from '../actions/sidebar'
 import 'stylesheets/FrontPage'
+import {EventEmitter} from 'fbemitter'
+
+const emitter = new EventEmitter()
 
 class FrontPage extends Component {
   static get propTypes() {
@@ -21,16 +23,13 @@ class FrontPage extends Component {
   render() {
     const { sidebar, dispatch } = this.props
     const sidebarBounds = bindActionCreators(sidebarActionCreators, dispatch)
+
     return (
       <div>
         <ToolboxApp>
-          <Sidebar sidebar={sidebar} {...sidebarBounds} />
-          <Button
-            label='Show Sidebar' accent onClick={sidebarBounds.showSidebar}
-            style={{ top: '45px' }}
-          />
+          <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
         </ToolboxApp>
-        <RenderView />
+        <RenderView emitter={emitter} />
       </div>
     )
   }
