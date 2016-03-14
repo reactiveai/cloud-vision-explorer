@@ -8,11 +8,12 @@ const getImageUrl = (id) => {
 
 const style = {
   wrapper: {
-    margin: '0 auto'
+    margin: '12vh 25vw 15vh auto',
+    textAlign: 'center'
   },
   img: {
-    width: '200px',
-    height: '200px'
+    maxWidth: '80vw',
+    maxHeight: '80vh',
   }
 }
 

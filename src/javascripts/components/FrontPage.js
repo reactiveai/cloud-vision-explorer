@@ -26,8 +26,8 @@ class FrontPage extends Component {
     const sidebarBounds = bindActionCreators(sidebarActionCreators, dispatch)
 
     return (
-      <div>
-        <ToolboxApp>
+      <div >
+        <ToolboxApp style={{height: '100vw'}}>
           <ImageView emitter={emitter} />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
         </ToolboxApp>
