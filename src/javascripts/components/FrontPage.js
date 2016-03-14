@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import ToolboxApp from 'react-toolbox/lib/app'
 import ImageView from './ImageView'
 import RenderView from './RenderView'
+import InfoLink from './InfoLink'
 import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
 import _ from 'lodash'
@@ -12,6 +13,15 @@ import 'stylesheets/FrontPage'
 import {EventEmitter} from 'fbemitter'
 
 const emitter = new EventEmitter()
+
+const style = {
+  infoLink: {
+    position: 'absolute',
+    top: '18vh',
+    left: '1vh',
+    width: '20vh'
+  }
+}
 
 class FrontPage extends Component {
   static get propTypes() {
@@ -28,6 +38,7 @@ class FrontPage extends Component {
     return (
       <div >
         <ToolboxApp style={{height: '100vw'}}>
+          <InfoLink style={style.infoLink} emitter={emitter} />
           <ImageView emitter={emitter} />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
         </ToolboxApp>

@@ -14,6 +14,7 @@ const style = {
     color: '#cccccc'
   },
   li: {
+    cursor: 'pointer'
   }
 }
 
