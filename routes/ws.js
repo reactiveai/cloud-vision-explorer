@@ -4,20 +4,17 @@ const numeral = require('numeral')
 const onConnection = (sock, db) => {
   console.log('connected')
 
-  sock.on('thumbnail', (ids) => {
-    const queryStr = 'SELECT id, thumb FROM entries WHERE id IN (?)'
+  sock.on('thumbnail', (ids, doneFn) => {
+    const queryStr = 'SELECT thumb FROM entries WHERE id IN (?)'
     db.query(queryStr, [ids], (err, rows) => {
       if(err) {
         console.log(err)
         return
       }
 
-      sock.emit('thumbnail', _.map(rows, (row) => {
+      doneFn(_.map(rows, (row) => {
         console.log(`emitting thumbnail : ${row.id} / ${numeral(row.thumb.byteLength).format('0.0 b')}`)
-        return {
-          id: row['id'],
-          thumb: row['thumb']
-        }
+        return row['thumb']
       }))
     })
   })
