@@ -9,12 +9,19 @@ const TARGET_IMAGE_IDS = [
 ]
 
 const style = {
+  h1: {
+    color: '#cccccc',
+    fontSize: 'x-small',
+    marginBottom: 50
+  },
   ul: {
     listStyleType: 'none',
-    color: '#cccccc'
+    color: '#cccccc',
+    paddingLeft: '0vh'
   },
   li: {
-    cursor: 'pointer'
+    cursor: 'pointer',
+    marginBottom: 10
   }
 }
 
@@ -35,15 +42,19 @@ export default class InfoLink extends React.Component {
       return (
         <li key={item.id} style={style.li}
             onClick={() => { this.props.emitter.emit('showSidebar', item.id) }}>
-          <img src={getThumbUrl(item.id)} /> {item.label}
+          <img src={getThumbUrl(item.id)} />
         </li>
       )
     })
 
     return (
-      <ul style={_.assign(this.props.style, style.ul)}>
-        {listItems}
-      </ul>
+      <div style={this.props.style}>
+        <img src="/images/Google-Cloud-Platform.png" /><br />
+        <h1 style={style.h1}>Cloud Vision API<br/>Demo</h1>
+        <ul style={style.ul}>
+          {listItems}
+        </ul>
+      </div>
     )
   }
 }

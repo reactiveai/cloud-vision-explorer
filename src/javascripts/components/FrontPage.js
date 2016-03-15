@@ -17,8 +17,8 @@ const emitter = new EventEmitter()
 const style = {
   infoLink: {
     position: 'absolute',
-    top: '18vh',
-    left: '1vh',
+    top: '12vh',
+    left: '2vh',
     width: '20vh'
   }
 }
