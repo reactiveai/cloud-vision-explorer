@@ -5,6 +5,7 @@ import ToolboxApp from 'react-toolbox/lib/app'
 import ImageView from './ImageView'
 import RenderView from './RenderView'
 import InfoLink from './InfoLink'
+import ClusterLabel from './ClusterLabel'
 import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
 import _ from 'lodash'
@@ -21,6 +22,11 @@ const style = {
     top: '12vh',
     left: '2vh',
     width: '20vh'
+  },
+  clusterLabel: {
+    position: 'absolute',
+    bottom: '1vh',
+    left: '2vh',
   }
 }
 
@@ -39,6 +45,7 @@ class FrontPage extends Component {
     return (
       <div >
         <ToolboxApp style={{height: '100vw'}}>
+          <ClusterLabel style={style.clusterLabel} emitter={emitter} />
           <InfoLink style={style.infoLink} emitter={emitter} />
           <ImageView emitter={emitter} />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
