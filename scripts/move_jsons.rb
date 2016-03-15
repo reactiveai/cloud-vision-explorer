@@ -9,7 +9,7 @@ def generate_json_filenames(filepath)
   open(filepath).read.split("\n").map{|id| id + ".json"}
 end
 
-def move_images(unsafe_id_json_filepath:, broken_id_json_filepath:)
+def move_jsons(unsafe_id_json_filepath:, broken_id_json_filepath:)
 
   json_filenames = {}
   json_filenames[:unsafe] = generate_json_filenames(unsafe_id_json_filepath)
@@ -37,5 +37,5 @@ def move_images(unsafe_id_json_filepath:, broken_id_json_filepath:)
 end
 
 #run
-move_images(unsafe_id_json_filepath: ARGV[0], broken_id_json_filepath: ARGV[1])
+move_jsons(unsafe_id_json_filepath: ARGV[0], broken_id_json_filepath: ARGV[1])
 
