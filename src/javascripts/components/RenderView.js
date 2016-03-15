@@ -396,7 +396,7 @@ export default React.createClass({
 
               nearbyVector.plane = createSpriteFromArrayBuffer(thumbObject.thumb)
               nearbyVector.plane.position.copy(nearbyVector.vec)
-              nearbyVector.plane.scale.multiplyScalar(denseFactor / 1000)
+              nearbyVector.plane.scale.multiplyScalar(denseFactor / 500)
 
               group.add(nearbyVector.plane)
 
