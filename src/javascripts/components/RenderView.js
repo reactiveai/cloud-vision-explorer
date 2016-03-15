@@ -109,7 +109,7 @@ export default React.createClass({
     _.each(groupedData, (value, key, coll) => {
       coll[key] = {
         nodes: value,
-        color: 0xffffff * random.real(0.0, 1.0)
+        color: new THREE.Color(0xffffff * random.real(0.0, 1.0))
       }
     })
 
@@ -126,7 +126,7 @@ export default React.createClass({
       const vertex = points[ i ].vec
       vertex.toArray(positions, i * 3)
 
-      points[i].color.setHex(groupedData[points[i].g].color)
+      points[i].color.set(groupedData[points[i].g].color)
       points[i].color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE
@@ -176,6 +176,46 @@ export default React.createClass({
       const line = new THREE.Line( geometry, lineMaterial )
 
       group.add(line)
+    })
+
+    // Add cluster names
+    clusters.forEach((cluster, i) => {
+      console.log(cluster.label)
+
+      const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
+      center.multiplyScalar(1000)
+      const text = cluster.label
+      const color = 'green'
+      const backGroundColor = 'yellow'
+
+      const canvas = document.createElement('canvas')
+      canvas.width = 512
+      canvas.height = 512
+
+      const context = canvas.getContext('2d')
+
+      const textColor = '#bbbbbb'
+
+      context.textAlign = 'center'
+      context.textBaseline = 'middle'
+      context.fillStyle = textColor
+      context.font = '80px Roboto'
+      context.fillText(text, canvas.width / 2, canvas.height / 2)
+
+      const texture = new THREE.Texture(canvas)
+      texture.needsUpdate = true
+
+      const spriteMaterial = new THREE.SpriteMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 1.0,
+        map: texture
+      })
+
+      const sprite = new THREE.Sprite(spriteMaterial)
+      sprite.position.copy(center)
+      sprite.scale.multiplyScalar(500)
+      group.add(sprite)
     })
 
     scene.add(group)
