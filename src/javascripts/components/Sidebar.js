@@ -6,6 +6,7 @@ import Drawer from 'react-toolbox/lib/drawer'
 import FontIcon from 'react-toolbox/lib/font_icon'
 import IconButton from 'react-toolbox/lib/button'
 import ProgressBar from 'react-toolbox/lib/progress_bar'
+import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 
@@ -47,6 +48,26 @@ class GraphTab extends React.Component {
       const key = name + 'Annotations'
       return (key in vision) ? vision[key] : []
     }
+    const likelihoodLevel = (likelihood) => {
+      const levelMap = {
+        UNKNOWN: 0,
+        VERY_UNLIKELY: 1,
+        UNLIKELY: 2,
+        POSSIBLE: 3,
+        LIKELY: 4,
+        VERY_LIKELY: 5
+      }
+      const level = levelMap[likelihood]
+      return (
+        <ul className="likelihood-level">
+          <li className={level > 0 ? 'active' : ''}></li>
+          <li className={level > 1 ? 'active' : ''}></li>
+          <li className={level > 2 ? 'active' : ''}></li>
+          <li className={level > 3 ? 'active' : ''}></li>
+          <li className={level > 4 ? 'active' : ''}></li>
+        </ul>
+      )
+    }
 
     return (
       <div className="tab-graph">
@@ -69,7 +90,78 @@ class GraphTab extends React.Component {
           <p>safesearch detection</p>
         </section>
         <section className="face-detection">
-          <p>face detection</p>
+          {getAnnotations('face').map((face, idx) =>
+            <div className="face-detection-person" key={idx}>
+              <div>
+                <FontIcon className="humanoid primary" value="accessibility" />
+                <div className="person-label">Person {idx + 1}</div>
+                <div className="angle">
+                  <div className="angle-label">Roll</div>
+                  <Donut
+                    color="currentColor"
+                    size={50}
+                    strokeWidth={4}
+                    value={(face.rollAngle + 180) / 360}
+                  />
+                </div>
+                <div className="angle">
+                  <div className="angle-label">Pan</div>
+                  <Donut
+                    color="currentColor"
+                    size={50}
+                    strokeWidth={4}
+                    value={(face.panAngle + 180) / 360}
+                  />
+                </div>
+                <div className="angle">
+                  <div className="angle-label">Tilt</div>
+                  <Donut
+                    color="currentColor"
+                    size={50}
+                    strokeWidth={4}
+                    value={(face.tiltAngle + 180) / 360}
+                  />
+                </div>
+              </div>
+              <div className="likelihoods">
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="sentiment_satisfied" />
+                  <div className="likelihood-label">Joy</div>
+                  {likelihoodLevel(face.joyLikelihood)}
+                </div>
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="sentiment_dissatisfied" />
+                  <div className="likelihood-label">Sorrow</div>
+                  {likelihoodLevel(face.sorrowLikelihood)}
+                </div>
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="lens" />
+                  <div className="likelihood-label">Anger</div>
+                  {likelihoodLevel(face.angerLikelihood)}
+                </div>
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="lens" />
+                  <div className="likelihood-label">Surprise</div>
+                  {likelihoodLevel(face.surpriseLikelihood)}
+                </div>
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="flare" />
+                  <div className="likelihood-label">Under Expose</div>
+                  {likelihoodLevel(face.underExposedLikelihood)}
+                </div>
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="blur_on" />
+                  <div className="likelihood-label">Blur</div>
+                  {likelihoodLevel(face.blurredLikelihood)}
+                </div>
+                <div className="likelihood">
+                  <FontIcon className="likelihood-icon" value="lens" />
+                  <div className="likelihood-label">Headwear</div>
+                  {likelihoodLevel(face.headwearLikelihood)}
+                </div>
+              </div>
+            </div>
+          )}
         </section>
         <section className="logo-detection">
           <p>logo detection</p>

@@ -74,6 +74,66 @@
         .score
           color: $sidebar-primary-color-1
 
+      &.face-detection
+        .face-detection-person
+          display: flex
+          margin-bottom: 30px
+
+          > *
+            margin-right: 20px
+
+        .humanoid
+          font-size: 80px
+
+          &.primary
+            color: $sidebar-primary-color-1
+
+        .person-label
+          text-align: center
+
+        .angle
+          display: flex
+          align-items: center
+          margin-top: 20px
+
+          .angle-label
+            flex-basis: 2em
+
+          .Donut
+            color: $sidebar-primary-color-2 !important
+
+        .likelihoods
+          margin-top: 15px
+
+        .likelihood
+          align-items: center
+          display: flex
+          margin-bottom: 1.2em
+
+        .likelihood-icon
+          flex-basis: 2em
+          color: $sidebar-primary-color-2
+
+        .likelihood-label
+          flex-basis: 7em
+          font-size: 80%
+
+        .likelihood-level
+          margin: 0
+          padding: 0
+          flex-grow: 1
+          list-style-type: none
+          display: flex
+
+          li
+            margin-left: 0.5em
+            height: 0.5em
+            width: 0.5em
+            background: $sidebar-primary-color-off
+
+            &.active
+              background: $sidebar-primary-color-2
+
     label
       background: #424242
       color: #757575
