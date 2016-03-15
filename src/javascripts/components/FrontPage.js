@@ -18,7 +18,7 @@ const style = {
   infoLink: {
     position: 'absolute',
     top: '12vh',
-    left: '1vh',
+    left: '2vh',
     width: '20vh'
   }
 }
