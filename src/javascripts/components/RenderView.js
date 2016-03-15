@@ -370,6 +370,22 @@ export default React.createClass({
       currentListOfNearbyVectors = listOfNearbyVectors
     }, thumbCheckSpeed)
 
+    let mousedownObject = null
+
+    document.addEventListener( 'mousedown', (e) => {
+      e.preventDefault()
+
+      raycaster.setFromCamera( mouse, camera )
+      const intersects = raycaster.intersectObject(particles)
+
+      if ( intersects.length > 0 ) {
+        mousedownObject = intersects[ 0 ].index
+      }
+      else {
+        mousedownObject = null
+      }
+    }, false)
+
     document.addEventListener( 'mouseup', (e) => {
       e.preventDefault()
 
@@ -377,9 +393,13 @@ export default React.createClass({
       const intersects = raycaster.intersectObject(particles)
 
       if ( intersects.length > 0 ) {
-        if ( lastClickedNodeIndex != intersects[ 0 ].index ) {
-          lastClickedNodeIndex = intersects[ 0 ].index
-          this.props.emitter.emit('showSidebar', data[lastClickedNodeIndex].i)
+        const index = intersects[ 0 ].index
+        if ( mousedownObject === index ) {
+          // Make sure the object has an actual image
+          if (points[index].plane) {
+            lastClickedNodeIndex = index
+            this.props.emitter.emit('showSidebar', points[lastClickedNodeIndex].i)
+          }
         }
       }
     }, false)
