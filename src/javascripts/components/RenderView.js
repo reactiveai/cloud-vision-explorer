@@ -162,7 +162,7 @@ export default React.createClass({
         blending:     THREE.AdditiveBlending,
         depthTest:    false,
         transparent:  true,
-        opacity: 0.18
+        opacity: 0.3
       })
 
       const vertices = clusters[key].lines.map((v) => {
