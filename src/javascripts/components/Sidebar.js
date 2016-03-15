@@ -42,10 +42,25 @@ class GraphTab extends React.Component {
   }
 
   render() {
+    const { vision } = this.props
+    const getAnnotations = (name) => {
+      const key = name + 'Annotations'
+      return (key in vision) ? vision[key] : []
+    }
+
     return (
       <div className="tab-graph">
         <section className="label-detection">
-          <p>label annotation</p>
+          {getAnnotations('label').map(label =>
+            <div key={label.description} className="row">
+              <div className="col-xs-3">{_.capitalize(label.description)}</div>
+              <ProgressBar
+                className="col-xs" type="linear" mode="determinate"
+                value={_.round(label.score * 100)}
+              />
+              <div className="col-xs-1 score">{_.round(label.score * 100)}%</div>
+            </div>
+          )}
         </section>
         <section className="text-detection">
           <p>text detection</p>
