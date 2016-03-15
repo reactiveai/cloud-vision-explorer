@@ -45,34 +45,6 @@ class GraphTab extends React.Component {
   render() {
     const { vision } = this.props
     const getAnnotations = (name) => {
-      if (name == 'face') {
-        return [
-          {
-            "rollAngle": 45,
-            "panAngle": -80,
-            "tiltAngle": 100,
-            "joyLikelihood": "UNLIKELY",
-            "sorrowLikelihood": "LIKELY",
-            "angerLikelihood": "VERY_LIKELY",
-            "surpriseLikelihood": "UNKNOWN",
-            "underExposedLikelihood": "VERY_LIKELY",
-            "blurredLikelihood": "POSSIBLE",
-            "headwearLikelihood": "VERY_UNLIKELY"
-          },
-          {
-            "rollAngle": 45,
-            "panAngle": -80,
-            "tiltAngle": 100,
-            "joyLikelihood": "UNLIKELY",
-            "sorrowLikelihood": "LIKELY",
-            "angerLikelihood": "VERY_LIKELY",
-            "surpriseLikelihood": "UNKNOWN",
-            "underExposedLikelihood": "VERY_LIKELY",
-            "blurredLikelihood": "POSSIBLE",
-            "headwearLikelihood": "VERY_UNLIKELY"
-          }
-        ]
-      }
       const key = name + 'Annotations'
       return (key in vision) ? vision[key] : []
     }
