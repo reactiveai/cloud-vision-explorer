@@ -9,6 +9,7 @@ import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
 import _ from 'lodash'
 import * as sidebarActionCreators from '../actions/sidebar'
+import 'stylesheets/main'
 import 'stylesheets/FrontPage'
 import {EventEmitter} from 'fbemitter'
 
