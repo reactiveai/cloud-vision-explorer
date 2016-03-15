@@ -261,6 +261,28 @@ export default React.createClass({
       attributes.customColor.needsUpdate = true
     }
 
+    const createSpriteFromArrayBuffer = (buffer) => {
+      // Magic here! (ArrayBuffer to Base64String)
+      const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+
+      const image = new Image()
+      image.src = `data:image/jpeg;base64,${b64img}`
+
+      const texture = new THREE.Texture()
+      texture.image = image
+      image.onload = function() {
+        texture.needsUpdate = true
+      }
+
+      const spriteMaterial = new THREE.SpriteMaterial({
+        // color: 0xff0000,
+        transparent: true,
+        opacity: 0,
+        map: texture
+      })
+
+      return new THREE.Sprite(spriteMaterial)
+    }
 
     const checkForImagesThatCanBeDownloaded = _.throttle(() => {
       // Keep track of particles that are within our range, and particles
@@ -343,26 +365,7 @@ export default React.createClass({
             const nearbyVector = listOfNewNearbyVectors[i]
 
             nearbyVector._promise = nearbyVector._promise.then(() => {
-              // Magic here! (ArrayBuffer to Base64String)
-              const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
-              const image = new Image()
-              image.src = `data:image/jpeg;base64,${b64img}`
-
-              const texture = new THREE.Texture()
-              texture.image = image
-              image.onload = function() {
-                texture.needsUpdate = true
-              }
-
-              const spriteMaterial = new THREE.SpriteMaterial({
-                // color: 0xff0000,
-                transparent: true,
-                opacity: 0,
-                map: texture
-              })
-
-              nearbyVector.plane = new THREE.Sprite(spriteMaterial)
+              nearbyVector.plane = createSpriteFromArrayBuffer(thumb)
               nearbyVector.plane.position.copy(nearbyVector.vec)
               nearbyVector.plane.scale.multiplyScalar(5)
 
