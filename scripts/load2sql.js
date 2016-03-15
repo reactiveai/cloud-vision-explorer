@@ -37,7 +37,7 @@ const runReplace = (file) => {
     const thumb64  = fs.readFileSync(`${ThumbDir}/64x64/${id}.jpg`)
     const thumb128 = fs.readFileSync(`${ThumbDir}/128x128/${id}.jpg`)
 
-    const dataset = {id, thumb32, thumb64, thumb128, thumb}
+    const dataset = {id, thumb32, thumb64, thumb128}
 
     pool.query('REPLACE INTO entries SET ?', dataset, (err, res) => {
       if(err){

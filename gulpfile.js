@@ -16,13 +16,13 @@ gulp.task('default', () => {
 
 gulp.task('server', () => {
   supervisor('server.js', {
-    ignore: ['public']
+    ignore: ['public', 'node_modules']
   })
 })
 
 gulp.task('server-hot-reload', () => {
   supervisor('server.dev.js', {
-    ignore: ['public']
+    ignore: ['public', 'node_modules']
   })
 })
 
