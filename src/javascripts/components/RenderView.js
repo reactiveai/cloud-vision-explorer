@@ -272,17 +272,19 @@ export default React.createClass({
         }
       })
 
-      currentListOfNearbyVectors.forEach((nearbyVector) => {
-        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
-          nearbyVector._promise = nearbyVector._promise
-          .then(() => {
-            return tween({
-              o: 1.0
-            }, {
-              o: 0.0
-            }, 1000, function () {
-              nearbyVector.plane.material.opacity = this.o
-            })
+      const listOfRemovedNearbyVectors = currentListOfNearbyVectors.filter((nearbyVector) => {
+        return !_.includes(listOfNearbyVectors, nearbyVector)
+      })
+
+      listOfRemovedNearbyVectors.forEach((nearbyVector) => {
+        nearbyVector._promise = nearbyVector._promise
+        .then(() => {
+          return tween({
+            o: 1.0
+          }, {
+            o: 0.0
+          }, 1000, function () {
+            nearbyVector.plane.material.opacity = this.o
           })
           .then(() => {
             nearbyVector.plane.material.map.dispose()
