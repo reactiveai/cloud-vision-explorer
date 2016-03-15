@@ -148,10 +148,10 @@ export default class Sidebar extends React.Component {
         <SidebarTabs className="detail-tab"
                      index={sidebar.tabIndex}
                      onChange={changeTab}>
-          <Tab label='Graph' className={classForTab(0)}>
+          <Tab label='Graphical' className={classForTab(0)}>
             <GraphTab vision={this.state.vision} />
           </Tab>
-          <Tab label='Data' className={classForTab(1)}>
+          <Tab label='JSON' className={classForTab(1)}>
             <pre>{JSON.stringify(this.state.vision, null, 2)}</pre>
           </Tab>
         </SidebarTabs>
