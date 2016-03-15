@@ -20,6 +20,8 @@ import io from 'socket.io-client'
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
+const tweenSpeed = 500
+const thumbCheckSpeed = 500
 
 // Promise TWEEN
 const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
@@ -305,7 +307,7 @@ export default React.createClass({
             o: 1.0
           }, {
             o: 0.0
-          }, 1000, function () {
+          }, tweenSpeed, function () {
             nearbyVector.plane.material.opacity = this.o
           })
         })
@@ -329,7 +331,7 @@ export default React.createClass({
             r: nearbyVector.color.r,
             g: nearbyVector.color.g,
             b: nearbyVector.color.b
-          }, 1000, function () {
+          }, tweenSpeed, function () {
             updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
           })
         })
@@ -350,7 +352,7 @@ export default React.createClass({
             r: 0,
             g: 0,
             b: 0
-          }, 1000, function () {
+          }, tweenSpeed, function () {
             updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
           })
         })
@@ -389,7 +391,7 @@ export default React.createClass({
       }
 
       currentListOfNearbyVectors = listOfNearbyVectors
-    }, 1000)
+    }, thumbCheckSpeed)
 
     document.addEventListener( 'mouseup', (e) => {
       e.preventDefault()
