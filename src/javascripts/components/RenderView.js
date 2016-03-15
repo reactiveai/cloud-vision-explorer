@@ -17,6 +17,9 @@ import { generateMockData } from '../misc/Util.js'
 
 import io from 'socket.io-client'
 
+import Random from 'random-js'
+const random = new Random(Random.engines.mt19937().seed(0))
+
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
@@ -106,7 +109,7 @@ export default React.createClass({
     _.each(groupedData, (value, key, coll) => {
       coll[key] = {
         nodes: value,
-        color: 0xffffff * Math.random()
+        color: 0xffffff * random.real(0.0, 1.0)
       }
     })
 

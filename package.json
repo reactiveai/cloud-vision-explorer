@@ -26,6 +26,7 @@
     "node-uuid": "^1.4.7",
     "npm-zepto": "^1.1.7",
     "numeral": "^1.5.3",
+    "random-js": "^1.0.8",
     "react": "^0.14.7",
     "react-addons-css-transition-group": "^0.14.7",
     "react-dom": "^0.14.7",
