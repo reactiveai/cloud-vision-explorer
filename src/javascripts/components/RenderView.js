@@ -23,8 +23,9 @@ const random = new Random(Random.engines.mt19937().seed(0))
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
-const tweenSpeed = 500
+const tweenSpeed = 200
 const thumbCheckSpeed = 100
+const denseFactor = 1000.0
 
 // Promise TWEEN
 const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
@@ -69,15 +70,15 @@ export default React.createClass({
   },
   _setupScene({points, clusters}) {
 
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.position.z = 2000
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, denseFactor * 10)
+    camera.position.z = denseFactor * 1.2
 
     const scene = new THREE.Scene()
 
     const raycaster = new THREE.Raycaster()
 
     // Increase the default mouseover detection radius of points
-    raycaster.params.Points.threshold = 5
+    raycaster.params.Points.threshold = denseFactor / 1000
 
     const mouse = new THREE.Vector2()
 
@@ -87,7 +88,7 @@ export default React.createClass({
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
 
       // Normalize it
-      n.vec.multiplyScalar(1000)
+      n.vec.multiplyScalar(denseFactor)
 
       // Add a real THREE color
       n.color = new THREE.Color()
@@ -117,7 +118,7 @@ export default React.createClass({
     const colors = new Float32Array(points.length * 3)
     const sizes = new Float32Array(points.length)
 
-    const PARTICLE_SIZE = 10
+    const PARTICLE_SIZE = denseFactor / 100
 
     const group = new THREE.Group()
 
@@ -167,7 +168,7 @@ export default React.createClass({
 
       const vertices = clusters[key].lines.map((v) => {
         // Deserialize and normalize
-        return (new THREE.Vector3()).fromArray(v).multiplyScalar(1000)
+        return (new THREE.Vector3()).fromArray(v).multiplyScalar(denseFactor)
       })
 
 
@@ -183,7 +184,7 @@ export default React.createClass({
       console.log(cluster.label)
 
       const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
-      center.multiplyScalar(1000)
+      center.multiplyScalar(denseFactor)
       const text = cluster.label
       const color = 'green'
       const backGroundColor = 'yellow'
@@ -214,7 +215,7 @@ export default React.createClass({
 
       const sprite = new THREE.Sprite(spriteMaterial)
       sprite.position.copy(center)
-      sprite.scale.multiplyScalar(500)
+      sprite.scale.multiplyScalar(denseFactor / 2)
       group.add(sprite)
     })
 
@@ -222,15 +223,15 @@ export default React.createClass({
 
     const controls = new THREE.TrackballControls(camera)
 
-    controls.rotateSpeed = 1.0
-    controls.zoomSpeed = 1.2
-    controls.panSpeed = 0.8
+    controls.rotateSpeed = 1.0 * 1.0
+    controls.zoomSpeed = 1.2 * 0.1
+    controls.panSpeed = 0.8 * 0.1
 
     controls.noZoom = false
     controls.noPan = false
 
-    controls.staticMoving = true
-    controls.dynamicDampingFactor = 0.3
+    controls.staticMoving = false
+    controls.dynamicDampingFactor = 0.2
 
     controls.keys = [ 65, 83, 68 ]
 
@@ -309,7 +310,7 @@ export default React.createClass({
       // that are outside our range. Add images for the ones that are near
       const listOfNearbyVectors = []
       points.forEach((n) => {
-        if (n.vec.distanceToSquared(camera.position) < Math.pow(200, 2)) {
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(denseFactor * 0.1, 2)) {
           listOfNearbyVectors.push(n)
         }
       })
@@ -382,7 +383,7 @@ export default React.createClass({
       if (listOfNewNearbyVectorsIds.length) {
         const getAllImagesPromise = sendAndAwait('thumb64', listOfNewNearbyVectorsIds)
 
-        listOfNewNearbyVectors.forEach((nearbyVector) => {
+        listOfNewNearbyVectors.forEach((nearbyVector, index) => {
           nearbyVector._promise = nearbyVector._promise.then(() => {
             return getAllImagesPromise
           })
@@ -391,18 +392,27 @@ export default React.createClass({
             const thumbObject = thumbs.find((t) => t.id === nearbyVector.i)
             // const nearbyVector = listOfNewNearbyVectors[i]
 
-            nearbyVector.plane = createSpriteFromArrayBuffer(thumbObject.thumb)
-            nearbyVector.plane.position.copy(nearbyVector.vec)
-            nearbyVector.plane.scale.multiplyScalar(5)
+            return new Promise((resolve) => {
 
-            group.add(nearbyVector.plane)
+              nearbyVector.plane = createSpriteFromArrayBuffer(thumbObject.thumb)
+              nearbyVector.plane.position.copy(nearbyVector.vec)
+              nearbyVector.plane.scale.multiplyScalar(denseFactor / 1000)
 
-            return tween({
-              o: 0
-            }, {
-              o: 1.0
-            }, tweenSpeed, function () {
-              nearbyVector.plane.material.opacity = this.o
+              group.add(nearbyVector.plane)
+
+              // Adding a small timeout may help with the browser blocking CPU
+              setTimeout(() => {
+                resolve()
+              }, 0)
+            })
+            .then(() => {
+              return tween({
+                o: 0
+              }, {
+                o: 1.0
+              }, tweenSpeed, function () {
+                nearbyVector.plane.material.opacity = this.o
+              })
             })
           })
         })

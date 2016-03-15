@@ -30,7 +30,7 @@ export default {
 
         gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
 
-        gl_FragColor.a *= 0.7;
+        gl_FragColor.a *= 0.5;
 
         if ( gl_FragColor.a < ALPHATEST ) discard;
 
