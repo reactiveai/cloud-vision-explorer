@@ -20,6 +20,8 @@ import io from 'socket.io-client'
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
+const tweenSpeed = 500
+const thumbCheckSpeed = 500
 
 // Promise TWEEN
 const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
@@ -261,6 +263,28 @@ export default React.createClass({
       attributes.customColor.needsUpdate = true
     }
 
+    const createSpriteFromArrayBuffer = (buffer) => {
+      // Magic here! (ArrayBuffer to Base64String)
+      const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+
+      const image = new Image()
+      image.src = `data:image/jpeg;base64,${b64img}`
+
+      const texture = new THREE.Texture()
+      texture.image = image
+      image.onload = function() {
+        texture.needsUpdate = true
+      }
+
+      const spriteMaterial = new THREE.SpriteMaterial({
+        // color: 0xff0000,
+        transparent: true,
+        opacity: 0,
+        map: texture
+      })
+
+      return new THREE.Sprite(spriteMaterial)
+    }
 
     const checkForImagesThatCanBeDownloaded = _.throttle(() => {
       // Keep track of particles that are within our range, and particles
@@ -272,41 +296,45 @@ export default React.createClass({
         }
       })
 
-      currentListOfNearbyVectors.forEach((nearbyVector) => {
-        if (!_.includes(listOfNearbyVectors, nearbyVector)) {
-          nearbyVector._promise = nearbyVector._promise
-          .then(() => {
-            return tween({
-              o: 1.0
-            }, {
-              o: 0.0
-            }, 1000, function () {
-              nearbyVector.plane.material.opacity = this.o
-            })
-          })
-          .then(() => {
-            nearbyVector.plane.material.map.dispose()
-            nearbyVector.plane.material.dispose()
+      const listOfRemovedNearbyVectors = currentListOfNearbyVectors.filter((nearbyVector) => {
+        return !_.includes(listOfNearbyVectors, nearbyVector)
+      })
 
-            group.remove(nearbyVector.plane)
-
-            delete nearbyVector.plane
+      listOfRemovedNearbyVectors.forEach((nearbyVector) => {
+        nearbyVector._promise = nearbyVector._promise
+        .then(() => {
+          return tween({
+            o: 1.0
+          }, {
+            o: 0.0
+          }, tweenSpeed, function () {
+            nearbyVector.plane.material.opacity = this.o
           })
-          .then(() => {
-            return tween({
-              r: 0,
-              g: 0,
-              b: 0
-            }, {
-              r: nearbyVector.color.r,
-              g: nearbyVector.color.g,
-              b: nearbyVector.color.b
-            }, 1000, function () {
-              updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
-            })
-          })
+        })
+        .then(() => {
 
-        }
+          nearbyVector.plane.material.map.dispose()
+          nearbyVector.plane.material.dispose()
+
+          group.remove(nearbyVector.plane)
+
+          delete nearbyVector.plane
+
+          return Promise.resolve()
+        })
+        .then(() => {
+          return tween({
+            r: 0,
+            g: 0,
+            b: 0
+          }, {
+            r: nearbyVector.color.r,
+            g: nearbyVector.color.g,
+            b: nearbyVector.color.b
+          }, tweenSpeed, function () {
+            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+          })
+        })
       })
 
       const listOfNewNearbyVectors = listOfNearbyVectors.filter((nearbyVector) => {
@@ -324,7 +352,7 @@ export default React.createClass({
             r: 0,
             g: 0,
             b: 0
-          }, 1000, function () {
+          }, tweenSpeed, function () {
             updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
           })
         })
@@ -335,54 +363,35 @@ export default React.createClass({
       // Only request thumbs if there are any vectors nearby at all
       if (listOfNewNearbyVectorsIds.length) {
         const getAllImagesPromise = sendAndAwait('thumb64', listOfNewNearbyVectorsIds)
-        .then((thumbs) => {
-          thumbs.forEach((thumb, i) => {
 
-            const nearbyVector = listOfNewNearbyVectors[i]
+        listOfNewNearbyVectors.forEach((nearbyVector) => {
+          nearbyVector._promise = nearbyVector._promise.then(() => {
+            return getAllImagesPromise
+          })
+          .then((thumbs) => {
 
-            nearbyVector._promise = nearbyVector._promise.then(() => {
-              // Magic here! (ArrayBuffer to Base64String)
-              const b64img = btoa([].reduce.call(new Uint8Array(thumb),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
+            const thumbObject = thumbs.find((t) => t.id === nearbyVector.i)
+            // const nearbyVector = listOfNewNearbyVectors[i]
 
-              const image = new Image()
-              image.src = `data:image/jpeg;base64,${b64img}`
+            nearbyVector.plane = createSpriteFromArrayBuffer(thumbObject.thumb)
+            nearbyVector.plane.position.copy(nearbyVector.vec)
+            nearbyVector.plane.scale.multiplyScalar(5)
 
-              const texture = new THREE.Texture()
-              texture.image = image
-              image.onload = function() {
-                texture.needsUpdate = true
-              }
+            group.add(nearbyVector.plane)
 
-              const spriteMaterial = new THREE.SpriteMaterial({
-                // color: 0xff0000,
-                transparent: true,
-                opacity: 0,
-                map: texture
-              })
-
-              nearbyVector.plane = new THREE.Sprite(spriteMaterial)
-              nearbyVector.plane.position.copy(nearbyVector.vec)
-              nearbyVector.plane.scale.multiplyScalar(5)
-
-              group.add(nearbyVector.plane)
+            return tween({
+              o: 0
+            }, {
+              o: 1.0
+            }, tweenSpeed, function () {
+              nearbyVector.plane.material.opacity = this.o
             })
-            .then(() => {
-              return tween({
-                o: 0
-              }, {
-                o: 1.0
-              }, 1000, function () {
-                nearbyVector.plane.material.opacity = this.o
-              })
-            })
-
           })
         })
-
       }
 
       currentListOfNearbyVectors = listOfNearbyVectors
-    }, 1000)
+    }, thumbCheckSpeed)
 
     document.addEventListener( 'mouseup', (e) => {
       e.preventDefault()

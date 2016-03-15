@@ -14,7 +14,10 @@ const fetchThumb = (db, ids, fieldName) => {
 
       const data = _.map(rows, (row) => {
         console.log(`${fieldName} : ${row['id']} / ${numeral(row[fieldName].byteLength).format('0.0 b')}`)
-        return row[fieldName]
+        return {
+          id: row['id'],
+          thumb: row[fieldName]
+        }
       })
 
       resolve(data)
