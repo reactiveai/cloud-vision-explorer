@@ -24,7 +24,7 @@ const random = new Random(Random.engines.mt19937().seed(0))
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
 const tweenSpeed = 500
-const thumbCheckSpeed = 500
+const thumbCheckSpeed = 100
 
 // Promise TWEEN
 const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
@@ -70,7 +70,7 @@ export default React.createClass({
   _setupScene({points, clusters}) {
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.position.z = 3000
+    camera.position.z = 2000
 
     const scene = new THREE.Scene()
 
@@ -145,6 +145,7 @@ export default React.createClass({
       vertexShader: Shaders.points.vertexShader,
       fragmentShader: Shaders.points.fragmentShader,
       alphaTest: 0.5,
+      transparent: true,
       depthTest: false
     })
 
@@ -268,7 +269,7 @@ export default React.createClass({
       // that are outside our range. Add images for the ones that are near
       const listOfNearbyVectors = []
       points.forEach((n) => {
-        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(200, 2)) {
           listOfNearbyVectors.push(n)
         }
       })
@@ -407,8 +408,8 @@ export default React.createClass({
     const tick = () => {
 
       // TODO fix absolute coords for nodes
-      // group.rotation.x += 0.00005
-      // group.rotation.y += 0.0001
+      group.rotation.x += 0.000005
+      group.rotation.y += 0.00001
 
       const geometry = particles.geometry
       const attributes = geometry.attributes
