@@ -17,11 +17,14 @@ import { generateMockData } from '../misc/Util.js'
 
 import io from 'socket.io-client'
 
+import Random from 'random-js'
+const random = new Random(Random.engines.mt19937().seed(0))
+
 // Promise jQuery getJSON version
 const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
 const tweenSpeed = 500
-const thumbCheckSpeed = 500
+const thumbCheckSpeed = 100
 
 // Promise TWEEN
 const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
@@ -54,16 +57,8 @@ export default React.createClass({
   },
   componentDidMount() {
 
-    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_1k.json').then((data) => {
-
-      // Normalize data
-      data.points.forEach((elem) => {
-        elem.x *= 1000.0
-        elem.y *= 1000.0
-        elem.z *= 1000.0
-      })
-
-      this._setupScene(data.points)
+    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_100k.json').then((data) => {
+      this._setupScene(data)
     })
 
     // {
@@ -72,10 +67,10 @@ export default React.createClass({
     // }
 
   },
-  _setupScene(data) {
+  _setupScene({points, clusters}) {
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000)
-    camera.position.z = 3000
+    camera.position.z = 2000
 
     const scene = new THREE.Scene()
 
@@ -87,9 +82,12 @@ export default React.createClass({
     const mouse = new THREE.Vector2()
 
     // Do some post-processing
-    data.forEach((n, i) => {
+    points.forEach((n, i) => {
       // Add a real THREE vector for easy access later
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
+
+      // Normalize it
+      n.vec.multiplyScalar(1000)
 
       // Add a real THREE color
       n.color = new THREE.Color()
@@ -102,7 +100,7 @@ export default React.createClass({
     })
 
     // First sort by the group ID ascending
-    const sortedData = _.orderBy(data, ['g'], ['asc'])
+    const sortedData = _.orderBy(points, ['g'], ['asc'])
 
     // Generate an object consisting out of groups of cluster IDs
     const groupedData = _.groupBy(sortedData, (element) => element.g)
@@ -111,25 +109,25 @@ export default React.createClass({
     _.each(groupedData, (value, key, coll) => {
       coll[key] = {
         nodes: value,
-        color: 0xffffff * Math.random()
+        color: new THREE.Color(0xffffff * random.real(0.0, 1.0))
       }
     })
 
-    const positions = new Float32Array(data.length * 3)
-    const colors = new Float32Array(data.length * 3)
-    const sizes = new Float32Array(data.length)
+    const positions = new Float32Array(points.length * 3)
+    const colors = new Float32Array(points.length * 3)
+    const sizes = new Float32Array(points.length)
 
     const PARTICLE_SIZE = 10
 
     const group = new THREE.Group()
 
-    for (let i = 0, l = data.length; i < l; i++) {
+    for (let i = 0, l = points.length; i < l; i++) {
 
-      const vertex = data[ i ].vec
+      const vertex = points[ i ].vec
       vertex.toArray(positions, i * 3)
 
-      data[i].color.setHex(groupedData[data[i].g].color)
-      data[i].color.toArray(colors, i * 3)
+      points[i].color.set(groupedData[points[i].g].color)
+      points[i].color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE
     }
@@ -147,6 +145,7 @@ export default React.createClass({
       vertexShader: Shaders.points.vertexShader,
       fragmentShader: Shaders.points.fragmentShader,
       alphaTest: 0.5,
+      transparent: true,
       depthTest: false
     })
 
@@ -155,7 +154,7 @@ export default React.createClass({
 
     // To achieve an effect similar to the mocks, we need to shoot a line
     // at another node that is most near, except if node that was already drawn to
-    _.forEach(groupedData, (value) => {
+    _.forEach(groupedData, (value, key) => {
       const geometry = new THREE.Geometry()
 
       const lineMaterial = new THREE.LineBasicMaterial({
@@ -163,41 +162,60 @@ export default React.createClass({
         blending:     THREE.AdditiveBlending,
         depthTest:    false,
         transparent:  true,
-        opacity: 0.18
+        opacity: 0.3
       })
 
-      const vertices = value.nodes.map((p) => new THREE.Vector3(p.x, p.y, p.z))
+      const vertices = clusters[key].lines.map((v) => {
+        // Deserialize and normalize
+        return (new THREE.Vector3()).fromArray(v).multiplyScalar(1000)
+      })
 
-      const findClosestVertex = (list, other, closeNess=0) => {
-        const clonedArr = _.without(_.clone(list), other)
-        clonedArr.sort((a, b) => a.distanceToSquared(other) - b.distanceToSquared(other))
-        return clonedArr[closeNess]
-      }
 
-      const allowedVerticesToSearch = _.clone(vertices)
-
-      const sortedVertices = []
-
-      const doSearch = (list, v) => {
-        if (sortedVertices.length === 0) {
-          sortedVertices.push(v)
-        }
-
-        list = _.without(list, v)
-        const nextVertex = findClosestVertex(list, v)
-        if (nextVertex) {
-          sortedVertices.push(nextVertex)
-          doSearch(list, nextVertex)
-        }
-      }
-
-      doSearch(allowedVerticesToSearch, vertices[0])
-
-      geometry.vertices = sortedVertices
+      geometry.vertices = vertices
 
       const line = new THREE.Line( geometry, lineMaterial )
 
       group.add(line)
+    })
+
+    // Add cluster names
+    clusters.forEach((cluster, i) => {
+      console.log(cluster.label)
+
+      const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
+      center.multiplyScalar(1000)
+      const text = cluster.label
+      const color = 'green'
+      const backGroundColor = 'yellow'
+
+      const canvas = document.createElement('canvas')
+      canvas.width = 512
+      canvas.height = 512
+
+      const context = canvas.getContext('2d')
+
+      const textColor = '#bbbbbb'
+
+      context.textAlign = 'center'
+      context.textBaseline = 'middle'
+      context.fillStyle = textColor
+      context.font = '80px Roboto'
+      context.fillText(text, canvas.width / 2, canvas.height / 2)
+
+      const texture = new THREE.Texture(canvas)
+      texture.needsUpdate = true
+
+      const spriteMaterial = new THREE.SpriteMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 1.0,
+        map: texture
+      })
+
+      const sprite = new THREE.Sprite(spriteMaterial)
+      sprite.position.copy(center)
+      sprite.scale.multiplyScalar(500)
+      group.add(sprite)
     })
 
     scene.add(group)
@@ -290,8 +308,8 @@ export default React.createClass({
       // Keep track of particles that are within our range, and particles
       // that are outside our range. Add images for the ones that are near
       const listOfNearbyVectors = []
-      data.forEach((n) => {
-        if (n.vec.distanceToSquared(camera.position) < Math.pow(500, 2)) {
+      points.forEach((n) => {
+        if (n.vec.distanceToSquared(camera.position) < Math.pow(200, 2)) {
           listOfNearbyVectors.push(n)
         }
       })
@@ -393,6 +411,22 @@ export default React.createClass({
       currentListOfNearbyVectors = listOfNearbyVectors
     }, thumbCheckSpeed)
 
+    let mousedownObject = null
+
+    document.addEventListener( 'mousedown', (e) => {
+      e.preventDefault()
+
+      raycaster.setFromCamera( mouse, camera )
+      const intersects = raycaster.intersectObject(particles)
+
+      if ( intersects.length > 0 ) {
+        mousedownObject = intersects[ 0 ].index
+      }
+      else {
+        mousedownObject = null
+      }
+    }, false)
+
     document.addEventListener( 'mouseup', (e) => {
       e.preventDefault()
 
@@ -400,9 +434,13 @@ export default React.createClass({
       const intersects = raycaster.intersectObject(particles)
 
       if ( intersects.length > 0 ) {
-        if ( lastClickedNodeIndex != intersects[ 0 ].index ) {
-          lastClickedNodeIndex = intersects[ 0 ].index
-          this.props.emitter.emit('showSidebar', data[lastClickedNodeIndex].i)
+        const index = intersects[ 0 ].index
+        if ( mousedownObject === index ) {
+          // Make sure the object has an actual image
+          if (points[index].plane) {
+            lastClickedNodeIndex = index
+            this.props.emitter.emit('showSidebar', points[lastClickedNodeIndex].i)
+          }
         }
       }
     }, false)
@@ -410,8 +448,8 @@ export default React.createClass({
     const tick = () => {
 
       // TODO fix absolute coords for nodes
-      // group.rotation.x += 0.00005
-      // group.rotation.y += 0.0001
+      group.rotation.x += 0.000005
+      group.rotation.y += 0.00001
 
       const geometry = particles.geometry
       const attributes = geometry.attributes
