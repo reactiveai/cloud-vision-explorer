@@ -308,29 +308,31 @@ export default React.createClass({
           }, 1000, function () {
             nearbyVector.plane.material.opacity = this.o
           })
-          .then(() => {
-            nearbyVector.plane.material.map.dispose()
-            nearbyVector.plane.material.dispose()
+        })
+        .then(() => {
 
-            group.remove(nearbyVector.plane)
+          nearbyVector.plane.material.map.dispose()
+          nearbyVector.plane.material.dispose()
 
-            delete nearbyVector.plane
+          group.remove(nearbyVector.plane)
+
+          delete nearbyVector.plane
+
+          return Promise.resolve()
+        })
+        .then(() => {
+          return tween({
+            r: 0,
+            g: 0,
+            b: 0
+          }, {
+            r: nearbyVector.color.r,
+            g: nearbyVector.color.g,
+            b: nearbyVector.color.b
+          }, 1000, function () {
+            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
           })
-          .then(() => {
-            return tween({
-              r: 0,
-              g: 0,
-              b: 0
-            }, {
-              r: nearbyVector.color.r,
-              g: nearbyVector.color.g,
-              b: nearbyVector.color.b
-            }, 1000, function () {
-              updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
-            })
-          })
-
-        }
+        })
       })
 
       const listOfNewNearbyVectors = listOfNearbyVectors.filter((nearbyVector) => {
@@ -359,31 +361,31 @@ export default React.createClass({
       // Only request thumbs if there are any vectors nearby at all
       if (listOfNewNearbyVectorsIds.length) {
         const getAllImagesPromise = sendAndAwait('thumb64', listOfNewNearbyVectorsIds)
-        .then((thumbs) => {
-          thumbs.forEach((thumb, i) => {
 
-            const nearbyVector = listOfNewNearbyVectors[i]
+        listOfNewNearbyVectors.forEach((nearbyVector) => {
+          nearbyVector._promise = nearbyVector._promise.then(() => {
+            return getAllImagesPromise
+          })
+          .then((thumbs) => {
 
-            nearbyVector._promise = nearbyVector._promise.then(() => {
-              nearbyVector.plane = createSpriteFromArrayBuffer(thumb)
-              nearbyVector.plane.position.copy(nearbyVector.vec)
-              nearbyVector.plane.scale.multiplyScalar(5)
+            const thumbObject = thumbs.find((t) => t.id === nearbyVector.i)
+            // const nearbyVector = listOfNewNearbyVectors[i]
 
-              group.add(nearbyVector.plane)
+            nearbyVector.plane = createSpriteFromArrayBuffer(thumbObject.thumb)
+            nearbyVector.plane.position.copy(nearbyVector.vec)
+            nearbyVector.plane.scale.multiplyScalar(5)
+
+            group.add(nearbyVector.plane)
+
+            return tween({
+              o: 0
+            }, {
+              o: 1.0
+            }, tweenSpeed, function () {
+              nearbyVector.plane.material.opacity = this.o
             })
-            .then(() => {
-              return tween({
-                o: 0
-              }, {
-                o: 1.0
-              }, 1000, function () {
-                nearbyVector.plane.material.opacity = this.o
-              })
-            })
-
           })
         })
-
       }
 
       currentListOfNearbyVectors = listOfNearbyVectors
