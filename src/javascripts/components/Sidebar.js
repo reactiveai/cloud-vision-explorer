@@ -92,6 +92,7 @@ export default class Sidebar extends React.Component {
     this.props.emitter.addListener('showSidebar', (id) => {
       console.log(getVisionJsonURL(id))
       this.props.showSidebar()
+      this.setState({ vision: {} }) // Clear results
       $.getJSON(getVisionJsonURL(id), (data) => {
         this.setState({ vision: data[0] }) // assuming an array at the moment
       })
