@@ -11,7 +11,8 @@ const TARGET_IMAGE_IDS = [
 const style = {
   ul: {
     listStyleType: 'none',
-    color: '#cccccc'
+    color: '#cccccc',
+    paddingLeft: '1vh'
   },
   li: {
     cursor: 'pointer'
@@ -41,9 +42,12 @@ export default class InfoLink extends React.Component {
     })
 
     return (
-      <ul style={_.assign(this.props.style, style.ul)}>
-        {listItems}
-      </ul>
+      <div style={this.props.style}>
+        <img src="/images/Google-Cloud-Platform.png" />
+        <ul style={style.ul}>
+          {listItems}
+        </ul>
+      </div>
     )
   }
 }
