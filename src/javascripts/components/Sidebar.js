@@ -86,7 +86,13 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('textAnnotations', 'text-detection', annons =>
-          <p>text detection</p>
+          annons.map((text, idx) =>
+            <p key={idx}>
+              <span className="text-quote">“</span>
+              <span className="text-description">{text.description}</span>
+              <span className="text-quote">„</span>
+            </p>
+          )
         )}
         {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', annon =>
           <p>safesearch detection</p>
