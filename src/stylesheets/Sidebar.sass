@@ -66,12 +66,21 @@
       box-shadow: 0 6px 9px rgba(0,0,0,0.16), 0 6px 9px rgba(0,0,0,0.23);
       padding: 20px 30px
 
-      &.label-detection .row
+      &.label-detection .label
         line-height: 2em
         margin-right: 10px
         align-items: center
+        display: flex
 
-        .score
+        .label-name
+          flex-basis: 10em
+          white-space: nowrap
+          overflow: hidden
+          text-overflow: ellipsis
+          margin-right: 0.5em
+
+        .label-score
+          margin-left: 1em
           color: $sidebar-primary-color-1
 
       &.text-detection

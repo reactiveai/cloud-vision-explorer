@@ -75,13 +75,13 @@ class GraphTab extends React.Component {
       <div className="tab-graph">
         {getDetectionSection('labelAnnotations', 'label-detection', annons =>
           annons.map(label =>
-            <div key={label.description} className="row">
-              <div className="col-xs-3">{_.capitalize(label.description)}</div>
+            <div key={label.description} className="label">
+              <div className="label-name">{_.capitalize(label.description)}</div>
               <ProgressBar
-                className="col-xs" type="linear" mode="determinate"
+                className="label-score-bar" type="linear" mode="determinate"
                 value={_.round(label.score * 100)}
               />
-              <div className="col-xs-1 score">{_.round(label.score * 100)}%</div>
+              <div className="label-score">{_.round(label.score * 100)}%</div>
             </div>
           )
         )}
