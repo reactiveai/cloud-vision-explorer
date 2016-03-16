@@ -83,6 +83,34 @@
           color: #9E9E9E
           font-size: 1.5em
 
+      &.safesearch-detection
+        padding-top: 2em
+
+        .likelihoods-row
+          display: flex
+
+        .likelihood
+          flex-grow: 1
+          margin-bottom: 1.2em
+
+        .likelihood-label
+          margin-bottom: 1em
+
+        .likelihood-level
+          margin: 0 1em 1em 0
+          padding: 0
+          list-style-type: none
+          display: flex
+
+          li
+            margin-right: 0.8em
+            height: 0.8em
+            width: 0.8em
+            background: $sidebar-primary-color-off
+
+            &.active
+              background: $sidebar-primary-color-2
+
       &.face-detection
         .face-detection-person
           display: flex
