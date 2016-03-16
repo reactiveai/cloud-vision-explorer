@@ -62,7 +62,7 @@
         margin: 10px
 
     .tab-graph section
-      min-height: 150px
+      font-weight: bold
       box-shadow: 0 6px 9px rgba(0,0,0,0.16), 0 6px 9px rgba(0,0,0,0.23);
       padding: 20px 30px
 
@@ -73,6 +73,15 @@
 
         .score
           color: $sidebar-primary-color-1
+
+      &.text-detection
+        .text-quote
+          color: #455A64
+          font-size: 3em
+
+        .text-description
+          color: #9E9E9E
+          font-size: 1.5em
 
       &.face-detection
         .face-detection-person
@@ -139,6 +148,7 @@
       color: #757575
       text-align: center
       text-transform: none
+      font-weight: bold
 
       &.active
         background: #3949AB
