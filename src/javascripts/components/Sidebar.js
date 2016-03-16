@@ -266,6 +266,15 @@ export default class Sidebar extends React.Component {
     const classForIndicator = (key) => {
       return key in this.state.vision ? 'active' : ''
     }
+    const animateScroll = (divid) => {
+      const currentScroll = $('.detail-tab > section').prop('scrollTop')
+      const el = $(`.${divid}`)
+      if (el.length) {
+        let targetScroll = el.position().top
+        targetScroll += currentScroll
+        $('.detail-tab > section').animate({scrollTop: targetScroll}, 'slow')
+      }
+    }
 
     const handIcon = {
       cursor: 'pointer'
@@ -278,25 +287,25 @@ export default class Sidebar extends React.Component {
               onOverlayClick={() => { this.props.emitter.emit('hideSidebar') }}>
 
         <ul className="feature-indicator">
-          <li className={classForIndicator('labelAnnotations')}>
+          <li className={classForIndicator('labelAnnotations')} onClick={animateScroll.bind(this, 'label-detection')}>
             <FontIcon style={handIcon} value='label_outline' />
           </li>
-          <li className={classForIndicator('textAnnotations')}>
+          <li className={classForIndicator('textAnnotations')} onClick={animateScroll.bind(this, 'text-detection')}>
             <FontIcon style={handIcon} value='translate' />
           </li>
-          <li className={classForIndicator('safeSearchAnnotation')}>
+          <li className={classForIndicator('safeSearchAnnotation')} onClick={animateScroll.bind(this, 'safesearch-detection')}>
             <span style={handIcon} className="custom-icon safesearch" />
           </li>
-          <li className={classForIndicator('faceAnnotations')}>
+          <li className={classForIndicator('faceAnnotations')} onClick={animateScroll.bind(this, 'face-detection')}>
             <FontIcon style={handIcon} value='face' />
           </li>
-          <li className={classForIndicator('logoAnnotations')}>
+          <li className={classForIndicator('logoAnnotations')} onClick={animateScroll.bind(this, 'logo-detection')}>
             <span style={handIcon} className="custom-icon logo_detection" />
           </li>
-          <li className={classForIndicator('landmarkAnnotations')}>
+          <li className={classForIndicator('landmarkAnnotations')} onClick={animateScroll.bind(this, 'landmark-detection')}>
             <FontIcon style={handIcon} value='place' />
           </li>
-          <li className={classForIndicator('imagePropertiesAnnotation')}>
+          <li className={classForIndicator('imagePropertiesAnnotation')} onClick={animateScroll.bind(this, 'image-properties')}>
             <FontIcon style={handIcon} value='photo' />
           </li>
         </ul>
