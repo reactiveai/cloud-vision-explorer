@@ -8,12 +8,19 @@ const getImageUrl = (id) => {
 
 const style = {
   wrapper: {
-    margin: '12vh 25vw 15vh auto',
-    textAlign: 'center'
+    position: 'absolute',
+    width: `calc(100vw - ${384 + 40}px)`,
+    height: `calc(100% - ${40}px)`, // For some reason 'vw' doesn't work here
+    margin: `20px ${384 + 20}px 20px 20px`,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   img: {
-    maxWidth: '80vw',
-    maxHeight: '80vh',
+    display: 'block',
+    maxWidth: '100%',
+    maxHeight: '100%',
+    border: '2px solid black'
   }
 }
 
