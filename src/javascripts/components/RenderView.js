@@ -13,7 +13,7 @@ import $ from 'npm-zepto'
 
 import Shaders from '../misc/Shaders.js'
 
-import { generateMockData } from '../misc/Util.js'
+// import { generateMockData } from '../misc/Util.js'
 
 import io from 'socket.io-client'
 
@@ -180,14 +180,12 @@ export default React.createClass({
     })
 
     // Add cluster names
-    clusters.forEach((cluster, i) => {
+    clusters.forEach((cluster) => {
       console.log(cluster.label)
 
       const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
       center.multiplyScalar(denseFactor)
       const text = cluster.label
-      const color = 'green'
-      const backGroundColor = 'yellow'
 
       const canvas = document.createElement('canvas')
       canvas.width = 512
@@ -383,14 +381,13 @@ export default React.createClass({
       if (listOfNewNearbyVectorsIds.length) {
         const getAllImagesPromise = sendAndAwait('thumb64', listOfNewNearbyVectorsIds)
 
-        listOfNewNearbyVectors.forEach((nearbyVector, index) => {
+        listOfNewNearbyVectors.forEach((nearbyVector) => {
           nearbyVector._promise = nearbyVector._promise.then(() => {
             return getAllImagesPromise
           })
           .then((thumbs) => {
 
             const thumbObject = thumbs.find((t) => t.id === nearbyVector.i)
-            // const nearbyVector = listOfNewNearbyVectors[i]
 
             return new Promise((resolve) => {
 
@@ -460,9 +457,6 @@ export default React.createClass({
       // TODO fix absolute coords for nodes
       group.rotation.x += 0.000005
       group.rotation.y += 0.00001
-
-      const geometry = particles.geometry
-      const attributes = geometry.attributes
 
       raycaster.setFromCamera( mouse, camera )
 
