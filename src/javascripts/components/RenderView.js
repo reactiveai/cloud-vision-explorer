@@ -421,7 +421,6 @@ export default React.createClass({
     let mousedownObject = null
 
     document.addEventListener( 'mousedown', (e) => {
-      e.preventDefault()
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
@@ -435,7 +434,6 @@ export default React.createClass({
     }, false)
 
     document.addEventListener( 'mouseup', (e) => {
-      e.preventDefault()
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
