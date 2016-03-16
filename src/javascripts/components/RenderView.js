@@ -69,6 +69,7 @@ export default React.createClass({
 
   },
   _setupScene({points, clusters}) {
+    this.props.emitter.emit('imageCount', points.length)
 
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, denseFactor * 10)
     camera.position.z = denseFactor * 1.2
