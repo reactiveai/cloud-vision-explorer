@@ -44,10 +44,6 @@ class GraphTab extends React.Component {
 
   render() {
     const { vision } = this.props
-    const getAnnotations = (name) => {
-      const key = name + 'Annotations'
-      return (key in vision) ? vision[key] : []
-    }
     const likelihoodLevel = (likelihood) => {
       const levelMap = {
         UNKNOWN: 0,
@@ -68,11 +64,17 @@ class GraphTab extends React.Component {
         </ul>
       )
     }
+    const getDetectionSection = (key, className, callback) => {
+      return key in vision ?
+        <section className={className}>
+          {callback(vision[key])}
+        </section> : ''
+    }
 
     return (
       <div className="tab-graph">
-        <section className="label-detection">
-          {getAnnotations('label').map(label =>
+        {getDetectionSection('labelAnnotations', 'label-detection', annons =>
+          annons.map(label =>
             <div key={label.description} className="row">
               <div className="col-xs-3">{_.capitalize(label.description)}</div>
               <ProgressBar
@@ -81,16 +83,16 @@ class GraphTab extends React.Component {
               />
               <div className="col-xs-1 score">{_.round(label.score * 100)}%</div>
             </div>
-          )}
-        </section>
-        <section className="text-detection">
+          )
+        )}
+        {getDetectionSection('textAnnotations', 'text-detection', annons =>
           <p>text detection</p>
-        </section>
-        <section className="safesearch-detection">
+        )}
+        {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', annon =>
           <p>safesearch detection</p>
-        </section>
-        <section className="face-detection">
-          {getAnnotations('face').map((face, idx) =>
+        )}
+        {getDetectionSection('faceAnnotations', 'face-detection', annons =>
+          annons.map((face, idx) =>
             <div className="face-detection-person" key={idx}>
               <div>
                 <FontIcon className="humanoid primary" value="accessibility" />
@@ -161,14 +163,17 @@ class GraphTab extends React.Component {
                 </div>
               </div>
             </div>
-          )}
-        </section>
-        <section className="logo-detection">
+          )
+        )}
+        {getDetectionSection('logoAnnotations', 'logo-detection', annons =>
           <p>logo detection</p>
-        </section>
-        <section className="image-properties">
-          <p>image detection</p>
-        </section>
+        )}
+        {getDetectionSection('landmarkAnnotations', 'landmark-detection', annons =>
+          <p>landmark detection</p>
+        )}
+        {getDetectionSection('imagePropertiesAnnotation', 'image-properties', annon =>
+          <p>image properties</p>
+        )}
       </div>
     )
   }
@@ -220,6 +225,9 @@ export default class Sidebar extends React.Component {
     const classForTab = (index) => {
       return sidebar.tabIndex === index ? 'col-xs active' : 'col-xs'
     }
+    const classForIndicator = (key) => {
+      return key in this.state.vision ? 'col-xs active' : 'col-xs'
+    }
 
     return (
       <Drawer className="sidebar"
@@ -228,13 +236,27 @@ export default class Sidebar extends React.Component {
               onOverlayClick={() => { this.props.emitter.emit('hideSidebar') }}>
 
         <ul className="feature-indicator row">
-          <li className="col-xs active"><FontIcon value='label_outline' /></li>
-          <li className="col-xs"><FontIcon value='translate' /></li>
-          <li className="col-xs active"><span className="custom-icon safesearch" /></li>
-          <li className="col-xs active"><FontIcon value='face' /></li>
-          <li className="col-xs"><span className="custom-icon logo_detection" /></li>
-          <li className="col-xs"><FontIcon value='place' /></li>
-          <li className="col-xs active"><FontIcon value='photo' /></li>
+          <li className={classForIndicator('labelAnnotations')}>
+            <FontIcon value='label_outline' />
+          </li>
+          <li className={classForIndicator('textAnnotations')}>
+            <FontIcon value='translate' />
+          </li>
+          <li className={classForIndicator('safeSearchAnnotation')}>
+            <span className="custom-icon safesearch" />
+          </li>
+          <li className={classForIndicator('faceAnnotations')}>
+            <FontIcon value='face' />
+          </li>
+          <li className={classForIndicator('logoAnnotations')}>
+            <span className="custom-icon logo_detection" />
+          </li>
+          <li className={classForIndicator('landmarkAnnotations')}>
+            <FontIcon value='place' />
+          </li>
+          <li className={classForIndicator('imagePropertiesAnnotation')}>
+            <FontIcon value='photo' />
+          </li>
         </ul>
 
         <SidebarTabs className="detail-tab"
