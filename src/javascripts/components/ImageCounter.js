@@ -1,11 +1,18 @@
 import _ from 'lodash'
 import React, { PropTypes } from 'react'
+import numeral from 'numeral'
 
 const style = {
-  color: '#9e9e9e',
-  fontSize: 'medium',
-  fontWeight: 'bold',
-  padding: '4px 8px'
+  number: {
+    color: '#9e9e9e',
+    fontSize: 'x-large',
+    fontWeight: 'lighter',
+    padding: '4px 8px'
+  },
+  text: {
+    fontSize: 'medium',
+    paddingLeft: 5
+  }
 }
 
 export default class ClusterLabel extends React.Component {
@@ -19,12 +26,12 @@ export default class ClusterLabel extends React.Component {
   constructor(props, context) {
     super(props, context)
 
-    this.state = { clusterName: '' }
+    this.state = { count: 0 }
   }
 
   componentWillMount() {
-    this.props.emitter.addListener('currentCluster', (clusterName) => {
-      this.setState({clusterName})
+    this.props.emitter.addListener('imageCount', (count) => {
+      this.setState({count})
     })
   }
 
@@ -35,7 +42,10 @@ export default class ClusterLabel extends React.Component {
   render() {
     return (
       <div style={this.props.style}>
-        <h2 style={style}>{this.state.clusterName}</h2>
+        <div style={style.number}>
+          {numeral(this.state.count).format('0,0')}
+          <span style={style.text}>IMAGES</span>
+        </div>
       </div>
     )
   }

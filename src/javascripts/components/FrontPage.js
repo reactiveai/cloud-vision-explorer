@@ -5,7 +5,7 @@ import ToolboxApp from 'react-toolbox/lib/app'
 import ImageView from './ImageView'
 import RenderView from './RenderView'
 import InfoLink from './InfoLink'
-import ClusterLabel from './ClusterLabel'
+import ImageCounter from './ImageCounter'
 import Sidebar from './Sidebar'
 import Button from 'react-toolbox/lib/button'
 import _ from 'lodash'
@@ -23,7 +23,7 @@ const style = {
     left: '2vh',
     width: '20vh'
   },
-  clusterLabel: {
+  imageCounter: {
     position: 'absolute',
     bottom: '1vh',
     left: '2vh',
@@ -45,12 +45,12 @@ class FrontPage extends Component {
     return (
       <div >
         <ToolboxApp>
-          <ClusterLabel style={style.clusterLabel} emitter={emitter} />
+          <ImageCounter style={style.imageCounter} emitter={emitter} />
           <InfoLink style={style.infoLink} emitter={emitter} />
           <ImageView emitter={emitter} />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
           <RenderView emitter={emitter} />
-        </ToolboxApp>        
+        </ToolboxApp>
       </div>
     )
   }
