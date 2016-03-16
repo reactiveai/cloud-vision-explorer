@@ -44,13 +44,13 @@ class FrontPage extends Component {
 
     return (
       <div >
-        <ToolboxApp style={{height: '100vw'}}>
+        <ToolboxApp>
           <ClusterLabel style={style.clusterLabel} emitter={emitter} />
           <InfoLink style={style.infoLink} emitter={emitter} />
           <ImageView emitter={emitter} />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
-        </ToolboxApp>
-        <RenderView emitter={emitter} />
+          <RenderView emitter={emitter} />
+        </ToolboxApp>        
       </div>
     )
   }

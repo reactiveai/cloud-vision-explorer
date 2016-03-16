@@ -221,7 +221,7 @@ export default React.createClass({
 
     scene.add(group)
 
-    const controls = new THREE.TrackballControls(camera)
+    const controls = new THREE.TrackballControls(camera, this._container)
 
     controls.rotateSpeed = 1.0 * 1.0
     controls.zoomSpeed = 1.2 * 0.1
