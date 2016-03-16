@@ -95,7 +95,28 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', annon =>
-          <p>safesearch detection</p>
+          <div className="likelihoods">
+            <div className="likelihoods-row">
+              <div className="likelihood">
+                <div className="likelihood-label">Adult</div>
+                {likelihoodLevel(annon.adult)}
+              </div>
+              <div className="likelihood">
+                <div className="likelihood-label">Spoof</div>
+                {likelihoodLevel(annon.spoof)}
+              </div>
+            </div>
+            <div className="likelihoods-row">
+              <div className="likelihood">
+                <div className="likelihood-label">Medical</div>
+                {likelihoodLevel(annon.medical)}
+              </div>
+              <div className="likelihood">
+                <div className="likelihood-label">Violence</div>
+                {likelihoodLevel(annon.violence)}
+              </div>
+            </div>
+          </div>
         )}
         {getDetectionSection('faceAnnotations', 'face-detection', annons =>
           annons.map((face, idx) =>
