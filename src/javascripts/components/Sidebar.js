@@ -1,3 +1,5 @@
+/*global $*/
+
 import _ from 'lodash'
 import React, { PropTypes } from 'react'
 import { Tab, Tabs } from 'react-toolbox'
