@@ -6,15 +6,16 @@ services:
       - "80:80"
     links:
       - ap1:ap1
+      - ap2:ap2
   ap1:
-    image: cloud-vision-explorer:beta3
+    image: cloud-vision-explorer:beta4
     environment:
       MYSQL_SERVER:
       MYSQL_USER:
       MYSQL_PASSWORD:
       MYSQL_DATABASE:
   ap2:
-    image: cloud-vision-explorer:beta3
+    image: cloud-vision-explorer:beta4
     environment:
       MYSQL_SERVER:
       MYSQL_USER:
