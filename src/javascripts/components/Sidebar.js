@@ -252,10 +252,10 @@ export default class Sidebar extends React.Component {
   render() {
     const { sidebar, hideSidebar, changeTab } = this.props
     const classForTab = (index) => {
-      return sidebar.tabIndex === index ? 'col-xs active' : 'col-xs'
+      return sidebar.tabIndex === index ? 'active' : ''
     }
     const classForIndicator = (key) => {
-      return key in this.state.vision ? 'col-xs active' : 'col-xs'
+      return key in this.state.vision ? 'active' : ''
     }
 
     return (
@@ -264,7 +264,7 @@ export default class Sidebar extends React.Component {
               type="right"
               onOverlayClick={() => { this.props.emitter.emit('hideSidebar') }}>
 
-        <ul className="feature-indicator row">
+        <ul className="feature-indicator">
           <li className={classForIndicator('labelAnnotations')}>
             <FontIcon value='label_outline' />
           </li>
