@@ -4,8 +4,8 @@ node_modules
 src
 logs
 *.log
-npm-debug.log
 .envrc
 .remote-sync.json
 .babelrc
 .eslintrc.json
+nginx
