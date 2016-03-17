@@ -70,6 +70,21 @@ class GraphTab extends React.Component {
           {callback(vision[key])}
         </section> : ''
     }
+    const getAngleSection = (name, value) => {
+      return (
+        <section className="angle">
+          <div className="angle-label">{name}</div>
+          <Donut
+            color="currentColor"
+            size={50}
+            strokeWidth={4}
+            value={(value + 180) / 360}
+          >
+            <span className="angle-value">{_.round(value)}&deg;</span>
+          </Donut>
+        </section>
+      )
+    }
 
     return (
       <div className="tab-graph">
@@ -124,33 +139,9 @@ class GraphTab extends React.Component {
               <div>
                 <FontIcon className="humanoid primary" value="accessibility" />
                 <div className="person-label">Person {idx + 1}</div>
-                <div className="angle">
-                  <div className="angle-label">Roll</div>
-                  <Donut
-                    color="currentColor"
-                    size={50}
-                    strokeWidth={4}
-                    value={(face.rollAngle + 180) / 360}
-                  />
-                </div>
-                <div className="angle">
-                  <div className="angle-label">Pan</div>
-                  <Donut
-                    color="currentColor"
-                    size={50}
-                    strokeWidth={4}
-                    value={(face.panAngle + 180) / 360}
-                  />
-                </div>
-                <div className="angle">
-                  <div className="angle-label">Tilt</div>
-                  <Donut
-                    color="currentColor"
-                    size={50}
-                    strokeWidth={4}
-                    value={(face.tiltAngle + 180) / 360}
-                  />
-                </div>
+                {getAngleSection('Roll', face.rollAngle)}
+                {getAngleSection('Pan', face.panAngle)}
+                {getAngleSection('Tilt', face.tiltAngle)}
               </div>
               <div className="likelihoods">
                 <div className="likelihood">
