@@ -19,9 +19,10 @@ const emitter = new EventEmitter()
 const style = {
   infoLink: {
     position: 'absolute',
-    top: '12vh',
+    top: '2vh',
     left: '2vh',
-    width: '20vh'
+    width: '20vh',
+    zIndex: 100
   },
   imageCounter: {
     position: 'absolute',
