@@ -1,3 +1,5 @@
+/*global $*/
+
 import React from 'react'
 
 import THREE from 'three'
@@ -9,7 +11,6 @@ require('../misc/TrackballControls.js')(THREE)
 import 'stylesheets/RenderView'
 
 import _ from 'lodash'
-import $ from 'npm-zepto'
 
 import Shaders from '../misc/Shaders.js'
 
@@ -19,9 +20,6 @@ import io from 'socket.io-client'
 
 import Random from 'random-js'
 const random = new Random(Random.engines.mt19937().seed(0))
-
-// Promise jQuery getJSON version
-const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
 const tweenSpeed = 200
 const thumbCheckSpeed = 100
@@ -58,7 +56,10 @@ export default React.createClass({
   },
   componentDidMount() {
 
-    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_100k.json').then((data) => {
+    const gscUrl = 'http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_100k.json'
+    fetch(gscUrl).then((res) => {
+      return res.json()
+    }).then((data) => {
       this._setupScene(data)
     })
 
@@ -185,6 +186,8 @@ export default React.createClass({
       console.log(cluster.label)
 
       const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
+      cluster.center = center
+
       center.multiplyScalar(denseFactor)
       const text = cluster.label
 
@@ -199,7 +202,7 @@ export default React.createClass({
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = textColor
-      context.font = '80px Roboto'
+      context.font = '60px Roboto'
       context.fillText(text, canvas.width / 2, canvas.height / 2)
 
       const texture = new THREE.Texture(canvas)
@@ -215,6 +218,9 @@ export default React.createClass({
       const sprite = new THREE.Sprite(spriteMaterial)
       sprite.position.copy(center)
       sprite.scale.multiplyScalar(denseFactor / 2)
+
+      cluster.sprite = sprite
+
       group.add(sprite)
     })
 
@@ -244,7 +250,7 @@ export default React.createClass({
     stats.domElement.style.top = '0px'
     this._container.appendChild(stats.domElement)
 
-    document.addEventListener( 'mousemove', () => {
+    this._container.addEventListener( 'mousemove', () => {
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
     }, false)
@@ -421,7 +427,7 @@ export default React.createClass({
 
     let mousedownObject = null
 
-    document.addEventListener( 'mousedown', (e) => {
+    this._container.addEventListener( 'mousedown', (e) => {
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
@@ -434,7 +440,7 @@ export default React.createClass({
       }
     }, false)
 
-    document.addEventListener( 'mouseup', (e) => {
+    this._container.addEventListener( 'mouseup', (e) => {
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
@@ -493,6 +499,13 @@ export default React.createClass({
       }
 
       checkForImagesThatCanBeDownloaded()
+
+      clusters.forEach((c) => {
+        let opac = c.center.distanceTo(camera.position) / 1000
+        opac = Math.max(opac, 0.3)
+        opac = Math.min(opac, 1.0)
+        c.sprite.material.opacity = opac
+      })
 
     }
 

@@ -1,5 +1,3 @@
-import _ from 'lodash'
-import $ from 'npm-zepto'
 import React, { PropTypes } from 'react'
 
 const getImageUrl = (id) => {

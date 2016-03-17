@@ -1,5 +1,6 @@
+/*global $*/
+
 import _ from 'lodash'
-import $ from 'npm-zepto'
 import React, { PropTypes } from 'react'
 import { Tab, Tabs } from 'react-toolbox'
 import Drawer from 'react-toolbox/lib/drawer'
@@ -9,7 +10,7 @@ import ProgressBar from 'react-toolbox/lib/progress_bar'
 import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
-
+import PlusTitle from './PlusTitle'
 
 const getVisionJsonURL = (id) => {
   return `https://gcs-samples2-explorer.storage.googleapis.com/vision/result/${id}.json`
@@ -191,10 +192,22 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('logoAnnotations', 'logo-detection', annons =>
-          <p>logo detection</p>
+          annons.map(({description, mid}) =>
+            <div key={mid} className="logo-detection">
+              <PlusTitle>
+                <p className="description">{description}</p>
+              </PlusTitle>
+            </div>
+          )
         )}
         {getDetectionSection('landmarkAnnotations', 'landmark-detection', annons =>
-          <p>landmark detection</p>
+          annons.map(({description, mid}) =>
+            <div key={mid} className="landmark-detection">
+              <PlusTitle>
+                <p className="description">{description}</p>
+              </PlusTitle>
+            </div>
+          )
         )}
         {getDetectionSection('imagePropertiesAnnotation', 'image-properties', annon =>
           <ul>
@@ -234,7 +247,9 @@ export default class Sidebar extends React.Component {
       console.log(getVisionJsonURL(id))
       this.props.showSidebar()
       this.setState({ vision: {} }) // Clear results
-      $.getJSON(getVisionJsonURL(id), (data) => {
+      fetch(getVisionJsonURL(id)).then((res) => {
+        return res.json()
+      }).then((data) => {
         this.setState({ vision: data[0] }) // assuming an array at the moment
       })
     })
@@ -257,6 +272,19 @@ export default class Sidebar extends React.Component {
     const classForIndicator = (key) => {
       return key in this.state.vision ? 'active' : ''
     }
+    const animateScroll = (divid) => {
+      const currentScroll = $('.detail-tab > section').prop('scrollTop')
+      const el = $(`.${divid}`)
+      if (el.length) {
+        let targetScroll = el.position().top
+        targetScroll += currentScroll
+        $('.detail-tab > section').animate({scrollTop: targetScroll}, 'slow')
+      }
+    }
+
+    const handIcon = {
+      cursor: 'pointer'
+    }
 
     return (
       <Drawer className="sidebar"
@@ -265,26 +293,26 @@ export default class Sidebar extends React.Component {
               onOverlayClick={() => { this.props.emitter.emit('hideSidebar') }}>
 
         <ul className="feature-indicator">
-          <li className={classForIndicator('labelAnnotations')}>
-            <FontIcon value='label_outline' />
+          <li className={classForIndicator('labelAnnotations')} onClick={animateScroll.bind(this, 'label-detection')}>
+            <FontIcon style={handIcon} value='label_outline' />
           </li>
-          <li className={classForIndicator('textAnnotations')}>
-            <FontIcon value='translate' />
+          <li className={classForIndicator('textAnnotations')} onClick={animateScroll.bind(this, 'text-detection')}>
+            <FontIcon style={handIcon} value='translate' />
           </li>
-          <li className={classForIndicator('safeSearchAnnotation')}>
-            <span className="custom-icon safesearch" />
+          <li className={classForIndicator('safeSearchAnnotation')} onClick={animateScroll.bind(this, 'safesearch-detection')}>
+            <span style={handIcon} className="custom-icon safesearch" />
           </li>
-          <li className={classForIndicator('faceAnnotations')}>
-            <FontIcon value='face' />
+          <li className={classForIndicator('faceAnnotations')} onClick={animateScroll.bind(this, 'face-detection')}>
+            <FontIcon style={handIcon} value='face' />
           </li>
-          <li className={classForIndicator('logoAnnotations')}>
-            <span className="custom-icon logo_detection" />
+          <li className={classForIndicator('logoAnnotations')} onClick={animateScroll.bind(this, 'logo-detection')}>
+            <span style={handIcon} className="custom-icon logo_detection" />
           </li>
-          <li className={classForIndicator('landmarkAnnotations')}>
-            <FontIcon value='place' />
+          <li className={classForIndicator('landmarkAnnotations')} onClick={animateScroll.bind(this, 'landmark-detection')}>
+            <FontIcon style={handIcon} value='place' />
           </li>
-          <li className={classForIndicator('imagePropertiesAnnotation')}>
-            <FontIcon value='photo' />
+          <li className={classForIndicator('imagePropertiesAnnotation')} onClick={animateScroll.bind(this, 'image-properties')}>
+            <FontIcon style={handIcon} value='photo' />
           </li>
         </ul>
 
