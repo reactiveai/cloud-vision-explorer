@@ -85,6 +85,13 @@ class GraphTab extends React.Component {
         </section>
       )
     }
+    const getColorStyle = (color) => {
+      const c = color.color
+      return {
+        backgroundColor: `rgb(${c.red}, ${c.green}, ${c.blue})`,
+        flexGrow: color.score * 100
+      }
+    }
 
     return (
       <div className="tab-graph">
@@ -190,7 +197,11 @@ class GraphTab extends React.Component {
           <p>landmark detection</p>
         )}
         {getDetectionSection('imagePropertiesAnnotation', 'image-properties', annon =>
-          <p>image properties</p>
+          <ul>
+            {_.orderBy(annon.dominantColors.colors, ['score'], ['desc']).map((color, idx) =>
+              <li key={idx} style={getColorStyle(color)} />
+            )}
+          </ul>
         )}
       </div>
     )
