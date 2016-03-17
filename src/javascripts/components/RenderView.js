@@ -247,7 +247,8 @@ export default React.createClass({
 
     const stats = new Stats()
     stats.domElement.style.position = 'absolute'
-    stats.domElement.style.top = '0px'
+    stats.domElement.style.bottom = '0px'
+    stats.domElement.style.left = '200px'
     this._container.appendChild(stats.domElement)
 
     this._container.addEventListener( 'mousemove', () => {

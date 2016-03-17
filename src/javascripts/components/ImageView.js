@@ -7,9 +7,9 @@ const getImageUrl = (id) => {
 const style = {
   wrapper: {
     position: 'absolute',
-    width: `calc(100vw - ${384 + 40}px)`,
-    height: `calc(100% - ${40}px)`, // For some reason 'vw' doesn't work here
-    margin: `20px ${384 + 20}px 20px 20px`,
+    width: `calc(100vw - ${384 + 75}px)`,
+    height: `calc(100% - ${20}px)`, // For some reason 'vw' doesn't work here
+    margin: `10px ${384 + 20}px 10px 60px`,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
