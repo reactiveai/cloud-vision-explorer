@@ -192,7 +192,13 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('logoAnnotations', 'logo-detection', annons =>
-          <p>logo detection</p>
+          annons.map(({description, mid}) =>
+            <div key={mid} className="logo-detection">
+              <PlusTitle>
+                <p className="description">{description}</p>
+              </PlusTitle>
+            </div>
+          )
         )}
         {getDetectionSection('landmarkAnnotations', 'landmark-detection', annons =>
           annons.map(({description, mid}) =>
