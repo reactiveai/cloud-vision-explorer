@@ -24,12 +24,14 @@
     list-style-type: none
     padding: 0
     margin: 0
+    display: flex
 
     li
       text-align: center
       padding: 10px 5px
       background: #424242
       color: #757575
+      flex-grow: 1
 
       &.active
         background: #3949AB
@@ -52,6 +54,7 @@
     flex-grow: 1
 
     > section
+      flex-grow: 1
       color: #CFD8DC
       overflow-y: scroll
       height: 500px
@@ -215,7 +218,11 @@
         li
           height: 100px
 
+  nav
+    display: flex
+
     label
+      flex-grow: 1
       background: #424242
       color: #757575
       text-align: center
