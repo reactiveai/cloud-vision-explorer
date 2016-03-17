@@ -186,6 +186,8 @@ export default React.createClass({
       console.log(cluster.label)
 
       const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
+      cluster.center = center
+
       center.multiplyScalar(denseFactor)
       const text = cluster.label
 
@@ -200,7 +202,7 @@ export default React.createClass({
       context.textAlign = 'center'
       context.textBaseline = 'middle'
       context.fillStyle = textColor
-      context.font = '80px Roboto'
+      context.font = '60px Roboto'
       context.fillText(text, canvas.width / 2, canvas.height / 2)
 
       const texture = new THREE.Texture(canvas)
@@ -216,6 +218,9 @@ export default React.createClass({
       const sprite = new THREE.Sprite(spriteMaterial)
       sprite.position.copy(center)
       sprite.scale.multiplyScalar(denseFactor / 2)
+
+      cluster.sprite = sprite
+
       group.add(sprite)
     })
 
@@ -494,6 +499,13 @@ export default React.createClass({
       }
 
       checkForImagesThatCanBeDownloaded()
+
+      clusters.forEach((c) => {
+        let opac = c.center.distanceTo(camera.position) / 1000
+        opac = Math.max(opac, 0.3)
+        opac = Math.min(opac, 1.0)
+        c.sprite.material.opacity = opac
+      })
 
     }
 
