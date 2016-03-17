@@ -9,7 +9,6 @@ require('../misc/TrackballControls.js')(THREE)
 import 'stylesheets/RenderView'
 
 import _ from 'lodash'
-import $ from 'npm-zepto'
 
 import Shaders from '../misc/Shaders.js'
 
@@ -19,9 +18,6 @@ import io from 'socket.io-client'
 
 import Random from 'random-js'
 const random = new Random(Random.engines.mt19937().seed(0))
-
-// Promise jQuery getJSON version
-const getJSON = (url) => new Promise((resolve) => $.getJSON(url, resolve))
 
 const tweenSpeed = 200
 const thumbCheckSpeed = 100
@@ -58,7 +54,10 @@ export default React.createClass({
   },
   componentDidMount() {
 
-    getJSON('http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_100k.json').then((data) => {
+    const gscUrl = 'http://gcs-samples2-explorer.storage.googleapis.com/datapoint/output_100k.json'
+    fetch(gscUrl).then((res) => {
+      return res.json()
+    }).then((data) => {
       this._setupScene(data)
     })
 
