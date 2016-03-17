@@ -9,7 +9,7 @@ import ProgressBar from 'react-toolbox/lib/progress_bar'
 import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
-
+import PlusTitle from './PlusTitle'
 
 const getVisionJsonURL = (id) => {
   return `https://gcs-samples2-explorer.storage.googleapis.com/vision/result/${id}.json`
@@ -194,7 +194,13 @@ class GraphTab extends React.Component {
           <p>logo detection</p>
         )}
         {getDetectionSection('landmarkAnnotations', 'landmark-detection', annons =>
-          <p>landmark detection</p>
+          annons.map(({description, mid}) =>
+            <div key={mid} className="landmark-detection">
+              <PlusTitle>
+                <p className="description">{description}</p>
+              </PlusTitle>
+            </div>
+          )
         )}
         {getDetectionSection('imagePropertiesAnnotation', 'image-properties', annon =>
           <ul>
