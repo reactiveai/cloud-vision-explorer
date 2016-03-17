@@ -244,7 +244,7 @@ export default React.createClass({
     stats.domElement.style.top = '0px'
     this._container.appendChild(stats.domElement)
 
-    document.addEventListener( 'mousemove', () => {
+    this._container.addEventListener( 'mousemove', () => {
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
     }, false)
@@ -421,7 +421,7 @@ export default React.createClass({
 
     let mousedownObject = null
 
-    document.addEventListener( 'mousedown', (e) => {
+    this._container.addEventListener( 'mousedown', (e) => {
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
@@ -434,7 +434,7 @@ export default React.createClass({
       }
     }, false)
 
-    document.addEventListener( 'mouseup', (e) => {
+    this._container.addEventListener( 'mouseup', (e) => {
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
