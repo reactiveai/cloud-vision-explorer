@@ -37,18 +37,21 @@
         background: #3949AB
         color: #9FA8DA
 
+      .material-icons
+        margin: 5px 0
+
       .custom-icon
-        width: 21px
-        height: 21px
+        margin: 7px 0 5px 0
+        width: 20px
+        height: 20px
         display: inline-block
-        margin-top: 2px
         background-color: currentColor
 
         &.logo_detection
-          -webkit-mask-image: url(../images/icon/logo_detection.svg)
+          -webkit-mask: url(../images/icon/logo_detection.svg) no-repeat
 
         &.safesearch
-          -webkit-mask-image: url(../images/icon/safesearch.svg)
+          -webkit-mask: url(../images/icon/safesearch.svg) no-repeat
 
   .detail-tab
     flex-grow: 1
