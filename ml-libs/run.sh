@@ -9,10 +9,14 @@ if [ ! -f data/glove.6B.50d.txt ]; then
     mv glove.6B* data/
 fi
 
+wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api.json
 wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api_1000.json
 wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api_5000.json
 wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api_10000.json
 echo "input file is 1000 images"
 chmod +x main.py 
-python main.py -i vision_api_1000.json -o out1000.json
-echo "file is output.json"
+python main.py -i vision_api_1000.json -o out1k.json
+python main.py -i vision_api_5000.json -o out5k.json
+python main.py -i vision_api_10000.json -o out10k.json
+python main.py -i vision_api.json -o out100k.json
+echo "done"

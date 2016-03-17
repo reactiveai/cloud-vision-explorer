@@ -8,14 +8,24 @@ from sys import argv
 from clustering import kmeans
 from tsne import low_dim_mapper
 from util import json_utils
+import numpy as np
 
 DEFAULT_NO_CLUSTERS = 10
-DEFAULT_INPUT_FILENAME = 'input.json'
+DEFAULT_INPUT_FILENAME = 'vision_api_1000.json'
 DEFAULT_OUTPUT_FILENAME = 'output.json'
 DEFAULT_GLOVE_WORD2VEC_DIM = 50  # valid values are 50, 100, 150, 200, 250 and 300
 DEFAULT_INITIAL_DIMS_AFTER_PCA = 50  # should be less or equal than glove word2vec dimension
 DEFAULT_PERPLEXITY = 50
 DEFAULT_THETA = 0.5  # 0.0 for theta is equivalent to vanilla t-SNE
+
+SPECIFIC_CLUSTER_NAME = 'animal'
+
+
+def get_cats_frequency(most_common_labels):
+    for label in most_common_labels:
+        if label[0] == SPECIFIC_CLUSTER_NAME:
+            return label[1]
+    return 0
 
 
 def arg_parse():
@@ -57,14 +67,45 @@ if __name__ == "__main__":
     [c_centers, X_assignments, _] = kmeans.tf_k_means_cluster(X_vectors, no_clusters=arg_p.no_clusters)
 
     labels = []
+    max_cat_frequency = 0
+    cat_cluster_id = -1
+    data_points_id_cat_cluster = []
     for cluster_id in xrange(arg_p.no_clusters):
         data_points_in_cluster_indexes = [i for i, x in enumerate(X_assignments) if x == cluster_id]
         dominant_labels = list(X_labels[data_point_idx] for data_point_idx in data_points_in_cluster_indexes)
         most_common_labels = Counter(dominant_labels).most_common()
-        dominant_label = most_common_labels[0][0]
-        frequency_dominant_label = most_common_labels[0][1]
+
+        # cat part - beg
+        cat_freq = get_cats_frequency(most_common_labels)
+        if cat_freq >= max_cat_frequency:
+            max_cat_frequency = cat_freq
+            cat_cluster_id = cluster_id
+
+            data_points_id_cat_cluster = []
+            for data_point_idx in data_points_in_cluster_indexes:
+                if X_labels[data_point_idx] == SPECIFIC_CLUSTER_NAME:
+                    data_points_id_cat_cluster.append(data_point_idx)
+        # cat part - end
+
+        i = 1
+        while most_common_labels[i][0] in labels:
+            i += 1
+
+        dominant_label = most_common_labels[i][0]
+        frequency_dominant_label = most_common_labels[i][1]
         labels.append(dominant_label)
+
         print(cluster_id, '->', dominant_label, '(', frequency_dominant_label, '), center=', c_centers[cluster_id])
 
+    cat_cluster_center = np.zeros(3)
+    for elt_id in data_points_id_cat_cluster:
+        X_assignments[elt_id] = arg_p.no_clusters
+        cat_cluster_center += X_vectors[elt_id]
+    cat_cluster_center /= max_cat_frequency
+
+    c_centers = np.vstack((c_centers, cat_cluster_center))
+    labels.append(SPECIFIC_CLUSTER_NAME)
+
+    print(arg_p.no_clusters, '->', SPECIFIC_CLUSTER_NAME, '(', max_cat_frequency, '), center=', cat_cluster_center)
     json_utils.convert_to_json(X_vectors, X_assignments, c_centers, labels, X_image_ids, filename=arg_p.output)
     print("Program took {0:.2f} seconds to execute.".format(time.time() - start_time))
