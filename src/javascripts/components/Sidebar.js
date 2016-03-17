@@ -155,12 +155,12 @@ class GraphTab extends React.Component {
                   {likelihoodLevel(face.sorrowLikelihood)}
                 </div>
                 <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="lens" />
+                  <span className="likelihood-icon custom-icon anger" />
                   <div className="likelihood-label">Anger</div>
                   {likelihoodLevel(face.angerLikelihood)}
                 </div>
                 <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="lens" />
+                  <span className="likelihood-icon custom-icon surprise" />
                   <div className="likelihood-label">Surprise</div>
                   {likelihoodLevel(face.surpriseLikelihood)}
                 </div>
@@ -175,7 +175,7 @@ class GraphTab extends React.Component {
                   {likelihoodLevel(face.blurredLikelihood)}
                 </div>
                 <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="lens" />
+                  <span className="likelihood-icon custom-icon headwear" />
                   <div className="likelihood-label">Headwear</div>
                   {likelihoodLevel(face.headwearLikelihood)}
                 </div>
