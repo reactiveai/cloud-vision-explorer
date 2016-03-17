@@ -45,6 +45,10 @@ class GraphTab extends React.Component {
 
   render() {
     const { vision } = this.props
+    const classForPerson = (idx) => {
+      const classes = ['primary', 'secondary', 'third']
+      return 'face-detection-person ' + classes[idx % classes.length]
+    }
     const likelihoodLevel = (likelihood) => {
       const levelMap = {
         UNKNOWN: 0,
@@ -143,9 +147,9 @@ class GraphTab extends React.Component {
         )}
         {getDetectionSection('faceAnnotations', 'face-detection', annons =>
           annons.map((face, idx) =>
-            <div className="face-detection-person" key={idx}>
+            <div className={classForPerson(idx)} key={idx}>
               <div>
-                <FontIcon className="humanoid primary" value="accessibility" />
+                <FontIcon className="humanoid" value="accessibility" />
                 <div className="person-label">Person {idx + 1}</div>
                 {getAngleSection('Roll', face.rollAngle)}
                 {getAngleSection('Pan', face.panAngle)}

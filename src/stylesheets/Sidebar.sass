@@ -129,14 +129,29 @@
           display: flex
           margin-bottom: 30px
 
+          &.primary
+            color: $sidebar-primary-color-2
+
+            .humanoid
+              color: $sidebar-primary-color-1
+
+          &.secondary
+            color: $sidebar-secondary-color-2
+
+            .humanoid
+              color: $sidebar-secondary-color-1
+
+          &.third
+            color: $sidebar-third-color-2
+
+            .humanoid
+              color: $sidebar-third-color-1
+
           > *
             margin-right: 20px
 
         .humanoid
           font-size: 80px
-
-          &.primary
-            color: $sidebar-primary-color-1
 
         .person-label
           text-align: center
@@ -150,7 +165,6 @@
             flex-basis: 2em
 
           .Donut
-            color: $sidebar-primary-color-2 !important
             font-size: 0.8em !important
 
             .angle-value
@@ -167,23 +181,23 @@
         .likelihood-icon
           flex-basis: 2em
           font-size: 24px
-          color: $sidebar-primary-color-2
 
           &.custom-icon
             width: 21px
             height: 21px
             margin-left: 1px
+            background-color: currentColor
 
           &.anger
-            background: url(../images/icon/anger.svg) no-repeat
+            -webkit-mask: url(../images/icon/anger.svg) no-repeat
 
           &.surprise
-            background: url(../images/icon/surprise.svg) no-repeat
+            -webkit-mask: url(../images/icon/surprise.svg) no-repeat
 
           &.headwear
             height: 15px
             margin-right: 8px
-            background: url(../images/icon/headwear.svg) no-repeat
+            -webkit-mask: url(../images/icon/headwear.svg) no-repeat
 
         .likelihood-label
           flex-basis: 7em
@@ -203,7 +217,7 @@
             background: $sidebar-primary-color-off
 
             &.active
-              background: $sidebar-primary-color-2
+              background: currentColor
 
       &.image-properties
         padding: 30px
