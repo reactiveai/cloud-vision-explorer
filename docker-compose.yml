@@ -20,17 +20,3 @@ services:
       MYSQL_USER:
       MYSQL_PASSWORD:
       MYSQL_DATABASE:
-  ap3:
-    image: cloud-vision-explorer:beta3
-    environment:
-      MYSQL_SERVER:
-      MYSQL_USER:
-      MYSQL_PASSWORD:
-      MYSQL_DATABASE:
-  ap4:
-    image: cloud-vision-explorer:beta3
-    environment:
-      MYSQL_SERVER:
-      MYSQL_USER:
-      MYSQL_PASSWORD:
-      MYSQL_DATABASE:
