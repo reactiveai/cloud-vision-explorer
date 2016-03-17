@@ -459,9 +459,10 @@ export default React.createClass({
 
     const tick = () => {
 
+      const time = (new Date()).getTime()
       // TODO fix absolute coords for nodes
-      group.rotation.x += 0.000005
-      group.rotation.y += 0.00001
+      group.rotation.x = Math.sin(time * 0.0001) * 0.001
+      group.rotation.y = Math.cos(time * 0.0001) * 0.002
 
       raycaster.setFromCamera( mouse, camera )
 
