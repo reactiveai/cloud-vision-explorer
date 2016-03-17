@@ -1,0 +1,15 @@
+version: '2'
+services:
+  proxy:
+    build: ./nginx
+    links:
+      - ap1:ap1
+  ap1:
+    image: cloud-vision-explorer:beta3
+    ports:
+      - "80:80"
+    environment:
+      MYSQL_SERVER:
+      MYSQL_USER:
+      MYSQL_PASSWORD:
+      MYSQL_DATABASE:
