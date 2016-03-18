@@ -5,7 +5,7 @@ import React, { PropTypes } from 'react'
 import { Tab, Tabs } from 'react-toolbox'
 import Drawer from 'react-toolbox/lib/drawer'
 import FontIcon from 'react-toolbox/lib/font_icon'
-import IconButton from 'react-toolbox/lib/button'
+import Button from 'react-toolbox/lib/button'
 import ProgressBar from 'react-toolbox/lib/progress_bar'
 import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
@@ -285,9 +285,22 @@ export default class Sidebar extends React.Component {
         $('.detail-tab > section').animate({scrollTop: targetScroll}, 'slow')
       }
     }
-
-    const handIcon = {
-      cursor: 'pointer'
+    const getIndicator = (key, icon, jumpTo, opts) => {
+      const active = key in this.state.vision
+      return (
+        <li
+          className={active ? 'active' : ''}
+          onClick={animateScroll.bind(this, jumpTo)}
+        >
+          {opts && opts.customIcon ?
+            <Button ripple inverse disabled={!active}>
+              <span className={'custom-icon ' + icon} />
+            </Button>
+          :
+            <Button icon={icon} ripple inverse disabled={!active} />
+          }
+        </li>
+      )
     }
 
     return (
@@ -297,27 +310,19 @@ export default class Sidebar extends React.Component {
               onOverlayClick={() => { this.props.emitter.emit('hideSidebar') }}>
 
         <ul className="feature-indicator">
-          <li className={classForIndicator('labelAnnotations')} onClick={animateScroll.bind(this, 'label-detection')}>
-            <FontIcon style={handIcon} value='label_outline' />
-          </li>
-          <li className={classForIndicator('textAnnotations')} onClick={animateScroll.bind(this, 'text-detection')}>
-            <FontIcon style={handIcon} value='translate' />
-          </li>
-          <li className={classForIndicator('safeSearchAnnotation')} onClick={animateScroll.bind(this, 'safesearch-detection')}>
-            <span style={handIcon} className="custom-icon safesearch" />
-          </li>
-          <li className={classForIndicator('faceAnnotations')} onClick={animateScroll.bind(this, 'face-detection')}>
-            <FontIcon style={handIcon} value='face' />
-          </li>
-          <li className={classForIndicator('logoAnnotations')} onClick={animateScroll.bind(this, 'logo-detection')}>
-            <span style={handIcon} className="custom-icon logo_detection" />
-          </li>
-          <li className={classForIndicator('landmarkAnnotations')} onClick={animateScroll.bind(this, 'landmark-detection')}>
-            <FontIcon style={handIcon} value='place' />
-          </li>
-          <li className={classForIndicator('imagePropertiesAnnotation')} onClick={animateScroll.bind(this, 'image-properties')}>
-            <FontIcon style={handIcon} value='photo' />
-          </li>
+          {getIndicator('labelAnnotations', 'label_outline', 'label-detection')}
+          {getIndicator('textAnnotations', 'translate', 'text-detection')}
+          {getIndicator(
+            'safeSearchAnnotation', 'safesearch', 'safesearch-detection',
+            { customIcon: true }
+          )}
+          {getIndicator('faceAnnotations', 'face', 'face-detection')}
+          {getIndicator(
+            'logoAnnotation', 'logo', 'logo-detection',
+            { customIcon: true }
+          )}
+          {getIndicator('landmarkAnnotations', 'place', 'landmark-detection')}
+          {getIndicator('imagePropertiesAnnotation', 'photo', 'image-properties')}
         </ul>
 
         <SidebarTabs className="detail-tab"
