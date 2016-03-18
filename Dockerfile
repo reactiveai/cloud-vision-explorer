@@ -5,9 +5,7 @@ WORKDIR /opt/cloud-vision-explorer
 
 COPY . /opt/cloud-vision-explorer
 
-# npm-zepto doesn't work with "--production"
-#RUN npm install --production
-RUN npm install
+RUN npm install --production
 
 ENV NODE_ENV production
 ENV PORT 80
