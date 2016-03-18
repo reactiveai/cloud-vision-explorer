@@ -121,30 +121,6 @@ class GraphTab extends React.Component {
             </p>
           )
         )}
-        {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', annon =>
-          <div className="likelihoods">
-            <div className="likelihoods-row">
-              <div className="likelihood">
-                <div className="likelihood-label">Adult</div>
-                {likelihoodLevel(annon.adult)}
-              </div>
-              <div className="likelihood">
-                <div className="likelihood-label">Spoof</div>
-                {likelihoodLevel(annon.spoof)}
-              </div>
-            </div>
-            <div className="likelihoods-row">
-              <div className="likelihood">
-                <div className="likelihood-label">Medical</div>
-                {likelihoodLevel(annon.medical)}
-              </div>
-              <div className="likelihood">
-                <div className="likelihood-label">Violence</div>
-                {likelihoodLevel(annon.violence)}
-              </div>
-            </div>
-          </div>
-        )}
         {getDetectionSection('faceAnnotations', 'face-detection', annons =>
           annons.map((face, idx) =>
             <div className={classForPerson(idx)} key={idx}>
@@ -219,6 +195,30 @@ class GraphTab extends React.Component {
               <li key={idx} style={getColorStyle(color)} />
             )}
           </ul>
+        )}
+        {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', annon =>
+          <div className="likelihoods">
+            <div className="likelihoods-row">
+              <div className="likelihood">
+                <div className="likelihood-label">Adult</div>
+                {likelihoodLevel(annon.adult)}
+              </div>
+              <div className="likelihood">
+                <div className="likelihood-label">Spoof</div>
+                {likelihoodLevel(annon.spoof)}
+              </div>
+            </div>
+            <div className="likelihoods-row">
+              <div className="likelihood">
+                <div className="likelihood-label">Medical</div>
+                {likelihoodLevel(annon.medical)}
+              </div>
+              <div className="likelihood">
+                <div className="likelihood-label">Violence</div>
+                {likelihoodLevel(annon.violence)}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     )
@@ -312,10 +312,6 @@ export default class Sidebar extends React.Component {
         <ul className="feature-indicator">
           {getIndicator('labelAnnotations', 'label_outline', 'label-detection')}
           {getIndicator('textAnnotations', 'translate', 'text-detection')}
-          {getIndicator(
-            'safeSearchAnnotation', 'safesearch', 'safesearch-detection',
-            { customIcon: true }
-          )}
           {getIndicator('faceAnnotations', 'face', 'face-detection')}
           {getIndicator(
             'logoAnnotation', 'logo', 'logo-detection',
@@ -323,6 +319,10 @@ export default class Sidebar extends React.Component {
           )}
           {getIndicator('landmarkAnnotations', 'place', 'landmark-detection')}
           {getIndicator('imagePropertiesAnnotation', 'photo', 'image-properties')}
+          {getIndicator(
+            'safeSearchAnnotation', 'safesearch', 'safesearch-detection',
+            { customIcon: true }
+          )}
         </ul>
 
         <SidebarTabs className="detail-tab"
