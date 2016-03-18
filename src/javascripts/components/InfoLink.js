@@ -3,9 +3,10 @@ import React, { PropTypes } from 'react'
 import Link from 'react-toolbox/lib/link'
 
 const TARGET_IMAGE_IDS = [
-  {id: '02dfc015067fedf36e0b5f2f4d8c903a', label: 'foo' },
-  {id: 'f9bda71857c4b5dd47ca1ed50e3ff04e', label: 'bar' },
-  {id: '1b1035c01f2d8df490c146a76080b41a', label: 'buz' }
+  {id: '8fc425eaa277db86186edd229b0e3591' },
+  {id: '0c68e487dd8f16f343341569c29733b3' },
+  {id: '9feac60b880aec9cc8d1235ede925c9d' },
+  {id: '9cd08b4c67b69017a6c3a8682de6270d' }
 ]
 
 const style = {
