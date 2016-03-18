@@ -28,7 +28,6 @@
 
     li
       text-align: center
-      padding: 10px 5px
       background: #424242
       color: #757575
       flex-grow: 1
@@ -37,17 +36,27 @@
         background: #3949AB
         color: #9FA8DA
 
-      .material-icons
-        margin: 5px 0
+      button
+        padding: 15px 0
+        min-width: 0
+        border-radius: 0
+        height: auto
+        width: 100%
+        color: inherit !important
+
+        .material-icons
+          line-height: 1em
+          font-size: 24px
+          margin: 0
 
       .custom-icon
-        margin: 7px 0 5px 0
+        padding-bottom: 1px
         width: 20px
         height: 20px
         display: inline-block
         background-color: currentColor
 
-        &.logo_detection
+        &.logo
           -webkit-mask: url(../images/icon/logo_detection.svg) no-repeat
 
         &.safesearch
