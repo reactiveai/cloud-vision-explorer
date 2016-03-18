@@ -52,11 +52,11 @@ class GraphTab extends React.Component {
     const likelihoodLevel = (likelihood) => {
       const levelMap = {
         UNKNOWN: 0,
-        VERY_UNLIKELY: 1,
-        UNLIKELY: 2,
-        POSSIBLE: 3,
-        LIKELY: 4,
-        VERY_LIKELY: 5
+        VERY_UNLIKELY: 0,
+        UNLIKELY: 1,
+        POSSIBLE: 2,
+        LIKELY: 3,
+        VERY_LIKELY: 4
       }
       const level = levelMap[likelihood]
       return (
@@ -65,7 +65,6 @@ class GraphTab extends React.Component {
           <li className={level > 1 ? 'active' : ''}></li>
           <li className={level > 2 ? 'active' : ''}></li>
           <li className={level > 3 ? 'active' : ''}></li>
-          <li className={level > 4 ? 'active' : ''}></li>
         </ul>
       )
     }
