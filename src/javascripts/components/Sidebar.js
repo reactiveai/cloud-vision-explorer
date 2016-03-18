@@ -100,8 +100,8 @@ class GraphTab extends React.Component {
     return (
       <div className="tab-graph">
         {getDetectionSection('labelAnnotations', 'label-detection', annons =>
-          annons.map(label =>
-            <div key={label.description} className="label">
+          annons.map((label, idx) =>
+            <div key={idx} className="label">
               <div className="label-name">
                 {_.capitalize(label.description)}
               </div>
