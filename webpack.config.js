@@ -1,3 +1,5 @@
+'use strict'
+const _                 = require('lodash')
 const webpack           = require('webpack')
 const path              = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -9,13 +11,23 @@ const sassLoaders = [
   `sass-loader?indentedSyntax=sass&includePaths[]=${path.resolve(__dirname, './src')}`
 ]
 
-module.exports = {
-  devtool: 'inline-source-map',
-  entry: [
+let entryPoint = null
+if(_.isEqual(process.env.NODE_ENV, 'production')) {
+  entryPoint = [
+    './src/javascripts/main.js'
+  ]
+}
+else {
+  entryPoint = [
     'webpack-dev-server/client?http://0.0.0.0:3001',
     'webpack/hot/only-dev-server',
     './src/javascripts/main.js'
-  ],
+  ]
+}
+
+module.exports = {
+  devtool: 'inline-source-map',
+  entry: entryPoint,
 
   output: {
     path: path.resolve(__dirname, './public'),
