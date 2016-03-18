@@ -4,18 +4,19 @@ services:
     build: ./nginx
     ports:
       - "80:80"
+      - "443:443"
     links:
       - ap1:ap1
       - ap2:ap2
   ap1:
-    image: cloud-vision-explorer:beta4
+    build: .
     environment:
       MYSQL_SERVER:
       MYSQL_USER:
       MYSQL_PASSWORD:
       MYSQL_DATABASE:
   ap2:
-    image: cloud-vision-explorer:beta4
+    build: .
     environment:
       MYSQL_SERVER:
       MYSQL_USER:
