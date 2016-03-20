@@ -3,10 +3,11 @@ import React, { PropTypes } from 'react'
 import Link from 'react-toolbox/lib/link'
 
 const TARGET_IMAGE_IDS = [
-  {id: '8fc425eaa277db86186edd229b0e3591' },
-  {id: '0c68e487dd8f16f343341569c29733b3' },
-  {id: '9feac60b880aec9cc8d1235ede925c9d' },
-  {id: '9cd08b4c67b69017a6c3a8682de6270d' }
+  {id: '24e144ee08ce069fd077904f9039a5f4' },  // Cat
+  {id: '8fc425eaa277db86186edd229b0e3591' },  // Kangaroo
+  {id: '22b8f17c84059d5d293278f47d1561bf' },  // Ethnic Clothes
+  {id: '0c68e487dd8f16f343341569c29733b3' },  // Citi Field
+  {id: '016c664e470afeb55ce949ca313423bf' },  // Toyota
 ]
 
 const style = {
