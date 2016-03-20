@@ -13,6 +13,9 @@ wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api.
 wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api_1000.json
 wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api_5000.json
 wget -nc https://storage.googleapis.com/gcs-samples2-explorer/vision/vision_api_10000.json
+
+mkdir pickle
+
 echo "input file is 1000 images"
 chmod +x main.py 
 python main.py -i vision_api_1000.json -o out1k.json
