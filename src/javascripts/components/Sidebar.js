@@ -43,6 +43,33 @@ class GraphTab extends React.Component {
     }
   }
 
+  landmarkContent(annon) {
+    console.log(annon)
+    if(!_.has(annon, 'locations') || annon.locations.length == 0) {
+      return (
+        <div className="description">
+          {annon.description}
+        </div>
+      )
+    }
+
+    const {latitude, longitude} = annon.locations[0].latLng   // takes only the first one
+    const style = {
+      marginTop: 8,
+      fontSize: 'medium'
+    }
+
+    return (
+      <div className="description">
+        <div>{annon.description}</div>
+        <div style={style}>
+          Latitude : {latitude}<br />
+          Longitude : {longitude}
+        </div>
+      </div>
+    )
+  }
+
   render() {
     const { vision } = this.props
     const classForPerson = (idx) => {
@@ -186,11 +213,9 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('landmarkAnnotations', 'landmark-detection', annons =>
-          annons.map(({description, mid}) =>
-            <div key={mid} className="landmark-detection">
-              <PlusTitle>
-                <p className="description">{description}</p>
-              </PlusTitle>
+          annons.map((annon, index) =>
+            <div key={index} className="landmark-detection">
+              <PlusTitle>{this.landmarkContent(annon)}</PlusTitle>
             </div>
           )
         )}
