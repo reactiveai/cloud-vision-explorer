@@ -235,7 +235,7 @@ export default React.createClass({
       texture.needsUpdate = true
 
       const spriteMaterial = new THREE.SpriteMaterial({
-        color: 0xffffff,
+        color: 0xdddddd,
         transparent: true,
         opacity: 1.0,
         map: texture
@@ -448,7 +448,7 @@ export default React.createClass({
       }
 
       const spriteMaterial = new THREE.SpriteMaterial({
-        // color: 0xff0000,
+        color: 0xcccccc,
         transparent: true,
         opacity: 0,
         map: texture
@@ -617,32 +617,34 @@ export default React.createClass({
 
       // If our mouse hovers over something
       if ( intersects.length > 0 ) {
-
         // If the object we're hovering over is different from what we last hovered over
-        if ( lastIntersectIndex != intersects[ 0 ].index ) {
+        if ( lastIntersectIndex != intersects[0].index ) {
+          const node = points[intersects[0].index]
+          if (node.plane) {
+            node.plane.material.color.copy(new THREE.Color(0xffffff))
+          }
 
           // If we have hovered over something before
           if (lastIntersectIndex) {
-
+            const oldNode = points[lastIntersectIndex]
+            if (oldNode.plane) {
+              oldNode.plane.material.color.copy(new THREE.Color(0xcccccc))
+            }
           }
-
           lastIntersectIndex = intersects[ 0 ].index
-
-
-
-
         }
-
 
       }
       // If we're not hovering over something
       else {
         // If we were hovering over an object before
         if ( lastIntersectIndex !== null ) {
-
+          const oldNode = points[lastIntersectIndex]
+          if (oldNode.plane) {
+            oldNode.plane.material.color.copy(new THREE.Color(0xcccccc))
+          }
 
           lastIntersectIndex = null
-
         }
       }
 
