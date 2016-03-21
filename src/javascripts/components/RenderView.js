@@ -287,7 +287,7 @@ export default React.createClass({
       const startPoint = camera.position.clone()
 
       const endPointUnit = node.vec.clone().normalize()
-      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(50))
+      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(25))
 
       const startPointNormalized = startPoint.clone().normalize()
       const endPointNormalized = endPoint.clone().normalize()
