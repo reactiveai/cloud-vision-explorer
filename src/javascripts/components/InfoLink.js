@@ -13,9 +13,9 @@ const OPEN_IMAGE_BOOKMARK_IDS = [
 // These are actually also image IDs, because it's easy to reference them
 // even though we're just using them to zoom to a particular part of a cluster
 const ZOOM_CLUSTER_BOOKMARK_IDS = [
-  {id: '24e144ee08ce069fd077904f9039a5f4' },  // Cat
-  {id: '8fc425eaa277db86186edd229b0e3591' },  // Kangaroo
-  {id: '22b8f17c84059d5d293278f47d1561bf' },  // Ethnic Clothes
+  {id: 'c8261057a5ff2d642d05c32824fa3a2c' },  // Bird
+  {id: '14871b0e63d2025a8465e45be4733172' },  // Flower
+  {id: 'b550497b9dd1937694ed7647620a258e' },  // Residental area
 ]
 
 const style = {
