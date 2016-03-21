@@ -267,6 +267,19 @@ export default React.createClass({
 
     controls.keys = [ 65, 83, 68 ]
 
+    const groupOpacFunction = (cluster) => {
+      return function () { // can't be an arrow function!
+        _.each(groupedData, (value, key) => {
+          if (value !== cluster) {
+            const gc = value.color
+            updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
+            value.lineMaterial.opacity = 0.3 * this.f
+            clusters[key].sprite.material.opacity = 1.0 * this.f
+          }
+        })
+      }
+    }
+
     const trackNode = (node) => {
       const nodeGroup = groupedData[node.g]
 
@@ -310,16 +323,7 @@ export default React.createClass({
               f: 0.3
             }, {
               f: 1.0
-            }, otherGroupsFadeInTime, function () { // can't be an arrow function!
-              const gc = nodeGroup.color
-              _.each(groupedData, (value, key) => {
-                if (value !== currentlyZoomedCluster) {
-                  updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
-                  value.lineMaterial.opacity = 0.3 * this.f
-                  clusters[key].sprite.material.opacity = 1.0 * this.f
-                }
-              })
-            }) : wait(otherGroupsFadeInTime))
+            }, otherGroupsFadeInTime, groupOpacFunction(currentlyZoomedCluster)) : wait(otherGroupsFadeInTime))
           })
           .then(() => wait((waitTime/3)*0.5))
           .then(() => {
@@ -327,16 +331,7 @@ export default React.createClass({
               f: 1.0
             }, {
               f: 0.3
-            }, groupFocusTime, function () { // can't be an arrow function!
-              const gc = nodeGroup.color
-              _.each(groupedData, (value, key) => {
-                if (value !== nodeGroup) {
-                  updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
-                  value.lineMaterial.opacity = 0.3 * this.f
-                  clusters[key].sprite.material.opacity = 1.0 * this.f
-                }
-              })
-            })
+            }, groupFocusTime, groupOpacFunction(nodeGroup))
           }),
           tween({
             f: 0
@@ -638,12 +633,30 @@ export default React.createClass({
 
       checkForImagesThatCanBeDownloaded()
 
-      // clusters.forEach((c) => {
-      //   let opac = c.center.distanceTo(camera.position) / 1000
-      //   opac = Math.max(opac, 0.3)
-      //   opac = Math.min(opac, 1.0)
-      //   c.sprite.material.opacity = opac
-      // })
+      if (!currentlyTrackingNode && !currentlyZoomedCluster) {
+        clusters.forEach((c) => {
+          let opac = c.center.distanceTo(camera.position) / 1000
+          opac = Math.max(opac, 0.3)
+          opac = Math.min(opac, 1.0)
+          c.sprite.material.opacity = opac
+        })
+      }
+
+      // When zooming out, clear the focused cluster and show back all groups
+      if (camera.position.lengthSq() > 1000 * 1000
+        && currentlyZoomedCluster
+        && !currentlyTrackingNode) {
+        const oldZoomedCluster = currentlyZoomedCluster
+        currentlyZoomedCluster = null
+
+        cameraAnimationQueue = cameraAnimationQueue.then(() => {
+          return tween({
+            f: 0.3
+          }, {
+            f: 1.0
+          }, 1000, groupOpacFunction(oldZoomedCluster))
+        })
+      }
 
     }
 
