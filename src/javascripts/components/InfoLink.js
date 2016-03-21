@@ -14,7 +14,7 @@ const OPEN_IMAGE_BOOKMARK_IDS = [
 // even though we're just using them to zoom to a particular part of a cluster
 const ZOOM_CLUSTER_BOOKMARK_IDS = [
   {id: 'c8261057a5ff2d642d05c32824fa3a2c' },  // Bird
-  {id: '14871b0e63d2025a8465e45be4733172' },  // Flower
+  {id: 'c7ead95d2cecba86a6d8e5eb4928cbbf' },  // Flower
   {id: 'b550497b9dd1937694ed7647620a258e' },  // Residental area
 ]
 
