@@ -46,6 +46,8 @@ const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadrat
   })
 }
 
+const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+
 export default React.createClass({
   render() {
     return (
@@ -155,13 +157,13 @@ export default React.createClass({
       attributes.customColor.needsUpdate = true
     }
 
-    const updateGroupColor = (r, g, b, group) => {
+    const updateGroupColor = _.throttle((r, g, b, group) => {
       points.forEach((p, i) => {
         if (p.g === group) {
           updateNodeColor(r, g, b, i)
         }
       })
-    }
+    }, 100)
 
     const material = new THREE.ShaderMaterial({
       uniforms: {
@@ -266,103 +268,107 @@ export default React.createClass({
     controls.keys = [ 65, 83, 68 ]
 
     const trackNode = (node) => {
-
       const nodeGroup = groupedData[node.g]
 
       // We only want to reset the panning, so still save the camera position
       // as that needs to lerp to its target instead
-      const currentCameraPosition = camera.position.clone()
+      const startPoint = camera.position.clone()
 
-      camera.position.copy(currentCameraPosition)
+      const endPointUnit = node.vec.clone().normalize()
+      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(50))
 
-      const targetCameraPositionFar = node.vec.clone().normalize().multiplyScalar(nodeAnimationOrbitDistance)
-      const targetCameraPositionClose = node.vec.clone().normalize().multiplyScalar(30)
-      targetCameraPositionClose.add(node.vec)
+      const startPointNormalized = startPoint.clone().normalize()
+      const endPointNormalized = endPoint.clone().normalize()
+      const cross = endPointNormalized.clone().cross(startPointNormalized).normalize()
 
-      const distanceToAnimationTime = (d) => d * 8
+      const angle = startPoint.angleTo(endPoint)
+
+      const startPointDistance = startPoint.length()
+      const endPointDistance = endPoint.length()
+
+      const zoomOutDistance = 2000
+
+      let totalAnimTime = angle * 6000
+      totalAnimTime = Math.max(totalAnimTime, 6000)
+
+      const otherGroupsFadeInTime = 1000
+      const groupFocusTime = 1000
+
+      const waitTime = totalAnimTime - otherGroupsFadeInTime - groupFocusTime
 
       return Promise.resolve()
       // Make other clusters look dark
       .then(() => {
         currentlyTrackingNode = node
-        // First zoom back to the overview
-        return tween({
-          d: currentCameraPosition.length()
-        }, {
-          d: nodeAnimationOrbitDistance
-        }, Math.abs(distanceToAnimationTime(nodeAnimationOrbitDistance - currentCameraPosition.length())), function () {
-          camera.position.normalize().multiplyScalar(this.d)
-        }, TWEEN.Easing.Quadratic.InOut)
-      })
-      .then(() => {
-        return currentlyZoomedCluster !== null ? tween({
-          f: 0.3
-        }, {
-          f: 1.0
-        }, 1000, function () { // can't be an arrow function!
-          const gc = nodeGroup.color
-          _.each(groupedData, (value, key) => {
-            if (value !== currentlyZoomedCluster) {
-              updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
-              value.lineMaterial.opacity = 0.3 * this.f
-              clusters[key].sprite.material.opacity = 1.0 * this.f
-            }
-          })
-        }) : Promise.resolve()
-      })
-      .then(() => {
-
-
-
-        // We need to rotate from one quat to another
-        const cameraPositionFar = camera.position.clone()
 
         // Rotate around
-        return tween({
-          d: 0
-        }, {
-          d: 1
-        }, Math.abs(distanceToAnimationTime(cameraPositionFar.clone().sub(targetCameraPositionFar).length())) * 0.5, function () {
-          // camera.up.applyQuaternion( quaternion );
-          const newPos = cameraPositionFar.clone().lerp(targetCameraPositionFar, this.d)
-          const movement = newPos.clone().sub(camera.position)
-          camera.position.add(movement)
-
-          // Make sure the camera.position is always at the same distance from the center
-          camera.position.normalize().multiplyScalar(nodeAnimationOrbitDistance)
-
-          camera.lookAt(new THREE.Vector3())
-        }, TWEEN.Easing.Quadratic.InOut)
-      })
-      .then(() => {
-        return tween({
-          f: 1.0
-        }, {
-          f: 0.3
-        }, 1000, function () { // can't be an arrow function!
-          const gc = nodeGroup.color
-          _.each(groupedData, (value, key) => {
-            if (value !== nodeGroup) {
-              updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
-              value.lineMaterial.opacity = 0.3 * this.f
-              clusters[key].sprite.material.opacity = 1.0 * this.f
-            }
+        return Promise.all([
+          Promise.resolve()
+          .then(() => wait(waitTime/3))
+          .then(() => {
+            return (currentlyZoomedCluster !== null ? tween({
+              f: 0.3
+            }, {
+              f: 1.0
+            }, otherGroupsFadeInTime, function () { // can't be an arrow function!
+              const gc = nodeGroup.color
+              _.each(groupedData, (value, key) => {
+                if (value !== currentlyZoomedCluster) {
+                  updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
+                  value.lineMaterial.opacity = 0.3 * this.f
+                  clusters[key].sprite.material.opacity = 1.0 * this.f
+                }
+              })
+            }) : wait(otherGroupsFadeInTime))
           })
-        })
+          .then(() => wait((waitTime/3)*0.5))
+          .then(() => {
+            return tween({
+              f: 1.0
+            }, {
+              f: 0.3
+            }, groupFocusTime, function () { // can't be an arrow function!
+              const gc = nodeGroup.color
+              _.each(groupedData, (value, key) => {
+                if (value !== nodeGroup) {
+                  updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
+                  value.lineMaterial.opacity = 0.3 * this.f
+                  clusters[key].sprite.material.opacity = 1.0 * this.f
+                }
+              })
+            })
+          }),
+          tween({
+            f: 0
+          }, {
+            f: 1
+          }, totalAnimTime, function () {
+
+            const qF = TWEEN.Easing.Quadratic.InOut(this.f)
+            const qD = startPointDistance + (endPointDistance - startPointDistance) * qF
+
+            const interpolatedPosition = startPoint.clone().applyAxisAngle(cross, -angle * qF)
+
+            let bouncingF = this.f
+            if (bouncingF > 0.5) {
+              bouncingF = TWEEN.Easing.Sinusoidal.InOut((1.0 - bouncingF) * 2)
+            }
+            else {
+              bouncingF = TWEEN.Easing.Quadratic.InOut(this.f * 2)
+            }
+
+            const distance = qD + zoomOutDistance * bouncingF * angle * 0.2
+
+            interpolatedPosition.normalize().multiplyScalar(distance)
+
+            camera.position.copy(interpolatedPosition)
+
+            camera.lookAt(new THREE.Vector3())
+          }, TWEEN.Easing.Linear.None)
+        ])
       })
       .then(() => {
         currentlyZoomedCluster = nodeGroup
-
-        // Zoom in to the target node
-        return tween({
-          d: targetCameraPositionFar.length()
-        }, {
-          d: targetCameraPositionClose.length()
-        }, distanceToAnimationTime(targetCameraPositionFar.length() - targetCameraPositionClose.length()), function () {
-          camera.position.normalize().multiplyScalar(this.d)
-        }, TWEEN.Easing.Quadratic.InOut)
-      })
-      .then(() => {
         currentlyTrackingNode = null
 
         return Promise.resolve()
