@@ -8,12 +8,11 @@ from collections import Counter
 from sys import argv
 
 import numpy as np
-
 from clustering import kmeans
 from tsne import low_dim_mapper
 from util import json_utils
 
-DEFAULT_NO_CLUSTERS = 10
+DEFAULT_NO_CLUSTERS = 25
 DEFAULT_INPUT_FILENAME = 'vision_api_1000.json'
 DEFAULT_OUTPUT_FILENAME = 'output.json'
 DEFAULT_GLOVE_WORD2VEC_DIM = 200  # valid values are 50, 100, 150, 200, 250 and 300
@@ -22,7 +21,13 @@ DEFAULT_PERPLEXITY = 50
 DEFAULT_THETA = 0.5  # 0.0 for theta is equivalent to vanilla t-SNE
 
 NUMBER_OF_OUTPUT_DIMENSIONS = 3
-SPECIFIC_CLUSTER_NAME = 'animal'
+
+
+def get_frequency_for_specific_label(labels_counter, specific_cluster_name):
+    for label in labels_counter:
+        if label[0] == specific_cluster_name:
+            return label[1]
+    return 0
 
 
 def arg_parse():
@@ -41,6 +46,8 @@ def arg_parse():
                            default=DEFAULT_THETA)
     arg_parse.add_argument('-a', '--pca_dims', type=int,
                            default=DEFAULT_INITIAL_DIMS_AFTER_PCA)
+    arg_parse.add_argument('-n', '--specific_cluster_name', type=str,
+                           default='')
     return arg_parse
 
 
@@ -75,12 +82,6 @@ if __name__ == "__main__":
 
     [c_centers, X_assignments, _] = kmeans.tf_k_means_cluster(X_vectors, no_clusters=arg_p.no_clusters)
 
-    def get_frequency_for_specific_label(labels_counter):
-        for label in labels_counter:
-            if label[0] == SPECIFIC_CLUSTER_NAME:
-                return label[1]
-        return 0
-
     labels = []
     max_frequency_specific_cluster = 0
     specific_cluster_id = -1
@@ -90,17 +91,17 @@ if __name__ == "__main__":
         dominant_labels = list(X_labels[data_point_idx] for data_point_idx in data_points_in_cluster_indexes)
         most_common_labels = Counter(dominant_labels).most_common()
 
-        frequency_specific_cluster = get_frequency_for_specific_label(most_common_labels)
+        frequency_specific_cluster = get_frequency_for_specific_label(most_common_labels, arg_p.specific_cluster_name)
         if frequency_specific_cluster >= max_frequency_specific_cluster:
             max_frequency_specific_cluster = frequency_specific_cluster
             specific_cluster_id = cluster_id
 
             data_points_in_specific_cluster_indexes = []
             for data_point_idx in data_points_in_cluster_indexes:
-                if X_labels[data_point_idx] == SPECIFIC_CLUSTER_NAME:
+                if X_labels[data_point_idx] == arg_p.specific_cluster_name:
                     data_points_in_specific_cluster_indexes.append(data_point_idx)
 
-        i = 1
+        i = 0
         while most_common_labels[i][0] in labels:
             i += 1
 
@@ -110,18 +111,19 @@ if __name__ == "__main__":
 
         print(cluster_id, '->', dominant_label, '(', frequency_dominant_label, '), center=', c_centers[cluster_id])
 
-    specific_cluster_center = np.zeros(NUMBER_OF_OUTPUT_DIMENSIONS)
-    for elt_id in data_points_in_specific_cluster_indexes:
-        X_assignments[elt_id] = arg_p.no_clusters
-        specific_cluster_center += X_vectors[elt_id]
-    specific_cluster_center /= max_frequency_specific_cluster
+    if not arg_p.specific_cluster_name == '':
+        specific_cluster_center = np.zeros(NUMBER_OF_OUTPUT_DIMENSIONS)
+        for elt_id in data_points_in_specific_cluster_indexes:
+            X_assignments[elt_id] = arg_p.no_clusters
+            specific_cluster_center += X_vectors[elt_id]
+        specific_cluster_center /= max_frequency_specific_cluster
 
-    c_centers = np.vstack((c_centers, specific_cluster_center))
-    labels.append(SPECIFIC_CLUSTER_NAME)
+        c_centers = np.vstack((c_centers, specific_cluster_center))
+        labels.append(arg_p.specific_cluster_name)
 
-    print(arg_p.no_clusters, '->', labels[-1],
-          '(', max_frequency_specific_cluster,
-          '), center=', specific_cluster_center)
+        print(arg_p.no_clusters, '->', labels[-1],
+              '(', max_frequency_specific_cluster,
+              '- specific), center=', specific_cluster_center)
 
     json_utils.convert_to_json(X_vectors, X_assignments, c_centers, labels, X_image_ids, filename=arg_p.output)
     print("Program took {0:.2f} seconds to execute.".format(time.time() - start_time))
