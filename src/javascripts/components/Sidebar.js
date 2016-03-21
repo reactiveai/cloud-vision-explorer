@@ -94,9 +94,10 @@ class GraphTab extends React.Component {
         </ul>
       )
     }
-    const getDetectionSection = (key, className, callback) => {
+    const getDetectionSection = (key, className, label, callback) => {
       return key in vision ?
         <section className={className}>
+          <label className="result-caption">{label}</label>
           {callback(vision[key])}
         </section> : ''
     }
@@ -125,7 +126,7 @@ class GraphTab extends React.Component {
 
     return (
       <div className="tab-graph">
-        {getDetectionSection('labelAnnotations', 'label-detection', annons =>
+        {getDetectionSection('labelAnnotations', 'label-detection', 'LABEL', annons =>
           annons.map((label, idx) =>
             <div key={idx} className="label">
               <div className="label-name">
@@ -143,7 +144,7 @@ class GraphTab extends React.Component {
             </div>
           )
         )}
-        {getDetectionSection('textAnnotations', 'text-detection', annons =>
+        {getDetectionSection('textAnnotations', 'text-detection', 'TEXT', annons =>
           annons.map((text, idx) =>
             <p key={idx}>
               <span className="text-quote">“</span>
@@ -152,7 +153,7 @@ class GraphTab extends React.Component {
             </p>
           )
         )}
-        {getDetectionSection('faceAnnotations', 'face-detection', annons =>
+        {getDetectionSection('faceAnnotations', 'face-detection', 'FACE', annons =>
           annons.map((face, idx) =>
             <div className={classForPerson(idx)} key={idx}>
               <div>
@@ -202,7 +203,7 @@ class GraphTab extends React.Component {
             </div>
           )
         )}
-        {getDetectionSection('logoAnnotations', 'logo-detection', annons =>
+        {getDetectionSection('logoAnnotations', 'logo-detection', 'LOGO', annons =>
           annons.map(({description, mid}) =>
             <div key={mid} className="logo-detection">
               <PlusTitle>
@@ -211,21 +212,23 @@ class GraphTab extends React.Component {
             </div>
           )
         )}
-        {getDetectionSection('landmarkAnnotations', 'landmark-detection', annons =>
-          annons.map((annon, index) =>
-            <div key={index} className="landmark-detection">
-              <PlusTitle>{this.landmarkContent(annon)}</PlusTitle>
+        {getDetectionSection('landmarkAnnotations', 'landmark-detection', 'LANDMARK', annons =>
+          annons.map(({description, mid}) =>
+            <div key={mid} className="landmark-detection">
+              <PlusTitle>
+                <p className="description">{description}</p>
+              </PlusTitle>
             </div>
           )
         )}
-        {getDetectionSection('imagePropertiesAnnotation', 'image-properties', annon =>
+        {getDetectionSection('imagePropertiesAnnotation', 'image-properties', 'COLOR', annon =>
           <ul>
             {_.orderBy(annon.dominantColors.colors, ['score'], ['desc']).map((color, idx) =>
               <li key={idx} style={getColorStyle(color)} />
             )}
           </ul>
         )}
-        {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', annon =>
+        {getDetectionSection('safeSearchAnnotation', 'safesearch-detection', 'INAPPROPRIATE', annon =>
           <div className="likelihoods">
             <div className="likelihoods-row">
               <div className="likelihood">
