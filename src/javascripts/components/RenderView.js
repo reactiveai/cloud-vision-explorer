@@ -4,7 +4,6 @@ import React from 'react'
 
 import THREE from 'three'
 import TWEEN from 'tween.js'
-import Stats from 'three/examples/js/libs/stats.min'
 
 require('../misc/TrackballControls.js')(THREE)
 
@@ -380,12 +379,6 @@ export default React.createClass({
     renderer.setSize(window.innerWidth, window.innerHeight)
     this._container.appendChild(renderer.domElement)
 
-    const stats = new Stats()
-    stats.domElement.style.position = 'absolute'
-    stats.domElement.style.bottom = '0px'
-    stats.domElement.style.left = '200px'
-    this._container.appendChild(stats.domElement)
-
     this._container.addEventListener( 'mousemove', () => {
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
@@ -684,8 +677,6 @@ export default React.createClass({
 
     const animate = () => {
 
-      stats.begin()
-
       if (!currentlyTrackingNode) {
         controls.update()
       }
@@ -697,8 +688,6 @@ export default React.createClass({
       const delta = clock.getDelta()
 
       tick(delta)
-
-      stats.end()
 
       renderer.render(scene, camera)
 
