@@ -213,11 +213,9 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('landmarkAnnotations', 'landmark-detection', 'LANDMARK', annons =>
-          annons.map(({description, mid}) =>
-            <div key={mid} className="landmark-detection">
-              <PlusTitle>
-                <p className="description">{description}</p>
-              </PlusTitle>
+          annons.map((annon, index) =>
+            <div key={index} className="landmark-detection">
+              <PlusTitle>{this.landmarkContent(annon)}</PlusTitle>
             </div>
           )
         )}
