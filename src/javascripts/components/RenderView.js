@@ -26,9 +26,16 @@ const DATAPOINT_URL = 'https://gcs-samples2-explorer.storage.googleapis.com/data
 const tweenSpeed = 200
 const thumbCheckSpeed = 100
 const denseFactor = 1000.0
+const nodeAnimationOrbitDistance = denseFactor * 1.5
+
+// When this is not null, the camera will zoom in to this thumb
+// If a mouse event happens, set it back to null
+let currentlyTrackingNode = null
+let currentlyZoomedCluster = null
+let cameraAnimationQueue = Promise.resolve()
 
 // Promise TWEEN
-const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.In) => {
+const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.InOut) => {
   return new Promise((resolve) => {
     new TWEEN.Tween(start)
       .to(end, duration)
@@ -38,6 +45,8 @@ const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadrat
       .onComplete(resolve)
   })
 }
+
+const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
 export default React.createClass({
   render() {
@@ -140,6 +149,22 @@ export default React.createClass({
     geometry.addAttribute('customColor', new THREE.BufferAttribute(colors, 3))
     geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1))
 
+    const updateNodeColor = (r, g, b, index) => {
+      const attributes = geometry.attributes
+
+      const color = new THREE.Color(r, g, b)
+      color.toArray(attributes.customColor.array, index * 3)
+      attributes.customColor.needsUpdate = true
+    }
+
+    const updateGroupColor = _.throttle((r, g, b, group) => {
+      points.forEach((p, i) => {
+        if (p.g === group) {
+          updateNodeColor(r, g, b, i)
+        }
+      })
+    }, 100)
+
     const material = new THREE.ShaderMaterial({
       uniforms: {
         color:   { type: 'c', value: new THREE.Color( 0xffffff ) },
@@ -177,6 +202,8 @@ export default React.createClass({
       geometry.vertices = vertices
 
       const line = new THREE.Line( geometry, lineMaterial )
+
+      value.lineMaterial = lineMaterial
 
       group.add(line)
     })
@@ -240,6 +267,114 @@ export default React.createClass({
 
     controls.keys = [ 65, 83, 68 ]
 
+    const groupOpacFunction = (cluster) => {
+      return function () { // can't be an arrow function!
+        _.each(groupedData, (value, key) => {
+          if (value !== cluster) {
+            const gc = value.color
+            updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
+            value.lineMaterial.opacity = 0.3 * this.f
+            clusters[key].sprite.material.opacity = 1.0 * this.f
+          }
+        })
+      }
+    }
+
+    const trackNode = (node) => {
+      const nodeGroup = groupedData[node.g]
+
+      // We only want to reset the panning, so still save the camera position
+      // as that needs to lerp to its target instead
+      const startPoint = camera.position.clone()
+
+      const endPointUnit = node.vec.clone().normalize()
+      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(50))
+
+      const startPointNormalized = startPoint.clone().normalize()
+      const endPointNormalized = endPoint.clone().normalize()
+      const cross = endPointNormalized.clone().cross(startPointNormalized).normalize()
+
+      const angle = startPoint.angleTo(endPoint)
+
+      const startPointDistance = startPoint.length()
+      const endPointDistance = endPoint.length()
+
+      const zoomOutDistance = 2000
+
+      let totalAnimTime = angle * 6000
+      totalAnimTime = Math.max(totalAnimTime, 6000)
+
+      const otherGroupsFadeInTime = 1000
+      const groupFocusTime = 1000
+
+      const waitTime = totalAnimTime - otherGroupsFadeInTime - groupFocusTime
+
+      return Promise.resolve()
+      // Make other clusters look dark
+      .then(() => {
+        currentlyTrackingNode = node
+
+        // Rotate around
+        return Promise.all([
+          Promise.resolve()
+          .then(() => wait(waitTime/3))
+          .then(() => {
+            return (currentlyZoomedCluster !== null ? tween({
+              f: 0.3
+            }, {
+              f: 1.0
+            }, otherGroupsFadeInTime, groupOpacFunction(currentlyZoomedCluster)) : wait(otherGroupsFadeInTime))
+          })
+          .then(() => wait((waitTime/3)*0.5))
+          .then(() => {
+            return tween({
+              f: 1.0
+            }, {
+              f: 0.3
+            }, groupFocusTime, groupOpacFunction(nodeGroup))
+          }),
+          tween({
+            f: 0
+          }, {
+            f: 1
+          }, totalAnimTime, function () {
+
+            const qF = TWEEN.Easing.Quadratic.InOut(this.f)
+            const qD = startPointDistance + (endPointDistance - startPointDistance) * qF
+
+            const interpolatedPosition = startPoint.clone().applyAxisAngle(cross, -angle * qF)
+
+            let bouncingF = this.f
+            if (bouncingF > 0.5) {
+              bouncingF = TWEEN.Easing.Sinusoidal.InOut((1.0 - bouncingF) * 2)
+            }
+            else {
+              bouncingF = TWEEN.Easing.Quadratic.InOut(this.f * 2)
+            }
+
+            const distance = qD + zoomOutDistance * bouncingF * angle * 0.2
+
+            interpolatedPosition.normalize().multiplyScalar(distance)
+
+            camera.position.copy(interpolatedPosition)
+
+            camera.lookAt(new THREE.Vector3())
+          }, TWEEN.Easing.Linear.None)
+        ])
+      })
+      .then(() => {
+        currentlyZoomedCluster = nodeGroup
+        currentlyTrackingNode = null
+
+        return Promise.resolve()
+      })
+    }
+
+    this.props.emitter.addListener('zoomToImage', (id) => {
+      cameraAnimationQueue = cameraAnimationQueue.then(() => trackNode(_.find(points, (p) => p.i === id)))
+    })
+
+
     const renderer = new THREE.WebGLRenderer()
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -255,6 +390,8 @@ export default React.createClass({
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
     }, false)
+
+    const clock = new THREE.Clock()
 
     const socket = io()
 
@@ -280,13 +417,7 @@ export default React.createClass({
 
     let currentListOfNearbyVectors = []
 
-    const updateNodeColor = (r, g, b, index) => {
-      const attributes = geometry.attributes
 
-      const color = new THREE.Color(r, g, b)
-      color.toArray(attributes.customColor.array, index * 3)
-      attributes.customColor.needsUpdate = true
-    }
 
     const createSpriteFromArrayBuffer = (buffer) => {
       // Magic here! (ArrayBuffer to Base64String)
@@ -458,12 +589,12 @@ export default React.createClass({
       }
     }, false)
 
-    const tick = () => {
+    const tick = (dt) => {
 
       const time = (new Date()).getTime()
       // TODO fix absolute coords for nodes
-      group.rotation.x = Math.sin(time * 0.0001) * 0.001
-      group.rotation.y = Math.cos(time * 0.0001) * 0.002
+      // group.rotation.x = Math.sin(time * 0.0001) * 0.001
+      // group.rotation.y = Math.cos(time * 0.0001) * 0.002
 
       raycaster.setFromCamera( mouse, camera )
 
@@ -502,12 +633,30 @@ export default React.createClass({
 
       checkForImagesThatCanBeDownloaded()
 
-      clusters.forEach((c) => {
-        let opac = c.center.distanceTo(camera.position) / 1000
-        opac = Math.max(opac, 0.3)
-        opac = Math.min(opac, 1.0)
-        c.sprite.material.opacity = opac
-      })
+      if (!currentlyTrackingNode && !currentlyZoomedCluster) {
+        clusters.forEach((c) => {
+          let opac = c.center.distanceTo(camera.position) / 1000
+          opac = Math.max(opac, 0.3)
+          opac = Math.min(opac, 1.0)
+          c.sprite.material.opacity = opac
+        })
+      }
+
+      // When zooming out, clear the focused cluster and show back all groups
+      if (camera.position.lengthSq() > 1000 * 1000
+        && currentlyZoomedCluster
+        && !currentlyTrackingNode) {
+        const oldZoomedCluster = currentlyZoomedCluster
+        currentlyZoomedCluster = null
+
+        cameraAnimationQueue = cameraAnimationQueue.then(() => {
+          return tween({
+            f: 0.3
+          }, {
+            f: 1.0
+          }, 1000, groupOpacFunction(oldZoomedCluster))
+        })
+      }
 
     }
 
@@ -515,13 +664,17 @@ export default React.createClass({
 
       stats.begin()
 
-      controls.update()
+      if (!currentlyTrackingNode) {
+        controls.update()
+      }
 
       requestAnimationFrame(animate)
 
       TWEEN.update()
 
-      tick()
+      const delta = clock.getDelta()
+
+      tick(delta)
 
       stats.end()
 
