@@ -68,6 +68,14 @@ export default React.createClass({
     fetch(DATAPOINT_URL).then((res) => {
       return res.json()
     }).then((data) => {
+
+      data.clusters.forEach((c) => {
+        if (c.label === 'font') c.label = 'text'
+        if (c.label === 'statue') c.label = 'architecture'
+        if (c.label === 'animal') c.label = ''
+        if (c.label === 'food') c.label = 'animal'
+      })
+
       this._setupScene(data)
     })
 
