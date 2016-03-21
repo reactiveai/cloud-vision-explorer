@@ -44,7 +44,6 @@ class GraphTab extends React.Component {
   }
 
   landmarkContent(annon) {
-    console.log(annon)
     if(!_.has(annon, 'locations') || annon.locations.length == 0) {
       return (
         <div className="description">
@@ -276,9 +275,7 @@ export default class Sidebar extends React.Component {
 
   componentWillMount() {
     // Listening on event
-    console.log('Listening....')
     this.props.emitter.addListener('showSidebar', (id) => {
-      console.log(getVisionJsonURL(id))
       this.props.showSidebar()
       this.setState({ vision: {} }) // Clear results
       fetch(getVisionJsonURL(id)).then((res) => {
@@ -294,7 +291,6 @@ export default class Sidebar extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('Removing Listeners....')
     this.props.emitter.removeAllListeners()
   }
 
