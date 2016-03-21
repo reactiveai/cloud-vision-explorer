@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react'
 
 const getImageUrl = (id) => {
-  return `https://gcs-samples2-explorer.storage.googleapis.com/image/${id}.jpg`
+  return `https://storage.googleapis.com/gcs-samples2-explorer/image/${id}.jpg`
 }
 
 const style = {
