@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react'
+import 'stylesheets/ImageView'
 
 const getImageUrl = (id) => {
   return `https://storage.googleapis.com/gcs-samples2-explorer/image/${id}.jpg`
@@ -13,33 +14,45 @@ const style = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
-  },
-  img: {
-    display: 'block',
-    maxWidth: '100%',
-    maxHeight: '100%',
-    border: '2px solid black'
   }
 }
 
-export default class Sidebar extends React.Component {
+// TODO: this is called by Sidebar class too
+const getVisionJsonURL = (id) => {
+  return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
+}
+
+export default class ImaveView extends React.Component {
   static get propTypes() {
     return {
-      emitter: PropTypes.object.isRequired
+      emitter: PropTypes.object.isRequired,
+      highlightFaceLandmarks: PropTypes.bool.isRequired
     }
   }
 
   constructor(props, context) {
     super(props, context)
 
-    this.state = { active: false }
+    this.state = {
+      active: false,
+      vision: {},
+      imgLeft: 0,
+      imgTop: 0,
+      imgWidthRatio: 1,
+      imgHeightRatio: 1
+    }
   }
 
   componentWillMount() {
     this.props.emitter.addListener('showSidebar', (id) => {
       this.setState({
         id,
-        active: true,
+        active: true
+      })
+      fetch(getVisionJsonURL(id)).then((res) => {
+        return res.json()
+      }).then((data) => {
+        this.setState(s => _.assign({}, s, { vision: data[0] }))
       })
     })
 
@@ -52,11 +65,50 @@ export default class Sidebar extends React.Component {
     this.props.emitter.removeAllListeners()
   }
 
+  onLoadFocusedImage() {
+    const imageViewRect = this.refs.imageView.getBoundingClientRect()
+    const img = this.refs.focusedImage
+    const imgRect = img.getBoundingClientRect()
+    this.setState(s => _.assign({}, s, {
+      imgLeft: imgRect.left - imageViewRect.left,
+      imgTop: imgRect.top - imageViewRect.top,
+      imgWidthRatio: img.width / img.naturalWidth,
+      imgHeightRatio: img.height / img.naturalHeight
+    }))
+  }
+
   render() {
+    const { vision, imgLeft, imgTop, imgWidthRatio, imgHeightRatio } = this.state
+    const getLandmarkStyle = (landmark) => {
+      return {
+        left: `${landmark.position.x * imgWidthRatio + imgLeft}px`,
+        top: `${landmark.position.y * imgHeightRatio + imgTop}px`
+      }
+    }
+    const getFaceLandmarks = () => {
+      return 'faceAnnotations' in vision ?
+        vision.faceAnnotations.map((face, idx) =>
+          <div className="face-landmarks" key={idx}>
+            {face.landmarks.map(landmark =>
+              <img
+                className="face-landmark" style={getLandmarkStyle(landmark)}
+                key={landmark.type}
+                src={require('../../images/icon/face_landmark.svg')}
+              />
+            )}
+          </div>
+        ) : ''
+    }
     if(this.state.active) {
       return (
-        <div style={style.wrapper}>
-          <img style={style.img} src={getImageUrl(this.state.id)} />
+        <div ref="imageView" className="image-view" style={style.wrapper}>
+          <img
+            className="focused-image"
+            ref="focusedImage"
+            src={getImageUrl(this.state.id)}
+            onLoad={this.onLoadFocusedImage.bind(this)}
+          />
+          {this.props.highlightFaceLandmarks ? getFaceLandmarks() : ''}
         </div>
       )
     }
