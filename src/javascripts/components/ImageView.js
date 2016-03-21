@@ -19,7 +19,7 @@ const style = {
 
 // TODO: this is called by Sidebar class too
 const getVisionJsonURL = (id) => {
-  return `https://gcs-samples2-explorer.storage.googleapis.com/vision/result/${id}.json`
+  return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
 }
 
 export default class ImaveView extends React.Component {
