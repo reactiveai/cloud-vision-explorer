@@ -73,7 +73,7 @@ _.forEach(groupedData, (value, key) => {
   outputJson.clusters[key].lines = serializedVectors
 })
 
-fs.writeFile('./public/output.json', JSON.stringify(outputJson), (err) => {
+fs.writeFile('./public/output_100k.json', JSON.stringify(outputJson), (err) => {
   if (err) {
     return console.log(err)
   }

@@ -4,7 +4,6 @@ import React from 'react'
 
 import THREE from 'three'
 import TWEEN from 'tween.js'
-import Stats from 'three/examples/js/libs/stats.min'
 
 require('../misc/TrackballControls.js')(THREE)
 
@@ -69,6 +68,14 @@ export default React.createClass({
     fetch(DATAPOINT_URL).then((res) => {
       return res.json()
     }).then((data) => {
+
+      data.clusters.forEach((c) => {
+        if (c.label === 'font') c.label = 'text'
+        if (c.label === 'statue') c.label = 'architecture'
+        if (c.label === 'animal') c.label = ''
+        if (c.label === 'food') c.label = 'animal'
+      })
+
       this._setupScene(data)
     })
 
@@ -236,7 +243,7 @@ export default React.createClass({
       texture.needsUpdate = true
 
       const spriteMaterial = new THREE.SpriteMaterial({
-        color: 0xffffff,
+        color: 0xdddddd,
         transparent: true,
         opacity: 1.0,
         map: texture
@@ -288,7 +295,7 @@ export default React.createClass({
       const startPoint = camera.position.clone()
 
       const endPointUnit = node.vec.clone().normalize()
-      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(50))
+      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(25))
 
       const startPointNormalized = startPoint.clone().normalize()
       const endPointNormalized = endPoint.clone().normalize()
@@ -380,12 +387,6 @@ export default React.createClass({
     renderer.setSize(window.innerWidth, window.innerHeight)
     this._container.appendChild(renderer.domElement)
 
-    const stats = new Stats()
-    stats.domElement.style.position = 'absolute'
-    stats.domElement.style.bottom = '0px'
-    stats.domElement.style.left = '200px'
-    this._container.appendChild(stats.domElement)
-
     this._container.addEventListener( 'mousemove', () => {
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
@@ -427,13 +428,35 @@ export default React.createClass({
       image.src = `data:image/jpeg;base64,${b64img}`
 
       const texture = new THREE.Texture()
-      texture.image = image
+
+      const canvas = document.createElement('canvas')
+
       image.onload = function() {
+        canvas.width = image.width
+        canvas.height = image.height
+
+        const context = canvas.getContext('2d')
+
+        // Create a hexagon shape
+        context.beginPath()
+        context.lineTo(canvas.width / 9 * 2, 0)
+        context.lineTo(canvas.width / 9 * 7, 0)
+        context.lineTo(canvas.width, canvas.height / 2)
+        context.lineTo(canvas.width / 9 * 7, canvas.height)
+        context.lineTo(canvas.width / 9 * 2, canvas.height)
+        context.lineTo(0, canvas.height / 2)
+        context.closePath()
+        // Clip to the current path
+
+        context.clip()
+        context.drawImage(image, 0, 0)
+
+        texture.image = canvas
         texture.needsUpdate = true
       }
 
       const spriteMaterial = new THREE.SpriteMaterial({
-        // color: 0xff0000,
+        color: 0xcccccc,
         transparent: true,
         opacity: 0,
         map: texture
@@ -602,32 +625,34 @@ export default React.createClass({
 
       // If our mouse hovers over something
       if ( intersects.length > 0 ) {
-
         // If the object we're hovering over is different from what we last hovered over
-        if ( lastIntersectIndex != intersects[ 0 ].index ) {
+        if ( lastIntersectIndex != intersects[0].index ) {
+          const node = points[intersects[0].index]
+          if (node.plane) {
+            node.plane.material.color.copy(new THREE.Color(0xffffff))
+          }
 
           // If we have hovered over something before
           if (lastIntersectIndex) {
-
+            const oldNode = points[lastIntersectIndex]
+            if (oldNode.plane) {
+              oldNode.plane.material.color.copy(new THREE.Color(0xcccccc))
+            }
           }
-
           lastIntersectIndex = intersects[ 0 ].index
-
-
-
-
         }
-
 
       }
       // If we're not hovering over something
       else {
         // If we were hovering over an object before
         if ( lastIntersectIndex !== null ) {
-
+          const oldNode = points[lastIntersectIndex]
+          if (oldNode.plane) {
+            oldNode.plane.material.color.copy(new THREE.Color(0xcccccc))
+          }
 
           lastIntersectIndex = null
-
         }
       }
 
@@ -662,8 +687,6 @@ export default React.createClass({
 
     const animate = () => {
 
-      stats.begin()
-
       if (!currentlyTrackingNode) {
         controls.update()
       }
@@ -675,8 +698,6 @@ export default React.createClass({
       const delta = clock.getDelta()
 
       tick(delta)
-
-      stats.end()
 
       renderer.render(scene, camera)
 
