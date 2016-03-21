@@ -7,7 +7,7 @@ const TARGET_IMAGE_IDS = [
   {id: '8fc425eaa277db86186edd229b0e3591' },  // Kangaroo
   {id: '22b8f17c84059d5d293278f47d1561bf' },  // Ethnic Clothes
   {id: '0c68e487dd8f16f343341569c29733b3' },  // Citi Field
-  {id: '016c664e470afeb55ce949ca313423bf' },  // Toyota
+  {id: '326c917aed041bc7926238973ec5d36b' }   // Android
 ]
 
 const style = {
