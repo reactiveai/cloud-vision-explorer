@@ -13,7 +13,7 @@ import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
 
 const getVisionJsonURL = (id) => {
-  return `https://gcs-samples2-explorer.storage.googleapis.com/vision/result/${id}.json`
+  return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
 }
 
 class SidebarTabs extends Tabs {
