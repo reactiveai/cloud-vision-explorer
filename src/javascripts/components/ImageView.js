@@ -25,7 +25,8 @@ const getVisionJsonURL = (id) => {
 export default class ImaveView extends React.Component {
   static get propTypes() {
     return {
-      emitter: PropTypes.object.isRequired
+      emitter: PropTypes.object.isRequired,
+      highlightFaceLandmarks: PropTypes.bool.isRequired
     }
   }
 
@@ -107,7 +108,7 @@ export default class ImaveView extends React.Component {
             src={getImageUrl(this.state.id)}
             onLoad={this.onLoadFocusedImage.bind(this)}
           />
-          {getFaceLandmarks()}
+          {this.props.highlightFaceLandmarks ? getFaceLandmarks() : ''}
         </div>
       )
     }

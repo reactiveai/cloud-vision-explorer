@@ -11,6 +11,7 @@ import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
+import Checkbox from 'react-toolbox/lib/checkbox'
 
 const getVisionJsonURL = (id) => {
   return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
@@ -39,7 +40,18 @@ class SidebarTabs extends Tabs {
 class GraphTab extends React.Component {
   static get propTypes() {
     return {
-      vision: PropTypes.object.isRequired
+      vision: PropTypes.object.isRequired,
+      showHighlightFaceLandmarks: PropTypes.func.isRequired,
+      hideHighlightFaceLandmarks: PropTypes.func.isRequired,
+      highlightFaceLandmarks: PropTypes.bool.isRequired,
+    }
+  }
+
+  handleChange(checked) {
+    if (checked) {
+      this.props.showHighlightFaceLandmarks()
+    } else {
+      this.props.hideHighlightFaceLandmarks()
     }
   }
 
@@ -154,54 +166,64 @@ class GraphTab extends React.Component {
           )
         )}
         {getDetectionSection('faceAnnotations', 'face-detection', 'FACE', annons =>
-          annons.map((face, idx) =>
-            <div className={classForPerson(idx)} key={idx}>
-              <div>
-                <FontIcon className="humanoid" value="accessibility" />
-                <div className="person-label">Person {idx + 1}</div>
-                {getAngleSection('Roll', face.rollAngle)}
-                {getAngleSection('Pan', face.panAngle)}
-                {getAngleSection('Tilt', face.tiltAngle)}
-              </div>
-              <div className="likelihoods">
-                <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="sentiment_satisfied" />
-                  <div className="likelihood-label">Joy</div>
-                  {likelihoodLevel(face.joyLikelihood)}
-                </div>
-                <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="sentiment_dissatisfied" />
-                  <div className="likelihood-label">Sorrow</div>
-                  {likelihoodLevel(face.sorrowLikelihood)}
-                </div>
-                <div className="likelihood">
-                  <span className="likelihood-icon custom-icon anger" />
-                  <div className="likelihood-label">Anger</div>
-                  {likelihoodLevel(face.angerLikelihood)}
-                </div>
-                <div className="likelihood">
-                  <span className="likelihood-icon custom-icon surprise" />
-                  <div className="likelihood-label">Surprise</div>
-                  {likelihoodLevel(face.surpriseLikelihood)}
-                </div>
-                <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="flare" />
-                  <div className="likelihood-label">Under Expose</div>
-                  {likelihoodLevel(face.underExposedLikelihood)}
-                </div>
-                <div className="likelihood">
-                  <FontIcon className="likelihood-icon" value="blur_on" />
-                  <div className="likelihood-label">Blur</div>
-                  {likelihoodLevel(face.blurredLikelihood)}
-                </div>
-                <div className="likelihood">
-                  <span className="likelihood-icon custom-icon headwear" />
-                  <div className="likelihood-label">Headwear</div>
-                  {likelihoodLevel(face.headwearLikelihood)}
-                </div>
-              </div>
+          <div>
+            <div className="highlight-face-landmarks">
+              <img src={require('../../images/icon/highlight_face_landmarks.svg')} />
+              <span className="highlight-face-landmarks-label">Landmarks</span>
+              <Checkbox
+                checked={this.props.highlightFaceLandmarks}
+                onChange={this.handleChange.bind(this)}
+              />
             </div>
-          )
+            {annons.map((face, idx) =>
+              <div className={classForPerson(idx)} key={idx}>
+                <div>
+                  <FontIcon className="humanoid" value="accessibility" />
+                  <div className="person-label">Person {idx + 1}</div>
+                  {getAngleSection('Roll', face.rollAngle)}
+                  {getAngleSection('Pan', face.panAngle)}
+                  {getAngleSection('Tilt', face.tiltAngle)}
+                </div>
+                <div className="likelihoods">
+                  <div className="likelihood">
+                    <FontIcon className="likelihood-icon" value="sentiment_satisfied" />
+                    <div className="likelihood-label">Joy</div>
+                    {likelihoodLevel(face.joyLikelihood)}
+                  </div>
+                  <div className="likelihood">
+                    <FontIcon className="likelihood-icon" value="sentiment_dissatisfied" />
+                    <div className="likelihood-label">Sorrow</div>
+                    {likelihoodLevel(face.sorrowLikelihood)}
+                  </div>
+                  <div className="likelihood">
+                    <span className="likelihood-icon custom-icon anger" />
+                    <div className="likelihood-label">Anger</div>
+                    {likelihoodLevel(face.angerLikelihood)}
+                  </div>
+                  <div className="likelihood">
+                    <span className="likelihood-icon custom-icon surprise" />
+                    <div className="likelihood-label">Surprise</div>
+                    {likelihoodLevel(face.surpriseLikelihood)}
+                  </div>
+                  <div className="likelihood">
+                    <FontIcon className="likelihood-icon" value="flare" />
+                    <div className="likelihood-label">Under Expose</div>
+                    {likelihoodLevel(face.underExposedLikelihood)}
+                  </div>
+                  <div className="likelihood">
+                    <FontIcon className="likelihood-icon" value="blur_on" />
+                    <div className="likelihood-label">Blur</div>
+                    {likelihoodLevel(face.blurredLikelihood)}
+                  </div>
+                  <div className="likelihood">
+                    <span className="likelihood-icon custom-icon headwear" />
+                    <div className="likelihood-label">Headwear</div>
+                    {likelihoodLevel(face.headwearLikelihood)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
         {getDetectionSection('logoAnnotations', 'logo-detection', 'LOGO', annons =>
           annons.map(({description, mid}) =>
@@ -261,6 +283,8 @@ export default class Sidebar extends React.Component {
       sidebar: PropTypes.object.isRequired,
       showSidebar: PropTypes.func.isRequired,
       hideSidebar: PropTypes.func.isRequired,
+      showHighlightFaceLandmarks: PropTypes.func.isRequired,
+      hideHighlightFaceLandmarks: PropTypes.func.isRequired,
       changeTab: PropTypes.func.isRequired,
       emitter: PropTypes.object.isRequired
     }
@@ -356,7 +380,12 @@ export default class Sidebar extends React.Component {
                      index={sidebar.tabIndex}
                      onChange={changeTab}>
           <Tab label='Graphical' className={classForTab(0)}>
-            <GraphTab vision={this.state.vision} />
+            <GraphTab
+              vision={this.state.vision}
+              highlightFaceLandmarks={sidebar.highlightFaceLandmarks}
+              showHighlightFaceLandmarks={this.props.showHighlightFaceLandmarks}
+              hideHighlightFaceLandmarks={this.props.hideHighlightFaceLandmarks}
+            />
           </Tab>
           <Tab label='JSON' className={classForTab(1)}>
             <pre>{JSON.stringify(this.state.vision, null, 2)}</pre>
