@@ -341,7 +341,7 @@ export default class Sidebar extends React.Component {
           {getIndicator('textAnnotations', 'translate', 'text-detection')}
           {getIndicator('faceAnnotations', 'face', 'face-detection')}
           {getIndicator(
-            'logoAnnotation', 'logo', 'logo-detection',
+            'logoAnnotations', 'logo', 'logo-detection',
             { customIcon: true }
           )}
           {getIndicator('landmarkAnnotations', 'place', 'landmark-detection')}
