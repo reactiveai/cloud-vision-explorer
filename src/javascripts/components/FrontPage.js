@@ -48,7 +48,10 @@ class FrontPage extends Component {
         <ToolboxApp>
           <ImageCounter style={style.imageCounter} emitter={emitter} />
           <InfoLink style={style.infoLink} emitter={emitter} />
-          <ImageView emitter={emitter} />
+          <ImageView
+            emitter={emitter}
+            highlightFaceLandmarks={sidebar.highlightFaceLandmarks}
+          />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
           <RenderView emitter={emitter} />
         </ToolboxApp>
