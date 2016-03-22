@@ -67,7 +67,7 @@
 
     > section
       flex-grow: 1
-      color: #CFD8DC
+      color: $sidebar-text-color
       overflow-y: scroll
       height: 500px
       padding: 0
@@ -80,15 +80,18 @@
     .tab-graph > section
       font-weight: bold
       box-shadow: 0 6px 9px rgba(0,0,0,0.16), 0 6px 9px rgba(0,0,0,0.23)
-      padding: 20px 30px
+      padding: 30px 30px 50px
 
       .result-caption
         display: block
         color: #9E9E9E
-        margin-bottom: 18px
+        margin-bottom: 20px
 
       &.label-detection .label
-        margin-right: 10px
+        margin-bottom: 0.5em
+
+        &:last-child
+          margin-bottom: 0
 
         .label-name
           white-space: nowrap
@@ -99,39 +102,54 @@
           display: flex
           align-items: center
           color: $sidebar-primary-color-1
-          margin-bottom: 0.5em
 
           .label-score-bar
             height: 6px
             margin-right: 1em
 
       &.text-detection
+        padding-bottom: 35px
+
         p
-          margin: 5px 0
+          position: relative
+          display: flex
+          padding-right: 30px
+          margin: 0
 
         .text-quote
           color: #455A64
           font-size: 3em
 
+          &.pre
+
+          &.post
+            position: absolute
+            bottom: 0.1em
+
         .text-description
-          color: #9E9E9E
+          color: $sidebar-text-color
           font-size: 1.5em
+          padding: 0.6em 0.4em
 
       &.safesearch-detection
         padding-top: 2em
 
         .likelihoods-row
           display: flex
+          margin-bottom: 0.8em
+
+          &:last-child
+            margin-bottom: 0
 
         .likelihood
           flex-grow: 1
-          margin: 0 1em 0.8em 0
+          margin-right: 1em 1em 0.8em 0
 
         .likelihood-label
           margin-bottom: 1em
 
         .likelihood-level
-          margin: 0 1.2em 1em 0
+          margin: 0
           padding: 0
           list-style-type: none
           display: flex
@@ -157,14 +175,17 @@
           .highlight-face-landmarks-label
             flex-grow: 1
             margin-left: 2em
-            color: #BDBDBD
+            color: $sidebar-text-color
 
           label
             margin-bottom: 0
 
         .face-detection-person
           display: flex
-          margin-bottom: 20px
+          margin-bottom: 1.8em
+
+          &:last-child
+            margin-bottom: 0
 
           &.primary
             color: $sidebar-primary-color-2
@@ -200,7 +221,7 @@
 
           .angle-label
             flex-basis: 2em
-            color: $sidebar-label-color-1
+            color: $sidebar-text-color
             font-size: 80%
             margin-right: 0.5em
 
@@ -218,14 +239,18 @@
           display: flex
           margin-bottom: 1.2em
 
+          &:last-child
+            margin-bottom: 0
+
         .likelihood-icon
           flex-basis: 2em
           font-size: 24px
 
           &.custom-icon
-            width: 21px
-            height: 21px
-            margin-left: 1px
+            width: 20.5px
+            height: 20.5px
+            margin-left: 2px
+            margin: 0 -1.5px 0 1.5px
             background-color: currentColor
 
           &.anger
@@ -240,7 +265,7 @@
             -webkit-mask: url(../images/icon/headwear.svg) no-repeat
 
         .likelihood-label
-          color: $sidebar-label-color-1
+          color: $sidebar-text-color
           flex-basis: 7em
           font-size: 80%
 
@@ -261,8 +286,6 @@
               background: currentColor
 
       &.image-properties
-        padding: 30px
-
         ul
           list-style-type: none
           display: flex
@@ -274,6 +297,9 @@
           height: 100px
 
       &.landmark-detection, &.logo-detection
+        .plus-title
+          margin-top: 10px
+
         svg
           rect
             fill: #1de9b6
