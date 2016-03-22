@@ -11,7 +11,7 @@ import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
-import Checkbox from 'react-toolbox/lib/checkbox'
+import Switch from 'react-toolbox/lib/switch'
 
 import { getVisionJsonURL } from '../misc/Util.js'
 
@@ -159,7 +159,7 @@ class GraphTab extends React.Component {
             <div className="highlight-face-landmarks">
               <img src={require('../../images/icon/highlight_face_landmarks.svg')} />
               <span className="highlight-face-landmarks-label">Landmarks</span>
-              <Checkbox
+              <Switch
                 checked={this.props.highlightFaceLandmarks}
                 onChange={this.props.toggleHighlightFaceLandmarks}
               />
