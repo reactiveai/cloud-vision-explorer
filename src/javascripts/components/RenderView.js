@@ -62,7 +62,6 @@ export default React.createClass({
 
   // Perhaps this is added for performance reasons?
   shouldComponentUpdate() {
-    console.log('shouldComponentUpdate')
     return false
   },
   componentDidMount() {
@@ -220,8 +219,6 @@ export default React.createClass({
 
     // Add cluster names
     clusters.forEach((cluster) => {
-      console.log(cluster.label)
-
       const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
       cluster.center = center
 
@@ -486,7 +483,6 @@ export default React.createClass({
     }, {
       o: 0.05
     }, 5000, function () {
-      // console.log(this.o)
       bookmarkVectorIncludeDistanceFactor = this.o
     })
 
@@ -521,7 +517,6 @@ export default React.createClass({
       })
 
       listOfRemovedNearbyVectors.forEach((nearbyVector) => {
-        console.log('remove', nearbyVector)
         nearbyVector._promise = nearbyVector._promise
         .then(() => {
           return tween({
