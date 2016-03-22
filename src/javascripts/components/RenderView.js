@@ -119,6 +119,13 @@ export default React.createClass({
       n._promise = Promise.resolve()
     })
 
+    points.forEach((p) => {
+      // Cat in the way
+      if (p.i === '9881051092d70afabf5e3fdab465547a') {
+        p.vec.add(new THREE.Vector3(10, 0, 0))
+      }
+    })
+
     // First sort by the group ID ascending
     const sortedData = _.orderBy(points, ['g'], ['asc'])
 
