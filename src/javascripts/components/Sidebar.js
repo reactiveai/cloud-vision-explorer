@@ -39,17 +39,8 @@ class GraphTab extends React.Component {
   static get propTypes() {
     return {
       vision: PropTypes.object.isRequired,
-      showHighlightFaceLandmarks: PropTypes.func.isRequired,
-      hideHighlightFaceLandmarks: PropTypes.func.isRequired,
       highlightFaceLandmarks: PropTypes.bool.isRequired,
-    }
-  }
-
-  handleChange(checked) {
-    if (checked) {
-      this.props.showHighlightFaceLandmarks()
-    } else {
-      this.props.hideHighlightFaceLandmarks()
+      toggleHighlightFaceLandmarks: PropTypes.func.isRequired,
     }
   }
 
@@ -170,7 +161,7 @@ class GraphTab extends React.Component {
               <span className="highlight-face-landmarks-label">Landmarks</span>
               <Checkbox
                 checked={this.props.highlightFaceLandmarks}
-                onChange={this.handleChange.bind(this)}
+                onChange={this.props.toggleHighlightFaceLandmarks}
               />
             </div>
             {annons.map((face, idx) =>
@@ -281,8 +272,7 @@ export default class Sidebar extends React.Component {
       sidebar: PropTypes.object.isRequired,
       showSidebar: PropTypes.func.isRequired,
       hideSidebar: PropTypes.func.isRequired,
-      showHighlightFaceLandmarks: PropTypes.func.isRequired,
-      hideHighlightFaceLandmarks: PropTypes.func.isRequired,
+      toggleHighlightFaceLandmarks: PropTypes.func.isRequired,
       changeTab: PropTypes.func.isRequired,
       emitter: PropTypes.object.isRequired
     }
@@ -381,8 +371,7 @@ export default class Sidebar extends React.Component {
             <GraphTab
               vision={this.state.vision}
               highlightFaceLandmarks={sidebar.highlightFaceLandmarks}
-              showHighlightFaceLandmarks={this.props.showHighlightFaceLandmarks}
-              hideHighlightFaceLandmarks={this.props.hideHighlightFaceLandmarks}
+              toggleHighlightFaceLandmarks={this.props.toggleHighlightFaceLandmarks}
             />
           </Tab>
           <Tab label='JSON' className={classForTab(1)}>
