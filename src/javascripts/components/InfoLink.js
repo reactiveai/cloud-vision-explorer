@@ -2,21 +2,9 @@ import _ from 'lodash'
 import React, { PropTypes } from 'react'
 import Link from 'react-toolbox/lib/link'
 
-const OPEN_IMAGE_BOOKMARK_IDS = [
-  {id: '24e144ee08ce069fd077904f9039a5f4' },  // Cat
-  {id: '8fc425eaa277db86186edd229b0e3591' },  // Kangaroo
-  {id: '22b8f17c84059d5d293278f47d1561bf' },  // Ethnic Clothes
-  {id: '0c68e487dd8f16f343341569c29733b3' },  // Citi Field
-  {id: '326c917aed041bc7926238973ec5d36b' }   // Android
-]
+import 'stylesheets/InfoLink'
 
-// These are actually also image IDs, because it's easy to reference them
-// even though we're just using them to zoom to a particular part of a cluster
-const ZOOM_CLUSTER_BOOKMARK_IDS = [
-  {id: 'c8261057a5ff2d642d05c32824fa3a2c' },  // Bird
-  {id: 'c7ead95d2cecba86a6d8e5eb4928cbbf' },  // Flower
-  {id: 'b550497b9dd1937694ed7647620a258e' },  // Residental area
-]
+import { OPEN_IMAGE_BOOKMARK_IDS, ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
 
 const style = {
   h1: {
@@ -50,7 +38,7 @@ const style = {
 }
 
 const getThumbUrl = (id) => {
-  return `https://storage.googleapis.com/gcs-samples2-explorer/thumbnail/32x32/${id}.jpg`
+  return `https://storage.googleapis.com/gcs-samples2-explorer/thumbnail/64x64/${id}.jpg`
 }
 
 export default class InfoLink extends React.Component {
@@ -66,7 +54,7 @@ export default class InfoLink extends React.Component {
       return (
         <li key={item.id} style={style.imageBookmarks.li}
             onClick={() => { this.props.emitter.emit('zoomToImage', item.id, true) }}>
-          <img src={getThumbUrl(item.id)} />
+          <img src={getThumbUrl(item.id)} className='thumbnailImg' />
         </li>
       )
     })
@@ -75,7 +63,7 @@ export default class InfoLink extends React.Component {
       return (
         <li key={item.id} style={style.imageBookmarks.li}
             onClick={() => { this.props.emitter.emit('zoomToImage', item.id) }}>
-          <img src={getThumbUrl(item.id)} />
+          <img src={getThumbUrl(item.id)} className='thumbnailImg' />
         </li>
       )
     })
