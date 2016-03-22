@@ -2,6 +2,8 @@ import _ from 'lodash'
 import React, { PropTypes } from 'react'
 import Link from 'react-toolbox/lib/link'
 
+import 'stylesheets/InfoLink'
+
 const OPEN_IMAGE_BOOKMARK_IDS = [
   {id: '24e144ee08ce069fd077904f9039a5f4' },  // Cat
   {id: '8fc425eaa277db86186edd229b0e3591' },  // Kangaroo
@@ -50,7 +52,7 @@ const style = {
 }
 
 const getThumbUrl = (id) => {
-  return `https://storage.googleapis.com/gcs-samples2-explorer/thumbnail/32x32/${id}.jpg`
+  return `https://storage.googleapis.com/gcs-samples2-explorer/thumbnail/64x64/${id}.jpg`
 }
 
 export default class InfoLink extends React.Component {
@@ -66,7 +68,7 @@ export default class InfoLink extends React.Component {
       return (
         <li key={item.id} style={style.imageBookmarks.li}
             onClick={() => { this.props.emitter.emit('zoomToImage', item.id, true) }}>
-          <img src={getThumbUrl(item.id)} />
+          <img src={getThumbUrl(item.id)} className='thumbnailImg' />
         </li>
       )
     })
@@ -75,7 +77,7 @@ export default class InfoLink extends React.Component {
       return (
         <li key={item.id} style={style.imageBookmarks.li}
             onClick={() => { this.props.emitter.emit('zoomToImage', item.id) }}>
-          <img src={getThumbUrl(item.id)} />
+          <img src={getThumbUrl(item.id)} className='thumbnailImg' />
         </li>
       )
     })
