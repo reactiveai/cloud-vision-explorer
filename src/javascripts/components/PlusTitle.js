@@ -56,7 +56,7 @@ export default class PlusTitle extends React.Component {
 
   render() {
     return (
-      <div style={styles.wrapper}>
+      <div className="plus-title" style={styles.wrapper}>
         <PlusIcon style={styles.plusTopLeft}></PlusIcon>
         <PlusIcon style={styles.plusTopRight}></PlusIcon>
         <PlusIcon style={styles.plusBottomLeft}></PlusIcon>

@@ -159,7 +159,7 @@ class GraphTab extends React.Component {
             <p key={idx}>
               <span className="text-quote">“</span>
               <span className="text-description">{text.description}</span>
-              <span className="text-quote">„</span>
+              <span className="text-quote post">„</span>
             </p>
           )
         )}
