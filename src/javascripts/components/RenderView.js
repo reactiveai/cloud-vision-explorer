@@ -70,9 +70,6 @@ export default React.createClass({
       return res.json()
     }).then((data) => {
 
-      data.clusters.forEach((c) => {
-      })
-
       this._setupScene(data)
     })
 
@@ -482,18 +479,29 @@ export default React.createClass({
 
     const prefetchBookmarkIds = [...ZOOM_CLUSTER_BOOKMARK_IDS].map((o) => o.id)
 
-    // Prefetch all thumbs we're likely to zoom into
-    const listOfBookmarkVectors = []
-    prefetchBookmarkIds.forEach((id) => {
-      const node = _.find(points, (p) => p.i === id)
-      points.forEach((n) => {
-        if (n.vec.distanceToSquared(node.vec) < Math.pow(denseFactor * 0.05, 2)) {
-          listOfBookmarkVectors.push(n)
-        }
-      })
+    let bookmarkVectorIncludeDistanceFactor = 0
+
+    tween({
+      o: 0
+    }, {
+      o: 0.05
+    }, 5000, function () {
+      // console.log(this.o)
+      bookmarkVectorIncludeDistanceFactor = this.o
     })
 
     const checkForImagesThatCanBeDownloaded = _.throttle(() => {
+      // Prefetch all thumbs we're likely to zoom into
+      const listOfBookmarkVectors = []
+      prefetchBookmarkIds.forEach((id) => {
+        const node = _.find(points, (p) => p.i === id)
+        points.forEach((n) => {
+          if (n.vec.distanceToSquared(node.vec) < Math.pow(denseFactor * bookmarkVectorIncludeDistanceFactor, 2)) {
+            listOfBookmarkVectors.push(n)
+          }
+        })
+      })
+
       // Keep track of particles that are within our range, and particles
       // that are outside our range. Add images for the ones that are near
       let listOfNearbyVectors = [...listOfBookmarkVectors]
