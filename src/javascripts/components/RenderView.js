@@ -13,7 +13,7 @@ import _ from 'lodash'
 
 import Shaders from '../misc/Shaders.js'
 
-// import { generateMockData } from '../misc/Util.js'
+import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
 
 import io from 'socket.io-client'
 
@@ -377,8 +377,17 @@ export default React.createClass({
       })
     }
 
-    this.props.emitter.addListener('zoomToImage', (id) => {
-      cameraAnimationQueue = cameraAnimationQueue.then(() => trackNode(_.find(points, (p) => p.i === id)))
+    this.props.emitter.addListener('zoomToImage', (id, openSideBar) => {
+      // Preload the image so it'll show instantly once the animation finishes
+      preloadImage(getVisionJsonURL(id))
+
+      cameraAnimationQueue = cameraAnimationQueue
+        .then(() => trackNode(_.find(points, (p) => p.i === id)))
+        .then(() => {
+          if (openSideBar) {
+            this.props.emitter.emit('showSidebar', id)
+          }
+        })
     })
 
 
