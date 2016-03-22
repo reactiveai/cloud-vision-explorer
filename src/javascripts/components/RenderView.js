@@ -14,6 +14,7 @@ import _ from 'lodash'
 import Shaders from '../misc/Shaders.js'
 
 import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
+import { OPEN_IMAGE_BOOKMARK_IDS, ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
 
 import io from 'socket.io-client'
 
