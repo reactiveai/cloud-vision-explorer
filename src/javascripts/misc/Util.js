@@ -3,6 +3,13 @@ import _ from 'lodash'
 import THREE from 'three'
 
 module.exports = {
+  getVisionJsonURL: (id) => {
+    return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
+  },
+  preloadImage: (url) => {
+    const img = new Image()
+    img.src = url
+  },
   generateMockData: (numberOfMockGroups = _.random(50, 500),
     numberOfNodes = 100000,
     groupLocationSpread = 1000.0) => {

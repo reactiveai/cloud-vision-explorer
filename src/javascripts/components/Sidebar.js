@@ -13,9 +13,7 @@ import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
 import Checkbox from 'react-toolbox/lib/checkbox'
 
-const getVisionJsonURL = (id) => {
-  return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
-}
+import { getVisionJsonURL } from '../misc/Util.js'
 
 class SidebarTabs extends Tabs {
   // Copied mainly from the original class, but modified some orders and styles

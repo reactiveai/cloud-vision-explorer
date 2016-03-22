@@ -13,7 +13,7 @@ import _ from 'lodash'
 
 import Shaders from '../misc/Shaders.js'
 
-// import { generateMockData } from '../misc/Util.js'
+import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
 
 import io from 'socket.io-client'
 
@@ -295,7 +295,7 @@ export default React.createClass({
       const startPoint = camera.position.clone()
 
       const endPointUnit = node.vec.clone().normalize()
-      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(25))
+      const endPoint = node.vec.clone().add(endPointUnit.clone().multiplyScalar(5))
 
       const startPointNormalized = startPoint.clone().normalize()
       const endPointNormalized = endPoint.clone().normalize()
@@ -308,8 +308,8 @@ export default React.createClass({
 
       const zoomOutDistance = 2000
 
-      let totalAnimTime = angle * 6000
-      totalAnimTime = Math.max(totalAnimTime, 6000)
+      let totalAnimTime = angle * 2000
+      totalAnimTime = Math.max(totalAnimTime, 2000)
 
       const otherGroupsFadeInTime = 1000
       const groupFocusTime = 1000
@@ -377,8 +377,17 @@ export default React.createClass({
       })
     }
 
-    this.props.emitter.addListener('zoomToImage', (id) => {
-      cameraAnimationQueue = cameraAnimationQueue.then(() => trackNode(_.find(points, (p) => p.i === id)))
+    this.props.emitter.addListener('zoomToImage', (id, openSideBar) => {
+      // Preload the image so it'll show instantly once the animation finishes
+      preloadImage(getVisionJsonURL(id))
+
+      cameraAnimationQueue = cameraAnimationQueue
+        .then(() => trackNode(_.find(points, (p) => p.i === id)))
+        .then(() => {
+          if (openSideBar) {
+            this.props.emitter.emit('showSidebar', id)
+          }
+        })
     })
 
 

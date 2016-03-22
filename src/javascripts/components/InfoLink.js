@@ -65,7 +65,7 @@ export default class InfoLink extends React.Component {
     const imageBookmarks = _.map(OPEN_IMAGE_BOOKMARK_IDS, (item) => {
       return (
         <li key={item.id} style={style.imageBookmarks.li}
-            onClick={() => { this.props.emitter.emit('showSidebar', item.id) }}>
+            onClick={() => { this.props.emitter.emit('zoomToImage', item.id, true) }}>
           <img src={getThumbUrl(item.id)} />
         </li>
       )
