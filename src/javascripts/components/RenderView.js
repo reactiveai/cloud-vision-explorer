@@ -167,7 +167,9 @@ export default React.createClass({
     const updateGroupColor = _.throttle((r, g, b, group) => {
       points.forEach((p, i) => {
         if (p.g === group) {
-          updateNodeColor(r, g, b, i)
+          if (!points[i].plane) {
+            updateNodeColor(r, g, b, i)
+          }
         }
       })
     }, 100)
@@ -474,21 +476,40 @@ export default React.createClass({
       return new THREE.Sprite(spriteMaterial)
     }
 
+    const prefetchBookmarkIds = [...ZOOM_CLUSTER_BOOKMARK_IDS].map((o) => o.id)
+
+    // Prefetch all thumbs we're likely to zoom into
+    const listOfBookmarkVectors = []
+    prefetchBookmarkIds.forEach((id) => {
+      const node = _.find(points, (p) => p.i === id)
+      points.forEach((n) => {
+        if (n.vec.distanceToSquared(node.vec) < Math.pow(denseFactor * 0.05, 2)) {
+          listOfBookmarkVectors.push(n)
+        }
+      })
+    })
+
     const checkForImagesThatCanBeDownloaded = _.throttle(() => {
       // Keep track of particles that are within our range, and particles
       // that are outside our range. Add images for the ones that are near
-      const listOfNearbyVectors = []
-      points.forEach((n) => {
-        if (n.vec.distanceToSquared(camera.position) < Math.pow(denseFactor * 0.1, 2)) {
-          listOfNearbyVectors.push(n)
-        }
-      })
+      let listOfNearbyVectors = [...listOfBookmarkVectors]
+
+      if (!currentlyTrackingNode) {
+        points.forEach((n) => {
+          if (n.vec.distanceToSquared(camera.position) < Math.pow(denseFactor * 0.05, 2)) {
+            listOfNearbyVectors.push(n)
+          }
+        })
+      }
+
+      listOfNearbyVectors = _.uniq(listOfNearbyVectors)
 
       const listOfRemovedNearbyVectors = currentListOfNearbyVectors.filter((nearbyVector) => {
         return !_.includes(listOfNearbyVectors, nearbyVector)
       })
 
       listOfRemovedNearbyVectors.forEach((nearbyVector) => {
+        console.log('remove', nearbyVector)
         nearbyVector._promise = nearbyVector._promise
         .then(() => {
           return tween({
@@ -550,7 +571,7 @@ export default React.createClass({
 
       // Only request thumbs if there are any vectors nearby at all
       if (listOfNewNearbyVectorsIds.length) {
-        const getAllImagesPromise = sendAndAwait('thumb64', listOfNewNearbyVectorsIds)
+        const getAllImagesPromise = sendAndAwait('thumb128', listOfNewNearbyVectorsIds)
 
         listOfNewNearbyVectors.forEach((nearbyVector) => {
           nearbyVector._promise = nearbyVector._promise.then(() => {
