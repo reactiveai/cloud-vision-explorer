@@ -308,8 +308,8 @@ export default React.createClass({
 
       const zoomOutDistance = 2000
 
-      let totalAnimTime = angle * 6000
-      totalAnimTime = Math.max(totalAnimTime, 6000)
+      let totalAnimTime = angle * 2000
+      totalAnimTime = Math.max(totalAnimTime, 2000)
 
       const otherGroupsFadeInTime = 1000
       const groupFocusTime = 1000
