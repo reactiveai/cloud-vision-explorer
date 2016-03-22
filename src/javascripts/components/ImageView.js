@@ -52,12 +52,12 @@ export default class ImaveView extends React.Component {
       fetch(getVisionJsonURL(id)).then((res) => {
         return res.json()
       }).then((data) => {
-        this.setState(s => _.assign({}, s, { vision: data[0] }))
+        this.setState({ vision: data[0] })
       })
     })
 
     this.props.emitter.addListener('hideSidebar', (id) => {
-      this.setState({active: false})
+      this.setState({ active: false, vision: {} })
     })
   }
 
