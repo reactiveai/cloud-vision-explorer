@@ -16,10 +16,8 @@ export function changeTab(tabIndex) {
   return { type: CHANGE_TAB, tabIndex }
 }
 
-export function showHighlightFaceLandmarks() {
-  return { type: SHOW_HIGHLIGHT_FACE_LANDMARKS }
-}
-
-export function hideHighlightFaceLandmarks() {
-  return { type: HIDE_HIGHLIGHT_FACE_LANDMARKS }
+export function toggleHighlightFaceLandmarks(show) {
+  return {
+    type: show ? SHOW_HIGHLIGHT_FACE_LANDMARKS : HIDE_HIGHLIGHT_FACE_LANDMARKS
+  }
 }
