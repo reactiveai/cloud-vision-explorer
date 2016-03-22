@@ -7,10 +7,18 @@ $sidebar-secondary-color-1: #D4E157 !default
 $sidebar-secondary-color-2: #9E9D24 !default
 $sidebar-third-color-1: #2196F3 !default
 $sidebar-third-color-2: #1565C0 !default
+$sidebar-button-on-color-1: #9FA8DA !default
+$sidebar-button-on-color-2: #3949AB !default
+$sidebar-button-off-color-1: #757575 !default
+$sidebar-button-off-color-2: #424242 !default
 $tab-pointer-color: $sidebar-primary-color-1 !default
 $progress-main-color: $sidebar-primary-color-2 !default
 $color-divider: $sidebar-primary-color-off !default
 $overlay-opacity: .0 !default;
+$switch-track-on-color: $sidebar-button-on-color-1 !default
+$switch-thumb-on-color: $sidebar-button-on-color-2 !default
+$switch-track-off-color: $sidebar-button-off-color-2 !default
+$switch-thumb-off-color: $sidebar-button-off-color-1 !default
 
 .root {
   // I don't like !important but I can't find another way to overwrite
