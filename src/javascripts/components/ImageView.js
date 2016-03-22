@@ -49,12 +49,12 @@ export default class ImaveView extends React.Component {
       fetch(getVisionJsonURL(id)).then((res) => {
         return res.json()
       }).then((data) => {
-        this.setState(s => _.assign({}, s, { vision: data[0] }))
+        this.setState({ vision: data[0] })
       })
     })
 
     this.props.emitter.addListener('hideSidebar', (id) => {
-      this.setState({active: false})
+      this.setState({ active: false, vision: {} })
     })
   }
 
@@ -76,6 +76,17 @@ export default class ImaveView extends React.Component {
 
   render() {
     const { vision, imgLeft, imgTop, imgWidthRatio, imgHeightRatio } = this.state
+    const getBoundingPolyStyle = (boundingPoly) => {
+      const verts = _.orderBy(boundingPoly.vertices, ['x', 'y'])
+      const leftTop = _.head(verts)
+      const rightBottom = _.last(verts)
+      return {
+        left: `${leftTop.x * imgWidthRatio + imgLeft}px`,
+        top: `${leftTop.y * imgHeightRatio + imgTop}px`,
+        width: `${(rightBottom.x - leftTop.x) * imgWidthRatio}px`,
+        height: `${(rightBottom.y - leftTop.y) * imgHeightRatio}px`
+      }
+    }
     const getLandmarkStyle = (landmark) => {
       return {
         left: `${landmark.position.x * imgWidthRatio + imgLeft}px`,
@@ -85,7 +96,11 @@ export default class ImaveView extends React.Component {
     const getFaceLandmarks = () => {
       return 'faceAnnotations' in vision ?
         vision.faceAnnotations.map((face, idx) =>
-          <div className="face-landmarks" key={idx}>
+          <div className="face-detection-overlay" key={idx}>
+            <div
+              className="face-bounding-poly"
+              style={getBoundingPolyStyle(face.boundingPoly)}
+            />
             {face.landmarks.map(landmark =>
               <img
                 className="face-landmark" style={getLandmarkStyle(landmark)}
