@@ -12,6 +12,7 @@ import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
 import Switch from 'react-toolbox/lib/switch'
+import InlineSVG from 'react-inlinesvg'
 
 import { getVisionJsonURL } from '../misc/Util.js'
 
@@ -157,7 +158,10 @@ class GraphTab extends React.Component {
         {getDetectionSection('faceAnnotations', 'face-detection', 'FACE', annons =>
           <div>
             <div className="highlight-face-landmarks">
-              <img src={require('../../images/icon/highlight_face_landmarks.svg')} />
+              <img
+                className="custom-icon"
+                src={require('../../images/icon/highlight_face_landmarks')}
+              />
               <span className="highlight-face-landmarks-label">Landmarks</span>
               <Switch
                 checked={this.props.highlightFaceLandmarks}
@@ -185,12 +189,18 @@ class GraphTab extends React.Component {
                     {likelihoodLevel(face.sorrowLikelihood)}
                   </div>
                   <div className="likelihood">
-                    <span className="likelihood-icon custom-icon anger" />
+                    <InlineSVG
+                      className="likelihood-icon custom-icon"
+                      src={require('../../images/icon/anger')}
+                    />
                     <div className="likelihood-label">Anger</div>
                     {likelihoodLevel(face.angerLikelihood)}
                   </div>
                   <div className="likelihood">
-                    <span className="likelihood-icon custom-icon surprise" />
+                    <InlineSVG
+                      className="likelihood-icon custom-icon"
+                      src={require('../../images/icon/surprise')}
+                    />
                     <div className="likelihood-label">Surprise</div>
                     {likelihoodLevel(face.surpriseLikelihood)}
                   </div>
@@ -205,7 +215,10 @@ class GraphTab extends React.Component {
                     {likelihoodLevel(face.blurredLikelihood)}
                   </div>
                   <div className="likelihood">
-                    <span className="likelihood-icon custom-icon headwear" />
+                    <InlineSVG
+                      className="likelihood-icon custom-icon headwear"
+                      src={require('../../images/icon/headwear')}
+                    />
                     <div className="likelihood-label">Headwear</div>
                     {likelihoodLevel(face.headwearLikelihood)}
                   </div>
@@ -333,7 +346,10 @@ export default class Sidebar extends React.Component {
         >
           {opts && opts.customIcon ?
             <Button ripple inverse disabled={!active}>
-              <span className={'custom-icon ' + icon} />
+              <InlineSVG
+                className="custom-icon"
+                src={require(`../../images/icon/${icon}`)}
+              />
             </Button>
           :
             <Button icon={icon} ripple inverse disabled={!active} />
@@ -353,7 +369,7 @@ export default class Sidebar extends React.Component {
           {getIndicator('textAnnotations', 'translate', 'text-detection')}
           {getIndicator('faceAnnotations', 'face', 'face-detection')}
           {getIndicator(
-            'logoAnnotations', 'logo', 'logo-detection',
+            'logoAnnotations', 'logo_detection', 'logo-detection',
             { customIcon: true }
           )}
           {getIndicator('landmarkAnnotations', 'place', 'landmark-detection')}
