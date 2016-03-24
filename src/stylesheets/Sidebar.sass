@@ -38,10 +38,9 @@
 
       button
         padding: 15px 0
+        width: 100%
         min-width: 0
         border-radius: 0
-        height: auto
-        width: 100%
         color: inherit !important
 
         .material-icons
@@ -50,17 +49,14 @@
           margin: 0
 
       .custom-icon
-        padding-bottom: 1px
+        margin-top: 4px
         width: 20px
         height: 20px
-        display: inline-block
-        background-color: currentColor
+        line-height: 1em
+        vertical-align: baseline
 
-        &.logo
-          -webkit-mask: url(../images/icon/logo_detection.svg) no-repeat
-
-        &.safesearch
-          -webkit-mask: url(../images/icon/safesearch.svg) no-repeat
+        svg .cls-1
+          fill: currentColor
 
   .detail-tab
     flex-grow: 1
@@ -167,8 +163,9 @@
           align-items: center
           margin-bottom: 1em
 
-          img
+          > img
             width: 45px
+            height: 45px
 
           .highlight-face-landmarks-label
             flex-grow: 1
@@ -235,7 +232,7 @@
         .likelihood
           align-items: center
           display: flex
-          margin-bottom: 1.2em
+          margin-bottom: 1.1em
 
           &:last-child
             margin-bottom: 0
@@ -245,22 +242,16 @@
           font-size: 24px
 
           &.custom-icon
-            width: 20.5px
-            height: 20.5px
-            margin-left: 2px
-            margin: 0 -1.5px 0 1.5px
-            background-color: currentColor
+            svg
+              width: 20px
+              height: 20px
+              margin: 0 0 -2px 2px
 
-          &.anger
-            -webkit-mask: url(../images/icon/anger.svg) no-repeat
-
-          &.surprise
-            -webkit-mask: url(../images/icon/surprise.svg) no-repeat
+            .cls-1
+              fill: currentColor
 
           &.headwear
-            height: 15px
-            margin-right: 8px
-            -webkit-mask: url(../images/icon/headwear.svg) no-repeat
+            margin-right: 10px
 
         .likelihood-label
           color: $sidebar-text-color

@@ -72,7 +72,7 @@ module.exports = {
   ],
 
   resolve: {
-    extensions: ['', '.js', '.sass', '.scss'],
+    extensions: ['', '.js', '.sass', '.scss', '.svg'],
     modulesDirectories: ['src', 'node_modules']
   }
 }
