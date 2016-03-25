@@ -49,6 +49,9 @@ def arg_parse():
                            default=DEFAULT_INITIAL_DIMS_AFTER_PCA)
     arg_parse.add_argument('-n', '--specific_cluster_name', type=str,
                            default='')
+    arg_parse.add_argument('-s', '--use_snapshot', action='store_true')
+    arg_parse.add_argument('-b', '--output_dimension', type=int,
+                           default=NUMBER_OF_OUTPUT_DIMENSIONS)
     return arg_parse
 
 
@@ -66,13 +69,16 @@ if __name__ == "__main__":
     x_labels_filename = 'pickle/X_labels.dat'
     x_images_ids = 'pickle/X_image_ids.dat'
 
-    if os.path.isfile(x_vectors_filename) and os.path.isfile(x_labels_filename) and os.path.isfile(x_images_ids):
+    if arg_p.use_snapshot \
+            and os.path.isfile(x_vectors_filename) \
+            and os.path.isfile(x_labels_filename) \
+            and os.path.isfile(x_images_ids):
         X_vectors = pickle.load(open(x_vectors_filename, 'r'))
         X_labels = pickle.load(open(x_labels_filename, 'r'))
         X_image_ids = pickle.load(open(x_images_ids, 'r'))
     else:
         [X_vectors, X_labels, X_image_ids] = low_dim_mapper.generate_vectors(json_input_filename=arg_p.input,
-                                                                             dim=NUMBER_OF_OUTPUT_DIMENSIONS,
+                                                                             dim=arg_p.output_dimension,
                                                                              w2v_dim=arg_p.dimension,
                                                                              perplexity=arg_p.perplexity,
                                                                              theta=arg_p.theta,
@@ -81,14 +87,15 @@ if __name__ == "__main__":
         pickle.dump(X_labels, open(x_labels_filename, 'w'))
         pickle.dump(X_image_ids, open(x_images_ids, 'w'))
 
+    [c_centers, X_assignments, _] = kmeans.tf_k_means_cluster(X_vectors, no_clusters=arg_p.no_clusters)
+
     matlab_obj = {
         'vectors': X_vectors,
-        'labels': X_labels
+        'labels': X_labels,
+        'assignments': X_assignments
     }
 
     scipy.io.savemat('vectors.mat', mdict=matlab_obj, appendmat=False, do_compression=False, oned_as='row')
-
-    [c_centers, X_assignments, _] = kmeans.tf_k_means_cluster(X_vectors, no_clusters=arg_p.no_clusters)
 
     labels = []
     max_frequency_specific_cluster = 0
@@ -120,7 +127,7 @@ if __name__ == "__main__":
         print(cluster_id, '->', dominant_label, '(', frequency_dominant_label, '), center=', c_centers[cluster_id])
 
     if not arg_p.specific_cluster_name == '':
-        specific_cluster_center = np.zeros(NUMBER_OF_OUTPUT_DIMENSIONS)
+        specific_cluster_center = np.zeros(arg_p.output_dimension)
         for elt_id in data_points_in_specific_cluster_indexes:
             X_assignments[elt_id] = arg_p.no_clusters
             specific_cluster_center += X_vectors[elt_id]
@@ -130,7 +137,7 @@ if __name__ == "__main__":
         labels.append(arg_p.specific_cluster_name)
 
         print(arg_p.no_clusters, '->', labels[-1],
-              '(', max_frequency_specific_cluster,
+              '(count=', max_frequency_specific_cluster,
               '- specific), center=', specific_cluster_center)
 
     json_utils.convert_to_json(X_vectors, X_assignments, c_centers, labels, X_image_ids, filename=arg_p.output)

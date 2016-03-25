@@ -41,3 +41,4 @@ public/main.css
 .DS_Store
 ml-libs/data/*.txt
 .idea
+*.mat
