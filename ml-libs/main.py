@@ -11,6 +11,7 @@ import numpy as np
 from clustering import kmeans
 from tsne import low_dim_mapper
 from util import json_utils
+import scipy.io
 
 DEFAULT_NO_CLUSTERS = 25
 DEFAULT_INPUT_FILENAME = 'vision_api_1000.json'
@@ -79,6 +80,13 @@ if __name__ == "__main__":
         pickle.dump(X_vectors, open(x_vectors_filename, 'w'))
         pickle.dump(X_labels, open(x_labels_filename, 'w'))
         pickle.dump(X_image_ids, open(x_images_ids, 'w'))
+
+    matlab_obj = {
+        'vectors': X_vectors,
+        'labels': X_labels
+    }
+
+    scipy.io.savemat('vectors.mat', mdict=matlab_obj, appendmat=False, do_compression=False, oned_as='row')
 
     [c_centers, X_assignments, _] = kmeans.tf_k_means_cluster(X_vectors, no_clusters=arg_p.no_clusters)
 

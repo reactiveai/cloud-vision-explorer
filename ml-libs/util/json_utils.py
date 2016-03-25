@@ -10,25 +10,43 @@ def scale_max_abs(ax):
 
 
 def convert_to_json(x_norm, assignments, centers, labels, ids, filename):
+    output_dim = x_norm.shape[1]
     data_x = []
     for i in xrange(len(assignments)):
-        elt = {
-            'x': x_norm[i, 0],
-            'y': x_norm[i, 1],
-            'z': x_norm[i, 2],
-            'i': ids[i],
-            'g': assignments[i]
-        }
+
+        if output_dim == 3:
+            elt = {
+                'x': x_norm[i, 0],
+                'y': x_norm[i, 1],
+                'z': x_norm[i, 2],
+                'i': ids[i],
+                'g': assignments[i]
+            }
+        else:
+            elt = {
+                'x': x_norm[i, 0],
+                'y': x_norm[i, 1],
+                'i': ids[i],
+                'g': assignments[i]
+            }
         data_x.append(elt)
 
     data_centers = []
     for i in xrange(len(centers)):
-        elt = {
-            'x': centers[i, 0],
-            'y': centers[i, 1],
-            'z': centers[i, 2],
-            'label': labels[i]
-        }
+
+        if output_dim == 3:
+            elt = {
+                'x': centers[i, 0],
+                'y': centers[i, 1],
+                'z': centers[i, 2],
+                'label': labels[i]
+            }
+        else:
+            elt = {
+                'x': centers[i, 0],
+                'y': centers[i, 1],
+                'label': labels[i]
+            }
         data_centers.append(elt)
 
     data = {
