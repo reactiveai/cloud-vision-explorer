@@ -30,7 +30,8 @@ def generate_vectors(json_input_filename, w2v_dim, perplexity, theta, pca_dims, 
     for result in bh_tsne(vectors,
                           perplexity=perplexity,
                           initial_dims=pca_dims,
-                          theta=theta):
+                          theta=theta,
+                          no_dims=dim):
         embeddings.append(result)
 
     embeddings = json_utils.scale_max_abs(embeddings)
