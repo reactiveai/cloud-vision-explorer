@@ -2,7 +2,6 @@ const _ = require('lodash')
 
 const express      = require('express')
 const io           = require('socket.io')
-const mysql        = require('mysql')
 const favicon      = require('serve-favicon')
 const logger       = require('morgan')
 const cookieParser = require('cookie-parser')
@@ -10,12 +9,6 @@ const bodyParser   = require('body-parser')
 
 const app = express()
 app.io = io()
-app.db = mysql.createPool({
-  host: process.env.MYSQL_SERVER,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE
-})
 
 // view engine setup
 app.set('views', './views')
