@@ -2,7 +2,7 @@ import React, { PropTypes } from 'react'
 import 'stylesheets/ImageView'
 
 const getImageUrl = (id) => {
-  return `https://storage.googleapis.com/gcs-samples2-explorer/image/${id}.jpg`
+  return `https://storage.googleapis.com/${GCS_BUCKET_NAME}/image/${id}.jpg`
 }
 
 const style = {
