@@ -12,7 +12,7 @@ const getThumbURL = (id, dirName) => {
   return `https://storage.googleapis.com/${process.env.GCS_BUCKET}/thumbnail/${dirName}/${id}.jpg`
 }
 
-const onConnection = (sock, db) => {
+const onConnection = (sock) => {
   console.log('connected')
 
   _.each(THUMB_API2DIR, (dirName, apiName) => {
@@ -32,5 +32,5 @@ const onConnection = (sock, db) => {
 }
 
 module.exports = (app) => {
-  app.io.on('connection', (sock) => { onConnection(sock, app.db) })
+  app.io.on('connection', onConnection)
 }
