@@ -105,7 +105,7 @@ export default class ImaveView extends React.Component {
               <img
                 className="face-landmark" style={getLandmarkStyle(landmark)}
                 key={landmark.type}
-                src={require('../../images/icon/face_landmark.svg')}
+                src={require('../../images/icon/face_landmark')}
               />
             )}
           </div>
