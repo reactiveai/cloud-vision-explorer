@@ -1,7 +1,39 @@
 import _ from 'lodash'
 import THREE from 'three'
 
+const updateNodeColor = (geometry, r, g, b, index) => {
+  const attributes = geometry.attributes
+
+  const color = new THREE.Color(r, g, b)
+  color.toArray(attributes.customColor.array, index * 3)
+  attributes.customColor.needsUpdate = true
+}
+
+const updateGroupColor = _.throttle((points, geometry, r, g, b, group) => {
+  points.forEach((p, i) => {
+    if (p.g === group) {
+      if (!points[i].plane) {
+        updateNodeColor(geometry, r, g, b, i)
+      }
+    }
+  })
+}, 100)
+
 module.exports = {
+  updateNodeColor,
+  updateGroupColor,
+  groupOpacFunction: (points, geometry, clusters, cluster) => {
+    return function () { // can't be an arrow function!
+      _.each(clusters, (value, key) => {
+        if (value !== cluster) {
+          const gc = value.color
+          updateGroupColor(points, geometry, gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
+          value.lineMaterial.opacity = 0.3 * this.f
+          clusters[key].sprite.material.opacity = 1.0 * this.f
+        }
+      })
+    }
+  },
   createClusterNameSprite: (cluster) => {
     const text = cluster.label
 
