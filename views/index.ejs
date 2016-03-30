@@ -10,13 +10,9 @@
     />
   </head>
   <body>
-    <% if (error) { %>
-      <p><%= error %></p>
-    <% } else { %>
-      <div id="contents"></div>
-      <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
-      <script>var GCS_BUCKET_NAME = '<%= gcsBucketName %>'</script>
-      <script src="bundle.js"></script>
-    <% } %>
+    <div id="contents"></div>
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+    <script>var GCS_BUCKET_NAME = '<%= gcsBucketName %>'</script>
+    <script src="bundle.js"></script>
   </body>
 </html>
