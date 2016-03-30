@@ -11,7 +11,10 @@ import _ from 'lodash'
 import Shaders from '../misc/Shaders.js'
 
 import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
-import { createSpriteFromArrayBuffer, createClusterNameSprite } from '../misc/RenderUtil.js'
+import {  createSpriteFromArrayBuffer,
+          createClusterNameSprite,
+          groupOpacFunction,
+          updateNodeColor  } from '../misc/RenderUtil.js'
 import { ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
 
 import io from 'socket.io-client'
@@ -188,24 +191,6 @@ export default React.createClass({
     geometry.addAttribute('customColor', new THREE.BufferAttribute(colors, 3))
     geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1))
 
-    const updateNodeColor = (r, g, b, index) => {
-      const attributes = geometry.attributes
-
-      const color = new THREE.Color(r, g, b)
-      color.toArray(attributes.customColor.array, index * 3)
-      attributes.customColor.needsUpdate = true
-    }
-
-    const updateGroupColor = _.throttle((r, g, b, group) => {
-      points.forEach((p, i) => {
-        if (p.g === group) {
-          if (!points[i].plane) {
-            updateNodeColor(r, g, b, i)
-          }
-        }
-      })
-    }, 100)
-
     const material = new THREE.ShaderMaterial({
       uniforms: {
         color:   { type: 'c', value: new THREE.Color( 0xffffff ) },
@@ -273,19 +258,6 @@ export default React.createClass({
 
     controls.keys = [ 65, 83, 68 ]
 
-    const groupOpacFunction = (cluster) => {
-      return function () { // can't be an arrow function!
-        _.each(clusters, (value, key) => {
-          if (value !== cluster) {
-            const gc = value.color
-            updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
-            value.lineMaterial.opacity = 0.3 * this.f
-            clusters[key].sprite.material.opacity = 1.0 * this.f
-          }
-        })
-      }
-    }
-
     const trackNode = (node) => {
       const nodeGroup = clusters[node.g]
 
@@ -329,7 +301,7 @@ export default React.createClass({
               f: 0.3
             }, {
               f: 1.0
-            }, otherGroupsFadeInTime, groupOpacFunction(currentlyZoomedCluster)) : wait(otherGroupsFadeInTime))
+            }, otherGroupsFadeInTime, groupOpacFunction(clusters, currentlyZoomedCluster)) : wait(otherGroupsFadeInTime))
           })
           .then(() => wait((waitTime/3)*0.5))
           .then(() => {
@@ -337,7 +309,7 @@ export default React.createClass({
               f: 1.0
             }, {
               f: 0.3
-            }, groupFocusTime, groupOpacFunction(nodeGroup))
+            }, groupFocusTime, groupOpacFunction(clusters, nodeGroup))
           }),
           tween({
             f: 0
@@ -503,7 +475,7 @@ export default React.createClass({
             g: nearbyVector.color.g,
             b: nearbyVector.color.b
           }, tweenSpeed, function () {
-            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+            updateNodeColor(geometry, this.r, this.g, this.b, nearbyVector.index)
           })
         })
       })
@@ -524,7 +496,7 @@ export default React.createClass({
             g: 0,
             b: 0
           }, tweenSpeed, function () {
-            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+            updateNodeColor(geometry, this.r, this.g, this.b, nearbyVector.index)
           })
         })
       })
@@ -663,7 +635,7 @@ export default React.createClass({
             f: 0.3
           }, {
             f: 1.0
-          }, 1000, groupOpacFunction(oldZoomedCluster))
+          }, 1000, groupOpacFunction(clusters, oldZoomedCluster))
         })
       }
 
