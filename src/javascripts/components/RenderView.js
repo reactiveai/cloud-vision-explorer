@@ -1,7 +1,4 @@
-/*global $*/
-
 import React from 'react'
-
 import THREE from 'three'
 import TWEEN from 'tween.js'
 
@@ -14,7 +11,8 @@ import _ from 'lodash'
 import Shaders from '../misc/Shaders.js'
 
 import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
-import { OPEN_IMAGE_BOOKMARK_IDS, ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
+import { createSpriteFromArrayBuffer, createClusterNameSprite } from '../misc/RenderUtil.js'
+import { ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
 
 import io from 'socket.io-client'
 
@@ -26,7 +24,6 @@ const DATAPOINT_URL = `https://storage.googleapis.com/${window.gcsBucketName}/da
 const tweenSpeed = 200
 const thumbCheckSpeed = 100
 const denseFactor = 1000.0
-const nodeAnimationOrbitDistance = denseFactor * 1.5
 
 // When this is not null, the camera will zoom in to this thumb
 // If a mouse event happens, set it back to null
@@ -51,8 +48,7 @@ const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 export default React.createClass({
   render() {
     return (
-      <div ref={(c) => this._container = c} className="render-view">
-</div>
+      <div ref={(c) => this._container = c} className="render-view"></div>
     )
   },
 
@@ -64,6 +60,7 @@ export default React.createClass({
   shouldComponentUpdate() {
     return false
   },
+  
   componentDidMount() {
     fetch(DATAPOINT_URL).then((res) => {
       return res.json()
@@ -78,6 +75,7 @@ export default React.createClass({
     // }
 
   },
+  
   _setupScene({points, clusters}) {
     this.props.emitter.emit('imageCount', points.length)
 
@@ -93,10 +91,15 @@ export default React.createClass({
 
     const mouse = new THREE.Vector2()
 
-    // Do some post-processing
+    // Do some post-processing for points
     points.forEach((n, i) => {
       // Add a real THREE vector for easy access later
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
+
+      // Cleanup
+      delete n.x
+      delete n.y
+      delete n.z
 
       // Normalize it
       n.vec.multiplyScalar(denseFactor)
@@ -109,6 +112,18 @@ export default React.createClass({
 
       // Add a resolved promised so we can chain events to it
       n._promise = Promise.resolve()
+
+      // If there are points without an existing cluster
+      // create one for them
+      if (!clusters[n.g]) {
+        console.log(n)
+        clusters[n.g] = {
+          x: 0,
+          y: 0,
+          z: 0,
+          label: ''
+        }
+      }
     })
 
     points.forEach((p) => {
@@ -118,19 +133,36 @@ export default React.createClass({
       }
     })
 
-    // First sort by the group ID ascending
-    const sortedData = _.orderBy(points, ['g'], ['asc'])
+    // Do some post-processing for clusters
+    clusters.forEach((cluster) => {
+      // Add a real THREE vector for easy access later
+      cluster.center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
+      cluster.center.multiplyScalar(denseFactor)
 
-    // Generate an object consisting out of groups of cluster IDs
-    const groupedData = _.groupBy(sortedData, (element) => element.g)
-
-    // Add metadata to each group
-    _.each(groupedData, (value, key, coll) => {
-      coll[key] = {
-        nodes: value,
-        color: new THREE.Color(0xffffff * random.real(0.0, 1.0))
-      }
+      // Cleanup
+      delete cluster.x
+      delete cluster.y
+      delete cluster.z
     })
+
+    {
+      // First sort by the group ID ascending
+      const sortedData = _.orderBy(points, ['g'], ['asc'])
+
+      // Generate an object consisting out of groups of cluster IDs
+      const groupedData = _.groupBy(sortedData, (element) => element.g)
+
+      // Add metadata to each group
+      _.each(groupedData, (value, key) => {
+        const intKey = parseInt(key)
+
+        // Access all points for this cluster easily
+        clusters[intKey].points = value
+
+        // Assign a random color to this cluster
+        clusters[intKey].color = new THREE.Color(0xffffff * random.real(0.0, 1.0))
+      })
+    }
 
     const positions = new Float32Array(points.length * 3)
     const colors = new Float32Array(points.length * 3)
@@ -145,7 +177,7 @@ export default React.createClass({
       const vertex = points[ i ].vec
       vertex.toArray(positions, i * 3)
 
-      points[i].color.set(groupedData[points[i].g].color)
+      points[i].color.set(clusters[points[i].g].color)
       points[i].color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE
@@ -191,7 +223,7 @@ export default React.createClass({
 
     // To achieve an effect similar to the mocks, we need to shoot a line
     // at another node that is most near, except if node that was already drawn to
-    _.forEach(groupedData, (value, key) => {
+    _.forEach(clusters, (value, key) => {
       const geometry = new THREE.Geometry()
 
       const lineMaterial = new THREE.LineBasicMaterial({
@@ -202,11 +234,7 @@ export default React.createClass({
         opacity: 0.3
       })
 
-      const vertices = clusters[key].lines.map((v) => {
-        // Deserialize and normalize
-        return (new THREE.Vector3()).fromArray(v).multiplyScalar(denseFactor)
-      })
-
+      const vertices = clusters[key].points.map((p) => p.vec)
 
       geometry.vertices = vertices
 
@@ -219,38 +247,9 @@ export default React.createClass({
 
     // Add cluster names
     clusters.forEach((cluster) => {
-      const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
-      cluster.center = center
+      const sprite = createClusterNameSprite(cluster)
 
-      center.multiplyScalar(denseFactor)
-      const text = cluster.label
-
-      const canvas = document.createElement('canvas')
-      canvas.width = 512
-      canvas.height = 512
-
-      const context = canvas.getContext('2d')
-
-      const textColor = '#bbbbbb'
-
-      context.textAlign = 'center'
-      context.textBaseline = 'middle'
-      context.fillStyle = textColor
-      context.font = '60px Roboto'
-      context.fillText(text, canvas.width / 2, canvas.height / 2)
-
-      const texture = new THREE.Texture(canvas)
-      texture.needsUpdate = true
-
-      const spriteMaterial = new THREE.SpriteMaterial({
-        color: 0xdddddd,
-        transparent: true,
-        opacity: 1.0,
-        map: texture
-      })
-
-      const sprite = new THREE.Sprite(spriteMaterial)
-      sprite.position.copy(center)
+      sprite.position.copy(cluster.center)
       sprite.scale.multiplyScalar(denseFactor / 2)
 
       cluster.sprite = sprite
@@ -276,7 +275,7 @@ export default React.createClass({
 
     const groupOpacFunction = (cluster) => {
       return function () { // can't be an arrow function!
-        _.each(groupedData, (value, key) => {
+        _.each(clusters, (value, key) => {
           if (value !== cluster) {
             const gc = value.color
             updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
@@ -288,7 +287,7 @@ export default React.createClass({
     }
 
     const trackNode = (node) => {
-      const nodeGroup = groupedData[node.g]
+      const nodeGroup = clusters[node.g]
 
       // We only want to reset the panning, so still save the camera position
       // as that needs to lerp to its target instead
@@ -429,50 +428,6 @@ export default React.createClass({
 
 
 
-    const createSpriteFromArrayBuffer = (buffer) => {
-      // Magic here! (ArrayBuffer to Base64String)
-      const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
-      const image = new Image()
-      image.src = `data:image/jpeg;base64,${b64img}`
-
-      const texture = new THREE.Texture()
-
-      const canvas = document.createElement('canvas')
-
-      image.onload = function() {
-        canvas.width = image.width
-        canvas.height = image.height
-
-        const context = canvas.getContext('2d')
-
-        // Create a hexagon shape
-        context.beginPath()
-        context.lineTo(canvas.width / 9 * 2, 0)
-        context.lineTo(canvas.width / 9 * 7, 0)
-        context.lineTo(canvas.width, canvas.height / 2)
-        context.lineTo(canvas.width / 9 * 7, canvas.height)
-        context.lineTo(canvas.width / 9 * 2, canvas.height)
-        context.lineTo(0, canvas.height / 2)
-        context.closePath()
-        // Clip to the current path
-
-        context.clip()
-        context.drawImage(image, 0, 0)
-
-        texture.image = canvas
-        texture.needsUpdate = true
-      }
-
-      const spriteMaterial = new THREE.SpriteMaterial({
-        color: 0xcccccc,
-        transparent: true,
-        opacity: 0,
-        map: texture
-      })
-
-      return new THREE.Sprite(spriteMaterial)
-    }
 
     const prefetchBookmarkIds = [...ZOOM_CLUSTER_BOOKMARK_IDS].map((o) => o.id)
 
@@ -619,7 +574,7 @@ export default React.createClass({
 
     let mousedownObject = null
 
-    this._container.addEventListener( 'mousedown', (e) => {
+    this._container.addEventListener( 'mousedown', () => {
 
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
@@ -632,8 +587,7 @@ export default React.createClass({
       }
     }, false)
 
-    this._container.addEventListener( 'mouseup', (e) => {
-
+    this._container.addEventListener( 'mouseup', () => {
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
 
@@ -649,13 +603,7 @@ export default React.createClass({
       }
     }, false)
 
-    const tick = (dt) => {
-
-      const time = (new Date()).getTime()
-      // TODO fix absolute coords for nodes
-      // group.rotation.x = Math.sin(time * 0.0001) * 0.001
-      // group.rotation.y = Math.cos(time * 0.0001) * 0.002
-
+    const tick = () => {
       raycaster.setFromCamera( mouse, camera )
 
       const intersects = raycaster.intersectObject(particles)
@@ -678,7 +626,6 @@ export default React.createClass({
           }
           lastIntersectIndex = intersects[ 0 ].index
         }
-
       }
       // If we're not hovering over something
       else {
@@ -723,7 +670,6 @@ export default React.createClass({
     }
 
     const animate = () => {
-
       if (!currentlyTrackingNode) {
         controls.update()
       }
@@ -733,14 +679,11 @@ export default React.createClass({
       TWEEN.update()
 
       const delta = clock.getDelta()
-
       tick(delta)
 
       renderer.render(scene, camera)
-
     }
 
     animate()
-
   }
 })
