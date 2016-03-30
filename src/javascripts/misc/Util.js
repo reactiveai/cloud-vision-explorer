@@ -4,7 +4,7 @@ import THREE from 'three'
 
 module.exports = {
   getVisionJsonURL: (id) => {
-    return `https://storage.googleapis.com/gcs-samples2-explorer/vision/result/${id}.json`
+    return `https://storage.googleapis.com/${GCS_BUCKET_NAME}/vision/result/${id}.json`
   },
   preloadImage: (url) => {
     const img = new Image()
