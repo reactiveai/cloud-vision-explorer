@@ -1,5 +1,4 @@
 import React from 'react'
-
 import THREE from 'three'
 import TWEEN from 'tween.js'
 
@@ -49,8 +48,7 @@ const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 export default React.createClass({
   render() {
     return (
-      <div ref={(c) => this._container = c} className="render-view">
-</div>
+      <div ref={(c) => this._container = c} className="render-view"></div>
     )
   },
 
@@ -62,6 +60,7 @@ export default React.createClass({
   shouldComponentUpdate() {
     return false
   },
+  
   componentDidMount() {
     fetch(DATAPOINT_URL).then((res) => {
       return res.json()
@@ -76,6 +75,7 @@ export default React.createClass({
     // }
 
   },
+  
   _setupScene({points, clusters}) {
     this.props.emitter.emit('imageCount', points.length)
 
@@ -588,7 +588,6 @@ export default React.createClass({
     }, false)
 
     this._container.addEventListener( 'mouseup', () => {
-
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
 
@@ -605,7 +604,6 @@ export default React.createClass({
     }, false)
 
     const tick = () => {
-
       raycaster.setFromCamera( mouse, camera )
 
       const intersects = raycaster.intersectObject(particles)
@@ -628,7 +626,6 @@ export default React.createClass({
           }
           lastIntersectIndex = intersects[ 0 ].index
         }
-
       }
       // If we're not hovering over something
       else {
@@ -673,7 +670,6 @@ export default React.createClass({
     }
 
     const animate = () => {
-
       if (!currentlyTrackingNode) {
         controls.update()
       }
@@ -683,14 +679,11 @@ export default React.createClass({
       TWEEN.update()
 
       const delta = clock.getDelta()
-
       tick(delta)
 
       renderer.render(scene, camera)
-
     }
 
     animate()
-
   }
 })
