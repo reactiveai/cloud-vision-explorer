@@ -12,7 +12,7 @@ import _ from 'lodash'
 import Shaders from '../misc/Shaders.js'
 
 import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
-import { createSpriteFromArrayBuffer } from '../misc/RenderUtil.js'
+import { createSpriteFromArrayBuffer, createClusterNameSprite } from '../misc/RenderUtil.js'
 import { ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
 
 import io from 'socket.io-client'
@@ -91,10 +91,15 @@ export default React.createClass({
 
     const mouse = new THREE.Vector2()
 
-    // Do some post-processing
+    // Do some post-processing for points
     points.forEach((n, i) => {
       // Add a real THREE vector for easy access later
       n.vec = new THREE.Vector3(n.x, n.y, n.z)
+
+      // Cleanup
+      delete n.x
+      delete n.y
+      delete n.z
 
       // Normalize it
       n.vec.multiplyScalar(denseFactor)
@@ -116,19 +121,34 @@ export default React.createClass({
       }
     })
 
-    // First sort by the group ID ascending
-    const sortedData = _.orderBy(points, ['g'], ['asc'])
+    // Do some post-processing for clusters
+    clusters.forEach((cluster) => {
+      // Add a real THREE vector for easy access later
+      cluster.center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
+      cluster.center.multiplyScalar(denseFactor)
 
-    // Generate an object consisting out of groups of cluster IDs
-    const groupedData = _.groupBy(sortedData, (element) => element.g)
-
-    // Add metadata to each group
-    _.each(groupedData, (value, key, coll) => {
-      coll[key] = {
-        nodes: value,
-        color: new THREE.Color(0xffffff * random.real(0.0, 1.0))
-      }
+      // Cleanup
+      delete cluster.x
+      delete cluster.y
+      delete cluster.z
     })
+
+    {
+      // First sort by the group ID ascending
+      const sortedData = _.orderBy(points, ['g'], ['asc'])
+
+      // Generate an object consisting out of groups of cluster IDs
+      const groupedData = _.groupBy(sortedData, (element) => element.g)
+
+      // Add metadata to each group
+      _.each(groupedData, (value, key) => {
+        // Access all points for this cluster easily
+        clusters[key].points =  value
+
+        // Assign a random color to this cluster
+        clusters[key].color = new THREE.Color(0xffffff * random.real(0.0, 1.0))
+      })
+    }
 
     const positions = new Float32Array(points.length * 3)
     const colors = new Float32Array(points.length * 3)
@@ -143,7 +163,7 @@ export default React.createClass({
       const vertex = points[ i ].vec
       vertex.toArray(positions, i * 3)
 
-      points[i].color.set(groupedData[points[i].g].color)
+      points[i].color.set(clusters[points[i].g].color)
       points[i].color.toArray(colors, i * 3)
 
       sizes[i] = PARTICLE_SIZE
@@ -189,7 +209,7 @@ export default React.createClass({
 
     // To achieve an effect similar to the mocks, we need to shoot a line
     // at another node that is most near, except if node that was already drawn to
-    _.forEach(groupedData, (value, key) => {
+    _.forEach(clusters, (value, key) => {
       const geometry = new THREE.Geometry()
 
       const lineMaterial = new THREE.LineBasicMaterial({
@@ -205,7 +225,6 @@ export default React.createClass({
         return (new THREE.Vector3()).fromArray(v).multiplyScalar(denseFactor)
       })
 
-
       geometry.vertices = vertices
 
       const line = new THREE.Line( geometry, lineMaterial )
@@ -217,38 +236,9 @@ export default React.createClass({
 
     // Add cluster names
     clusters.forEach((cluster) => {
-      const center = new THREE.Vector3(cluster.x, cluster.y, cluster.z)
-      cluster.center = center
+      const sprite = createClusterNameSprite(cluster)
 
-      center.multiplyScalar(denseFactor)
-      const text = cluster.label
-
-      const canvas = document.createElement('canvas')
-      canvas.width = 512
-      canvas.height = 512
-
-      const context = canvas.getContext('2d')
-
-      const textColor = '#bbbbbb'
-
-      context.textAlign = 'center'
-      context.textBaseline = 'middle'
-      context.fillStyle = textColor
-      context.font = '60px Roboto'
-      context.fillText(text, canvas.width / 2, canvas.height / 2)
-
-      const texture = new THREE.Texture(canvas)
-      texture.needsUpdate = true
-
-      const spriteMaterial = new THREE.SpriteMaterial({
-        color: 0xdddddd,
-        transparent: true,
-        opacity: 1.0,
-        map: texture
-      })
-
-      const sprite = new THREE.Sprite(spriteMaterial)
-      sprite.position.copy(center)
+      sprite.position.copy(cluster.center)
       sprite.scale.multiplyScalar(denseFactor / 2)
 
       cluster.sprite = sprite
@@ -274,7 +264,7 @@ export default React.createClass({
 
     const groupOpacFunction = (cluster) => {
       return function () { // can't be an arrow function!
-        _.each(groupedData, (value, key) => {
+        _.each(clusters, (value, key) => {
           if (value !== cluster) {
             const gc = value.color
             updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
@@ -286,7 +276,7 @@ export default React.createClass({
     }
 
     const trackNode = (node) => {
-      const nodeGroup = groupedData[node.g]
+      const nodeGroup = clusters[node.g]
 
       // We only want to reset the panning, so still save the camera position
       // as that needs to lerp to its target instead
