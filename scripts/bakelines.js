@@ -8,7 +8,7 @@ const THREE = require('three')
 const _ = require('lodash')
 const fs = require('fs')
 
-const outputJson = require('./output.json')
+const outputJson = require('../public/output.json')
 
 const data = outputJson.points
 
@@ -31,18 +31,18 @@ _.each(groupedData, (value, key, coll) => {
   }
 })
 
-_.forEach(groupedData, (value, key) => {
-  const vertices = value.nodes.map((p) => p.vec)
+outputJson.points = []
 
-  console.log(vertices.length, 'vertices')
+_.forEach(groupedData, (value, key) => {
+  console.log(value.nodes.length, 'vertices')
 
   const findClosestVertex = (list, other) => {
     const clonedArr = _.without(_.clone(list), other)
-    clonedArr.sort((a, b) => a.distanceToSquared(other) - b.distanceToSquared(other))
+    clonedArr.sort((a, b) => a.vec.distanceToSquared(other.vec) - b.vec.distanceToSquared(other.vec))
     return clonedArr[0]
   }
 
-  const allowedVerticesToSearch = _.clone(vertices)
+  const allowedVerticesToSearch = _.clone(value.nodes)
 
   const sortedVertices = []
 
@@ -59,21 +59,22 @@ _.forEach(groupedData, (value, key) => {
     }
   }
 
-  doSearch(allowedVerticesToSearch, vertices[0])
+  doSearch(allowedVerticesToSearch, value.nodes[0])
 
-  const serializedVectors = sortedVertices.map((v) => v.toArray())
-
-  // Round the numbers a bit so they don't take too much space
-  _.forEach(serializedVectors, (v) => {
-    _.forEach(v, (n, k, a) => {
-      a[k] = Math.round(n * 10000) / 10000
-    })
+  const serializedVectors = sortedVertices.map((v) => {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      g: v.g,
+      i: v.i
+    }
   })
 
-  outputJson.clusters[key].lines = serializedVectors
+  outputJson.points = [...outputJson.points, ...serializedVectors]
 })
 
-fs.writeFile('./public/output_100k.json', JSON.stringify(outputJson), (err) => {
+fs.writeFile('./public/output.json', JSON.stringify(outputJson), (err) => {
   if (err) {
     return console.log(err)
   }

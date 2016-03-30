@@ -112,6 +112,18 @@ export default React.createClass({
 
       // Add a resolved promised so we can chain events to it
       n._promise = Promise.resolve()
+
+      // If there are points without an existing cluster
+      // create one for them
+      if (!clusters[n.g]) {
+        console.log(n)
+        clusters[n.g] = {
+          x: 0,
+          y: 0,
+          z: 0,
+          label: ''
+        }
+      }
     })
 
     points.forEach((p) => {
@@ -142,11 +154,13 @@ export default React.createClass({
 
       // Add metadata to each group
       _.each(groupedData, (value, key) => {
+        const intKey = parseInt(key)
+
         // Access all points for this cluster easily
-        clusters[key].points =  value
+        clusters[intKey].points = value
 
         // Assign a random color to this cluster
-        clusters[key].color = new THREE.Color(0xffffff * random.real(0.0, 1.0))
+        clusters[intKey].color = new THREE.Color(0xffffff * random.real(0.0, 1.0))
       })
     }
 
@@ -220,10 +234,7 @@ export default React.createClass({
         opacity: 0.3
       })
 
-      const vertices = clusters[key].lines.map((v) => {
-        // Deserialize and normalize
-        return (new THREE.Vector3()).fromArray(v).multiplyScalar(denseFactor)
-      })
+      const vertices = clusters[key].points.map((p) => p.vec)
 
       geometry.vertices = vertices
 
