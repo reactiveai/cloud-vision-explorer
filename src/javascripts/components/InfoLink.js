@@ -38,7 +38,7 @@ const style = {
 }
 
 const getThumbUrl = (id) => {
-  return `https://storage.googleapis.com/${GCS_BUCKET_NAME}/thumbnail/64x64/${id}.jpg`
+  return `https://storage.googleapis.com/${window.gcsBucketName}/thumbnail/64x64/${id}.jpg`
 }
 
 export default class InfoLink extends React.Component {
