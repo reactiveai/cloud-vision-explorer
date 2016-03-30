@@ -3,9 +3,11 @@ const router  = express.Router()
 
 module.exports = (app) => {
   router.get('/', (req, res) => {
-    const error = process.env.GCS_BUCKET_NAME ?
-      null : 'ERROR: GCS_BUCKET_NAME variable is required'
-    res.render('index', { error, gcsBucketName: process.env.GCS_BUCKET_NAME })
+    if (process.env.GCS_BUCKET_NAME) {
+      res.render('index', { gcsBucketName: process.env.GCS_BUCKET_NAME })
+    } else {
+      res.status(500).send('GCS_BUCKET_NAME variable is required')
+    }
   })
 
   router.get('/wstest', (req, res) => {
