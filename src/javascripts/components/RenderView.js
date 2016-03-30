@@ -21,7 +21,7 @@ import io from 'socket.io-client'
 import Random from 'random-js'
 const random = new Random(Random.engines.mt19937().seed(0))
 
-const DATAPOINT_URL = `https://storage.googleapis.com/${GCS_BUCKET_NAME}/datapoint/output_100k.json`
+const DATAPOINT_URL = `https://storage.googleapis.com/${window.gcsBucketName}/datapoint/output_100k.json`
 
 const tweenSpeed = 200
 const thumbCheckSpeed = 100
