@@ -1,4 +1,3 @@
-
 // Calculating nice lines to display on the client is very heavy
 // so we need to do this beforehand, save the lines to a file
 // and then load the file on the client
@@ -76,7 +75,8 @@ _.forEach(groupedData, (value, key) => {
 
 fs.writeFile('./public/output.json', JSON.stringify(outputJson), (err) => {
   if (err) {
-    return console.log(err)
+    console.log(err)
+    return
   }
 
   console.log('The file was saved!')
