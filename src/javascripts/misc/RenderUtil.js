@@ -1,8 +1,39 @@
 
-// import _ from 'lodash'
+import _ from 'lodash'
 import THREE from 'three'
 
 module.exports = {
+  createClusterNameSprite: (cluster) => {
+    const text = cluster.label
+
+    const canvas = document.createElement('canvas')
+    canvas.width = 512
+    canvas.height = 512
+
+    const context = canvas.getContext('2d')
+
+    const textColor = '#bbbbbb'
+
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    context.fillStyle = textColor
+    context.font = '60px Roboto'
+    context.fillText(text, canvas.width / 2, canvas.height / 2)
+
+    const texture = new THREE.Texture(canvas)
+    texture.needsUpdate = true
+
+    const spriteMaterial = new THREE.SpriteMaterial({
+      color: 0xdddddd,
+      transparent: true,
+      opacity: 1.0,
+      map: texture
+    })
+
+    const sprite = new THREE.Sprite(spriteMaterial)
+
+    return sprite
+  },
   createSpriteFromArrayBuffer: (buffer) => {
     // Magic here! (ArrayBuffer to Base64String)
     const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
