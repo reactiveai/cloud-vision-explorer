@@ -8,6 +8,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin'
 injectTapEventPlugin()
 
 import configureStore from './store/configureStore'
+import EntrancePage from './components/EntrancePage'
 import FrontPage from './components/FrontPage'
 
 const store = configureStore()
@@ -16,7 +17,8 @@ const history = syncHistoryWithStore(browserHistory, store)
 ReactDom.render(
   <Provider store={store}>
     <Router history={history}>
-      <Route path="/" component={FrontPage} />
+      <Route path="/galaxy" component={FrontPage} />
+      <Route path="/" component={EntrancePage} />
     </Router>
   </Provider>,
   document.getElementById('contents')
