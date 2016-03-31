@@ -8,10 +8,10 @@ module.exports = (app) => {
   })
 
   router.get('/*', (req, res) => {
-    if (process.env.GCS_BUCKET_NAME) {
-      res.render('index', { gcsBucketName: process.env.GCS_BUCKET_NAME })
+    if (process.env.GCS_BUCKET) {
+      res.render('index', { gcsBucketName: process.env.GCS_BUCKET })
     } else {
-      res.status(500).send('GCS_BUCKET_NAME variable is required')
+      res.status(500).send('GCS_BUCKET variable is required')
     }
   })
 

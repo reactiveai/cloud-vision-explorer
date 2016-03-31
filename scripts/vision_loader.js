@@ -6,7 +6,7 @@ const fs     = require('fs')
 const path   = require('path')
 const vision = require('node-cloud-vision-api')
 
-const GCS_BUCKET_NAME = 'gcs-samples2-explorer'
+const GCS_BUCKET = 'gcs-samples2-explorer'
 const ID_LENGTH = 32
 const REQ_INTERVAL = 1000
 
@@ -34,7 +34,7 @@ _.each(glob.sync(ImagePattern), (file, index, files) => {
 const loadVision = (id) => {
   const req = new vision.Request({
     image: new vision.Image({
-      url: `https://${GCS_BUCKET_NAME}.storage.googleapis.com/image/${id}.jpg`
+      url: `https://${GCS_BUCKET}.storage.googleapis.com/image/${id}.jpg`
     }),
     features: [
       new vision.Feature('FACE_DETECTION', 10),
