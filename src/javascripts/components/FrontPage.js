@@ -8,7 +8,6 @@ import InfoLink from './InfoLink'
 import ImageCounter from './ImageCounter'
 import Sidebar from './Sidebar'
 import * as sidebarActionCreators from '../actions/sidebar'
-import 'stylesheets/main'
 import 'stylesheets/FrontPage'
 import {EventEmitter} from 'fbemitter'
 
