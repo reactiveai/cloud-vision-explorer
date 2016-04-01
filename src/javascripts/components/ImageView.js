@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react'
 import 'stylesheets/ImageView'
+import _ from 'lodash'
 
 const getImageUrl = (id) => {
   return `https://storage.googleapis.com/${window.gcsBucketName}/image/${id}.jpg`
@@ -53,7 +54,7 @@ export default class ImaveView extends React.Component {
       })
     })
 
-    this.props.emitter.addListener('hideSidebar', (id) => {
+    this.props.emitter.addListener('hideSidebar', () => {
       this.setState({ active: false, vision: {} })
     })
   }

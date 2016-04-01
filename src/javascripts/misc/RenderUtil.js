@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import THREE from 'three'
 
 module.exports = {
@@ -33,7 +32,7 @@ module.exports = {
 
     return sprite
   },
-  
+
   createSpriteFromArrayBuffer: (buffer) => {
     // Magic here! (ArrayBuffer to Base64String)
     const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line

@@ -75,7 +75,7 @@ class GraphTab extends React.Component {
     const { vision } = this.props
     const classForPerson = (idx) => {
       const classes = ['primary', 'secondary', 'third']
-      return 'face-detection-person ' + classes[idx % classes.length]
+      return `face-detection-person ${classes[idx % classes.length]}`
     }
     const likelihoodLevel = (likelihood) => {
       const levelMap = {
@@ -311,7 +311,7 @@ export default class Sidebar extends React.Component {
       })
     })
 
-    this.props.emitter.addListener('hideSidebar', (id) => {
+    this.props.emitter.addListener('hideSidebar', () => {
       this.props.hideSidebar()
     })
   }
@@ -321,12 +321,9 @@ export default class Sidebar extends React.Component {
   }
 
   render() {
-    const { sidebar, hideSidebar, changeTab } = this.props
+    const { sidebar, changeTab } = this.props
     const classForTab = (index) => {
       return sidebar.tabIndex === index ? 'active' : ''
-    }
-    const classForIndicator = (key) => {
-      return key in this.state.vision ? 'active' : ''
     }
     const animateScroll = (divid) => {
       const currentScroll = $('.detail-tab > section').prop('scrollTop')
