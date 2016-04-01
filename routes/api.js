@@ -1,7 +1,7 @@
 const express = require('express')
 const router  = express.Router()
 
-module.exports = (app) => {
+module.exports = () => {
   router.get('/', (req, res) => {
     res.json({message: 'this is API#index'})
   })
