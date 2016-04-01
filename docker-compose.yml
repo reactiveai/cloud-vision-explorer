@@ -11,14 +11,8 @@ services:
   ap1:
     build: .
     environment:
-      MYSQL_SERVER:
-      MYSQL_USER:
-      MYSQL_PASSWORD:
-      MYSQL_DATABASE:
+      GCS_BUCKET:
   ap2:
     build: .
     environment:
-      MYSQL_SERVER:
-      MYSQL_USER:
-      MYSQL_PASSWORD:
-      MYSQL_DATABASE:
+      GCS_BUCKET:

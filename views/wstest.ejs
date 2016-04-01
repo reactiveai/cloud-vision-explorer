@@ -23,33 +23,27 @@
         'ffff814fca5de11caa543f33af84d937'
       ]
 
-      const imageLoader = (results, element) => {
-        console.debug(`received ${results.length} thumbnail`)
-        console.debug(results)
+      const imageLoader = (result, element) => {
+        // Magic here! (ArrayBuffer to Base64String)
+        // Maybe better use https://github.com/beatgammit/base64-js
+        const b64img = btoa([].reduce.call(new Uint8Array(result),(p,c) => {return p+String.fromCharCode(c)},''))
 
-        _.each(results, (result) => {
-          // Magic here! (ArrayBuffer to Base64String)
-          // Maybe better use https://github.com/beatgammit/base64-js
-          const b64img = btoa([].reduce.call(new Uint8Array(result),(p,c) => {return p+String.fromCharCode(c)},''))
+        const img = document.createElement('img');
+        img.src = `data:image/jpeg;base64,${b64img}`
 
-          const img = document.createElement('img');
-          img.src = `data:image/jpeg;base64,${b64img}`
-
-          const imgDiv = document.getElementById(element)
-          imgDiv.appendChild(img)
-        })
+        const imgDiv = document.getElementById(element)
+        imgDiv.appendChild(img)
       }
 
       const socket = io()
 
-      socket.on('thumb32', (results) => { imageLoader(results, 'images32') })
-      socket.on('thumb64', (results) => { imageLoader(results, 'images64') })
-      socket.on('thumb128', (results) => { imageLoader(results, 'images128') })
-
       socket.on('connect', () => {
-        socket.emit('thumb32', TARGET_IDS)
-        socket.emit('thumb64', TARGET_IDS)
-        socket.emit('thumb128', TARGET_IDS)
+        console.log('connected')
+        _.each(TARGET_IDS, (id) => {
+          socket.emit('thumb32', id, (data) => { imageLoader(data, 'images32') })
+          socket.emit('thumb64', id, (data) => { imageLoader(data, 'images64') })
+          socket.emit('thumb128', id, (data) => { imageLoader(data, 'images128') })
+        })
       })
     </script>
   </body>

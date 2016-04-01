@@ -1,37 +1,44 @@
-import React from 'react'
-import THREE from 'three'
-import TWEEN from 'tween.js'
+import React    from 'react'
+import THREE    from 'three'
+import TWEEN    from 'tween.js'
+import _        from 'lodash'
+import Shaders  from '../misc/Shaders.js'
+import io       from 'socket.io-client'
+import Random   from 'random-js'
 
+import { getVisionJsonURL,
+         preloadImage }               from '../misc/Util.js'
+import { createSpriteFromArrayBuffer,
+         createClusterNameSprite,
+         groupOpacFunction,
+         updateNodeColor  }           from '../misc/RenderUtil.js'
+import { ZOOM_CLUSTER_BOOKMARK_IDS }  from '../misc/Constants.js'
+
+// Load some webpack-incompatible modules
 require('../misc/TrackballControls.js')(THREE)
 
+// Styles
 import 'stylesheets/RenderView'
 
-import _ from 'lodash'
-
-import Shaders from '../misc/Shaders.js'
-
-import { getVisionJsonURL, preloadImage } from '../misc/Util.js'
-import { createSpriteFromArrayBuffer, createClusterNameSprite } from '../misc/RenderUtil.js'
-import { ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
-
-import io from 'socket.io-client'
-
-import Random from 'random-js'
-const random = new Random(Random.engines.mt19937().seed(0))
+const seededRandom = new Random(Random.engines.mt19937().seed(0))
 
 const DATAPOINT_URL = `https://storage.googleapis.com/${window.gcsBucketName}/datapoint/output_100k.json`
 
 const tweenSpeed = 200
 const thumbCheckSpeed = 100
+
+// denseFactor determines how big our 3D universe is.
+// Every coordinate/setting is scaled by this factor
 const denseFactor = 1000.0
 
-// When this is not null, the camera will zoom in to this thumb
-// If a mouse event happens, set it back to null
 let currentlyTrackingNode = null
 let currentlyZoomedCluster = null
+
+// When we request an animation, attach it to a promise
+// so it runs after whatever we're doing now
 let cameraAnimationQueue = Promise.resolve()
 
-// Promise TWEEN
+// Promise version of TWEEN.js
 const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadratic.InOut) => {
   return new Promise((resolve) => {
     new TWEEN.Tween(start)
@@ -43,6 +50,7 @@ const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadrat
   })
 }
 
+// Simple promise version of setTimeout()
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
 export default React.createClass({
@@ -60,22 +68,15 @@ export default React.createClass({
   shouldComponentUpdate() {
     return false
   },
-  
+
   componentDidMount() {
     fetch(DATAPOINT_URL).then((res) => {
       return res.json()
     }).then((data) => {
-
       this._setupScene(data)
     })
-
-    // {
-    //   const data = generateMockData(1, 100, 0)
-    //   this._setupScene(data)
-    // }
-
   },
-  
+
   _setupScene({points, clusters}) {
     this.props.emitter.emit('imageCount', points.length)
 
@@ -89,6 +90,7 @@ export default React.createClass({
     // Increase the default mouseover detection radius of points
     raycaster.params.Points.threshold = denseFactor / 1000
 
+    // Used for mousepicking
     const mouse = new THREE.Vector2()
 
     // Do some post-processing for points
@@ -126,8 +128,9 @@ export default React.createClass({
       }
     })
 
+    // Monkey-patch the dataset for the demo
     points.forEach((p) => {
-      // Cat in the way
+      // There's an ugly cat in the way of the first node, move it to the back
       if (p.i === '9881051092d70afabf5e3fdab465547a') {
         p.vec.add(new THREE.Vector3(10, 0, 0))
       }
@@ -160,7 +163,7 @@ export default React.createClass({
         clusters[intKey].points = value
 
         // Assign a random color to this cluster
-        clusters[intKey].color = new THREE.Color(0xffffff * random.real(0.0, 1.0))
+        clusters[intKey].color = new THREE.Color(0xffffff * seededRandom.real(0.0, 1.0))
       })
     }
 
@@ -187,24 +190,6 @@ export default React.createClass({
     geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.addAttribute('customColor', new THREE.BufferAttribute(colors, 3))
     geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1))
-
-    const updateNodeColor = (r, g, b, index) => {
-      const attributes = geometry.attributes
-
-      const color = new THREE.Color(r, g, b)
-      color.toArray(attributes.customColor.array, index * 3)
-      attributes.customColor.needsUpdate = true
-    }
-
-    const updateGroupColor = _.throttle((r, g, b, group) => {
-      points.forEach((p, i) => {
-        if (p.g === group) {
-          if (!points[i].plane) {
-            updateNodeColor(r, g, b, i)
-          }
-        }
-      })
-    }, 100)
 
     const material = new THREE.ShaderMaterial({
       uniforms: {
@@ -273,19 +258,6 @@ export default React.createClass({
 
     controls.keys = [ 65, 83, 68 ]
 
-    const groupOpacFunction = (cluster) => {
-      return function () { // can't be an arrow function!
-        _.each(clusters, (value, key) => {
-          if (value !== cluster) {
-            const gc = value.color
-            updateGroupColor(gc.r * this.f, gc.g * this.f, gc.b * this.f, parseInt(key, 10))
-            value.lineMaterial.opacity = 0.3 * this.f
-            clusters[key].sprite.material.opacity = 1.0 * this.f
-          }
-        })
-      }
-    }
-
     const trackNode = (node) => {
       const nodeGroup = clusters[node.g]
 
@@ -329,7 +301,7 @@ export default React.createClass({
               f: 0.3
             }, {
               f: 1.0
-            }, otherGroupsFadeInTime, groupOpacFunction(currentlyZoomedCluster)) : wait(otherGroupsFadeInTime))
+            }, otherGroupsFadeInTime, groupOpacFunction(points, geometry, clusters, currentlyZoomedCluster)) : wait(otherGroupsFadeInTime))
           })
           .then(() => wait((waitTime/3)*0.5))
           .then(() => {
@@ -337,7 +309,7 @@ export default React.createClass({
               f: 1.0
             }, {
               f: 0.3
-            }, groupFocusTime, groupOpacFunction(nodeGroup))
+            }, groupFocusTime, groupOpacFunction(points, geometry, clusters, nodeGroup))
           }),
           tween({
             f: 0
@@ -426,9 +398,6 @@ export default React.createClass({
 
     let currentListOfNearbyVectors = []
 
-
-
-
     const prefetchBookmarkIds = [...ZOOM_CLUSTER_BOOKMARK_IDS].map((o) => o.id)
 
     let bookmarkVectorIncludeDistanceFactor = 0
@@ -503,7 +472,7 @@ export default React.createClass({
             g: nearbyVector.color.g,
             b: nearbyVector.color.b
           }, tweenSpeed, function () {
-            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+            updateNodeColor(geometry, this.r, this.g, this.b, nearbyVector.index)
           })
         })
       })
@@ -524,7 +493,7 @@ export default React.createClass({
             g: 0,
             b: 0
           }, tweenSpeed, function () {
-            updateNodeColor(this.r, this.g, this.b, nearbyVector.index)
+            updateNodeColor(geometry, this.r, this.g, this.b, nearbyVector.index)
           })
         })
       })
@@ -533,19 +502,13 @@ export default React.createClass({
 
       // Only request thumbs if there are any vectors nearby at all
       if (listOfNewNearbyVectorsIds.length) {
-        const getAllImagesPromise = sendAndAwait('thumb128', listOfNewNearbyVectorsIds)
-
         listOfNewNearbyVectors.forEach((nearbyVector) => {
           nearbyVector._promise = nearbyVector._promise.then(() => {
-            return getAllImagesPromise
+            return sendAndAwait('thumb128', nearbyVector.i)
           })
-          .then((thumbs) => {
-
-            const thumbObject = thumbs.find((t) => t.id === nearbyVector.i)
-
+          .then((thumb) => {
             return new Promise((resolve) => {
-
-              nearbyVector.plane = createSpriteFromArrayBuffer(thumbObject.thumb)
+              nearbyVector.plane = createSpriteFromArrayBuffer(thumb)
               nearbyVector.plane.position.copy(nearbyVector.vec)
               nearbyVector.plane.scale.multiplyScalar(denseFactor / 500)
 
@@ -663,7 +626,7 @@ export default React.createClass({
             f: 0.3
           }, {
             f: 1.0
-          }, 1000, groupOpacFunction(oldZoomedCluster))
+          }, 1000, groupOpacFunction(points, geometry, clusters, oldZoomedCluster))
         })
       }
 
