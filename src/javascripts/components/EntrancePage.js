@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router'
-import Button from 'react-toolbox/lib/button'
 import Ripple from 'react-toolbox/lib/ripple'
 import 'stylesheets/EntrancePage'
 
