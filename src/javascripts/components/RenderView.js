@@ -118,7 +118,6 @@ export default React.createClass({
       // If there are points without an existing cluster
       // create one for them
       if (!clusters[n.g]) {
-        console.log(n)
         clusters[n.g] = {
           x: 0,
           y: 0,
