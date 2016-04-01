@@ -1,0 +1,17 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #212121;
+}
+
+#contents > div {
+  overflow: hidden !important;
+}
+
+.gcp-logo {
+  width: 45px;
+  margin-top: 15px;
+}
