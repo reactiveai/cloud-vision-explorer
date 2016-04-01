@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import THREE from 'three'
 
 const updateNodeColor = (geometry, r, g, b, index) => {
