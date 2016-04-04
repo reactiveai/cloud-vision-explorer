@@ -12,7 +12,6 @@ import { createSpriteFromArrayBuffer,
          createClusterNameSprite,
          groupOpacFunction,
          updateNodeColor  }           from '../misc/RenderUtil.js'
-import { ZOOM_CLUSTER_BOOKMARK_IDS }  from '../misc/Constants.js'
 
 // Load some webpack-incompatible modules
 require('../misc/TrackballControls.js')(THREE)
@@ -397,33 +396,10 @@ export default React.createClass({
 
     let currentListOfNearbyVectors = []
 
-    const prefetchBookmarkIds = [...ZOOM_CLUSTER_BOOKMARK_IDS].map((o) => o.id)
-
-    let bookmarkVectorIncludeDistanceFactor = 0
-
-    tween({
-      o: 0
-    }, {
-      o: 0.05
-    }, 5000, function () {
-      bookmarkVectorIncludeDistanceFactor = this.o
-    })
-
     const checkForImagesThatCanBeDownloaded = _.throttle(() => {
-      // Prefetch all thumbs we're likely to zoom into
-      const listOfBookmarkVectors = []
-      prefetchBookmarkIds.forEach((id) => {
-        const node = _.find(points, (p) => p.i === id)
-        points.forEach((n) => {
-          if (n.vec.distanceToSquared(node.vec) < Math.pow(denseFactor * bookmarkVectorIncludeDistanceFactor, 2)) {
-            listOfBookmarkVectors.push(n)
-          }
-        })
-      })
-
       // Keep track of particles that are within our range, and particles
       // that are outside our range. Add images for the ones that are near
-      let listOfNearbyVectors = [...listOfBookmarkVectors]
+      let listOfNearbyVectors = []
 
       if (!currentlyTrackingNode) {
         points.forEach((n) => {
