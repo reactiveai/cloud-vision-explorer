@@ -9,6 +9,11 @@ new WebpackDevServer(webpack(config), {
   historyApiFallback: true,
   proxy: {
     '*': 'http://localhost:3000'
+  },
+  stats: {
+    children: false,
+    colors: true,
+    chunks: false
   }
 }).listen(3001, 'localhost', (err) => {
   if (err) {
