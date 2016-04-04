@@ -14,8 +14,16 @@ module.exports = {
     numberOfNodes = 100000,
     groupLocationSpread = 1000.0) => {
     // Mock data
-    const data = []
+    const points = []
+    const clusters = []
     for (let i = 0; i < numberOfMockGroups; i++) {
+
+      clusters.push({
+        x: 0,
+        y: 0,
+        z: 0,
+        label: ''
+      })
 
       const groupLocation = new THREE.Vector3(
         _.random(-groupLocationSpread, groupLocationSpread),
@@ -25,7 +33,7 @@ module.exports = {
       const groupSize = _.random(10.0, 500.0)
 
       for (let j = 0; j < numberOfNodes/numberOfMockGroups; j++) {
-        data.push({
+        points.push({
           id: i,
           x: groupLocation.x + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
           y: groupLocation.y + Math.pow(_.random(-groupSize, groupSize), _.random(1, 1)),
@@ -35,6 +43,9 @@ module.exports = {
       }
     }
 
-    return data
+    return {
+      points: points,
+      clusters: clusters
+    }
   }
 }
