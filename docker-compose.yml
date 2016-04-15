@@ -6,13 +6,8 @@ services:
       - "80:80"
       - "443:443"
     links:
-      - ap1:ap1
-      - ap2:ap2
-  ap1:
-    build: .
-    environment:
-      GCS_BUCKET:
-  ap2:
+      - ap:ap
+  ap:
     build: .
     environment:
       GCS_BUCKET:
