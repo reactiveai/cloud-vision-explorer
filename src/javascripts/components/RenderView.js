@@ -3,15 +3,15 @@ import THREE    from 'three'
 import TWEEN    from 'tween.js'
 import _        from 'lodash'
 import Shaders  from '../misc/Shaders.js'
-import io       from 'socket.io-client'
 import Random   from 'random-js'
 
 import { getVisionJsonURL,
          preloadImage }               from '../misc/Util.js'
-import { createSpriteFromArrayBuffer,
+import { createHexagonSpriteFromUrl,
          createClusterNameSprite,
          groupOpacFunction,
          updateNodeColor  }           from '../misc/RenderUtil.js'
+import { gcsBucketName }              from '../config.js'          
 
 // Load some webpack-incompatible modules
 require('../misc/TrackballControls.js')(THREE)
@@ -21,10 +21,10 @@ import 'stylesheets/RenderView'
 
 const seededRandom = new Random(Random.engines.mt19937().seed(0))
 
-const DATAPOINT_URL = `https://storage.googleapis.com/${window.gcsBucketName}/datapoint/output_100k.json`
+const DATAPOINT_URL = `https://storage.googleapis.com/${gcsBucketName}/datapoint/output_100k.json`
 
 const tweenSpeed = 200
-const thumbCheckSpeed = 100
+const thumbCheckSpeed = 10
 
 // denseFactor determines how big our 3D universe is.
 // Every coordinate/setting is scaled by this factor
@@ -51,6 +51,8 @@ const tween = (start, end, duration, onUpdateFn, easingFn = TWEEN.Easing.Quadrat
 
 // Simple promise version of setTimeout()
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+
+const textureLoader = new THREE.TextureLoader()
 
 export default React.createClass({
   render() {
@@ -192,7 +194,7 @@ export default React.createClass({
     const material = new THREE.ShaderMaterial({
       uniforms: {
         color:   { type: 'c', value: new THREE.Color( 0xffffff ) },
-        texture: { type: 't', value: new THREE.TextureLoader().load( 'images/disc.png' ) }
+        texture: { type: 't', value: textureLoader.load( 'images/disc.png' ) }
       },
       vertexShader: Shaders.points.vertexShader,
       fragmentShader: Shaders.points.fragmentShader,
@@ -347,7 +349,8 @@ export default React.createClass({
     }
 
     this.props.emitter.addListener('zoomToImage', (id, openSideBar) => {
-      // Preload the image so it'll show instantly once the animation finishes
+      // Preload the image results JSON file so it'll show instantly
+      // when the sidebar is opened
       preloadImage(getVisionJsonURL(id))
 
       cameraAnimationQueue = cameraAnimationQueue
@@ -371,14 +374,6 @@ export default React.createClass({
     }, false)
 
     const clock = new THREE.Clock()
-
-    const socket = io()
-
-    socket.on('connect', () => {
-      console.debug('connected')
-    })
-
-    const sendAndAwait = (event, data) => new Promise((resolve) => { socket.emit(event, data, resolve) })
 
     window.addEventListener('resize', () => {
 
@@ -473,17 +468,12 @@ export default React.createClass({
         })
       })
 
-      const listOfNewNearbyVectorsIds = listOfNewNearbyVectors.map((v) => v.i)
-
       // Only request thumbs if there are any vectors nearby at all
-      if (listOfNewNearbyVectorsIds.length) {
+      if (listOfNewNearbyVectors.length) {
         listOfNewNearbyVectors.forEach((nearbyVector) => {
           nearbyVector._promise = nearbyVector._promise.then(() => {
-            return sendAndAwait('thumb128', nearbyVector.i)
-          })
-          .then((thumb) => {
             return new Promise((resolve) => {
-              nearbyVector.plane = createSpriteFromArrayBuffer(thumb)
+              nearbyVector.plane = createHexagonSpriteFromUrl(`https://storage.googleapis.com/${gcsBucketName}/thumbnail/128x128/${nearbyVector.i}.jpg`)
               nearbyVector.plane.position.copy(nearbyVector.vec)
               nearbyVector.plane.scale.multiplyScalar(denseFactor / 500)
 

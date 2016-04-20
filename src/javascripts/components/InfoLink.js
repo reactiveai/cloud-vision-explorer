@@ -4,6 +4,7 @@ import React, { PropTypes } from 'react'
 import 'stylesheets/InfoLink'
 
 import { OPEN_IMAGE_BOOKMARK_IDS, ZOOM_CLUSTER_BOOKMARK_IDS } from '../misc/Constants.js'
+import { gcsBucketName } from '../config.js'
 
 const style = {
   h1: {
@@ -37,7 +38,7 @@ const style = {
 }
 
 const getThumbUrl = (id) => {
-  return `https://storage.googleapis.com/${window.gcsBucketName}/thumbnail/64x64/${id}.jpg`
+  return `https://storage.googleapis.com/${gcsBucketName}/thumbnail/64x64/${id}.jpg`
 }
 
 export default class InfoLink extends React.Component {
