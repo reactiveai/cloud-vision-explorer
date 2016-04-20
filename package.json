@@ -12,11 +12,7 @@
     "build": "gulp build"
   },
   "dependencies": {
-    "body-parser": "~1.15.0",
-    "cookie-parser": "~1.4.1",
     "debug": "~2.2.0",
-    "ejs": "^2.4.1",
-    "express": "~4.13.4",
     "fbemitter": "^2.0.2",
     "file-loader": "^0.8.5",
     "gulp-eslint": "^2.0.0",
@@ -40,10 +36,6 @@
     "redux": "^3.3.1",
     "redux-logger": "^2.6.1",
     "redux-thunk": "^2.0.1",
-    "request-promise": "^2.0.1",
-    "serve-favicon": "~2.3.0",
-    "socket.io": "^1.4.5",
-    "superagent": "^1.8.3",
     "three": "^0.74.0",
     "tween.js": "^16.3.4"
   },

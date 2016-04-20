@@ -66,12 +66,10 @@ module.exports = {
     return sprite
   },
 
-  createSpriteFromArrayBuffer: (buffer) => {
-    // Magic here! (ArrayBuffer to Base64String)
-    const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
+  createHexagonSpriteFromUrl: (url) => {
     const image = new Image()
-    image.src = `data:image/jpeg;base64,${b64img}`
+    image.crossOrigin = 'anonymous'
+    image.src = url
 
     const texture = new THREE.Texture()
 
