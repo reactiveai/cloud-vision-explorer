@@ -1,7 +1,6 @@
 'use strict'
 const gulp          = require('gulp')
 const gutil         = require('gulp-util')
-const gulpCopy      = require('gulp-copy')
 const plumber       = require('gulp-plumber')
 const eslint        = require('gulp-eslint')
 const jasmine       = require('gulp-jasmine')
@@ -14,7 +13,7 @@ const wDevServer    = require('webpack-dev-server')
 const CLIENT_JS_ENTRY_POINT = 'src/javascripts/main.js'
 
 gulp.task('default', () => {
-  seq('lint', 'test', 'webpack-dev-server')
+  seq('lint', 'webpack-dev-server')
 })
 
 gulp.task('build', () => {
@@ -33,7 +32,7 @@ gulp.task('lint', () => {
 })
 
 gulp.task('_build', () => {
-  gulp.src('index.html').pipe(gulpCopy('build/prod'))
+  gulp.src('public/**/*').pipe(gulp.dest('build/prod'))
 
   return gulp.src(CLIENT_JS_ENTRY_POINT)
     .pipe(plumber())
@@ -42,7 +41,7 @@ gulp.task('_build', () => {
 })
 
 gulp.task('webpack-dev-server', () => {
-  gulp.src('index.html').pipe(gulpCopy('build/dev'))
+  gulp.src('public/**/*').pipe(gulp.dest('build/dev'))
 
   // Start a webpack-dev-server
   new wDevServer(webpack(webpackConfig), {
