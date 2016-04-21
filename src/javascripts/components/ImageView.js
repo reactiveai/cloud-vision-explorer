@@ -2,8 +2,10 @@ import React, { PropTypes } from 'react'
 import 'stylesheets/ImageView'
 import _ from 'lodash'
 
+import { gcsBucketName } from '../config.js'
+
 const getImageUrl = (id) => {
-  return `https://storage.googleapis.com/${window.gcsBucketName}/image/${id}.jpg`
+  return `https://storage.googleapis.com/${gcsBucketName}/image/${id}.jpg`
 }
 
 const style = {

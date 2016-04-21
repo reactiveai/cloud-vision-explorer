@@ -66,16 +66,23 @@ module.exports = {
     return sprite
   },
 
-  createSpriteFromArrayBuffer: (buffer) => {
-    // Magic here! (ArrayBuffer to Base64String)
-    const b64img = btoa([].reduce.call(new Uint8Array(buffer),(p,c) => {return p+String.fromCharCode(c)},'')) //eslint-disable-line
-
+  createHexagonSpriteFromUrl: (url) => new Promise((resolve) => {
     const image = new Image()
-    image.src = `data:image/jpeg;base64,${b64img}`
+    image.crossOrigin = 'anonymous'
+    image.src = url
 
     const texture = new THREE.Texture()
 
     const canvas = document.createElement('canvas')
+
+    const spriteMaterial = new THREE.SpriteMaterial({
+      color: 0xcccccc,
+      transparent: true,
+      opacity: 0,
+      map: texture
+    })
+
+    const sprite = new THREE.Sprite(spriteMaterial)
 
     image.onload = function() {
       canvas.width = image.width
@@ -99,15 +106,8 @@ module.exports = {
 
       texture.image = canvas
       texture.needsUpdate = true
+
+      resolve(sprite)
     }
-
-    const spriteMaterial = new THREE.SpriteMaterial({
-      color: 0xcccccc,
-      transparent: true,
-      opacity: 0,
-      map: texture
-    })
-
-    return new THREE.Sprite(spriteMaterial)
-  }
+  })
 }

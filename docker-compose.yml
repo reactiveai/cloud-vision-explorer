@@ -1,13 +1,7 @@
 version: '2'
 services:
-  proxy:
-    build: ./nginx
+  nginx:
+    build: .
     ports:
       - "80:80"
       - "443:443"
-    links:
-      - ap:ap
-  ap:
-    build: .
-    environment:
-      GCS_BUCKET:
