@@ -1,6 +1,7 @@
 'use strict'
 const gulp          = require('gulp')
 const gutil         = require('gulp-util')
+const gulpCopy      = require('gulp-copy')
 const plumber       = require('gulp-plumber')
 const eslint        = require('gulp-eslint')
 const jasmine       = require('gulp-jasmine')
@@ -17,21 +18,14 @@ gulp.task('default', () => {
 })
 
 gulp.task('build', () => {
-  seq('lint', 'test', '_build')
-})
-
-gulp.task('test', () => {
-  process.env.NODE_ENV = 'test'
-  return gulp.src('spec/**/*.spec.js')
-  .pipe(jasmine())
+  seq('lint', '_build')
 })
 
 gulp.task('lint', () => {
   return gulp.src([
     '*.js',
-    '!newrelic.js',
     'src/javascripts/**/*.js',
-    '!build/**/bundle.js'
+    '!build'
   ])
   .pipe(eslint({configFile: '.eslintrc.json'}))
   .pipe(eslint.format())
@@ -39,6 +33,8 @@ gulp.task('lint', () => {
 })
 
 gulp.task('_build', () => {
+  gulp.src('index.html').pipe(gulpCopy('build/prod'))
+
   return gulp.src(CLIENT_JS_ENTRY_POINT)
     .pipe(plumber())
     .pipe(wpStream(webpackConfig))
@@ -46,6 +42,8 @@ gulp.task('_build', () => {
 })
 
 gulp.task('webpack-dev-server', () => {
+  gulp.src('index.html').pipe(gulpCopy('build/dev'))
+
   // Start a webpack-dev-server
   new wDevServer(webpack(webpackConfig), {
     contentBase: 'build/dev/',

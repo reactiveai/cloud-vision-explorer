@@ -34,8 +34,7 @@ public/javascripts/bundle.js
 .envrc
 
 scripts/images/*.jpg
-build/**/bundle.js
-build/**/main.css
+build/**/*
 *.mat
 *.pyc
 .DS_Store

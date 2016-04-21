@@ -1,14 +1,8 @@
-FROM node:5
+FROM nginx
 
-RUN mkdir -p /opt/cloud-vision-explorer
-WORKDIR /opt/cloud-vision-explorer
+COPY ./nginx/nginx.conf /etc/nginx
+COPY ./nginx/ssl/* /etc/nginx/conf.d/
+COPY ./build/prod /opt/www
 
-COPY . /opt/cloud-vision-explorer
-
-RUN npm install --production
-
-ENV NODE_ENV production
-ENV PORT 80
 EXPOSE 80
-
-CMD [ "npm", "start" ]
+EXPOSE 443
