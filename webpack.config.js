@@ -1,30 +1,20 @@
 'use strict'
-const _                 = require('lodash')
+
 const webpack           = require('webpack')
 const path              = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const autoprefixer      = require('autoprefixer')
 
-let entryPoint = null
-if(_.isEqual(process.env.NODE_ENV, 'production')) {
-  entryPoint = [
-    './src/javascripts/main.js'
-  ]
-}
-else {
-  entryPoint = [
-    'webpack-dev-server/client?http://0.0.0.0:3001',
-    'webpack/hot/only-dev-server',
-    './src/javascripts/main.js'
-  ]
-}
-
 module.exports = {
   devtool: 'inline-source-map',
-  entry: entryPoint,
+
+  entry: [
+    'webpack/hot/only-dev-server',
+    './src/javascripts/main.js'
+  ],
 
   output: {
-    path: path.resolve(__dirname, './public'),
+    path: path.resolve(__dirname, './build/dev'),
     filename: 'bundle.js'
   },
 
@@ -74,5 +64,9 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.scss', '.svg'],
     modulesDirectories: ['src', 'node_modules']
+  },
+
+  stats: {
+    children: false  
   }
 }
