@@ -11,7 +11,7 @@ import { createHexagonSpriteFromUrl,
          createClusterNameSprite,
          groupOpacFunction,
          updateNodeColor  }           from '../misc/RenderUtil.js'
-import { gcsBucketName }              from '../config.js'          
+import { gcsBucketName }              from '../config.js'
 
 // Load some webpack-incompatible modules
 require('../misc/TrackballControls.js')(THREE)
@@ -472,17 +472,13 @@ export default React.createClass({
       if (listOfNewNearbyVectors.length) {
         listOfNewNearbyVectors.forEach((nearbyVector) => {
           nearbyVector._promise = nearbyVector._promise.then(() => {
-            return new Promise((resolve) => {
-              nearbyVector.plane = createHexagonSpriteFromUrl(`https://storage.googleapis.com/${gcsBucketName}/thumbnail/128x128/${nearbyVector.i}.jpg`)
+            return createHexagonSpriteFromUrl(`https://storage.googleapis.com/${gcsBucketName}/thumbnail/128x128/${nearbyVector.i}.jpg`)
+            .then((sprite) => {
+              nearbyVector.plane = sprite
               nearbyVector.plane.position.copy(nearbyVector.vec)
               nearbyVector.plane.scale.multiplyScalar(denseFactor / 500)
 
               group.add(nearbyVector.plane)
-
-              // Adding a small timeout may help with the browser blocking CPU
-              setTimeout(() => {
-                resolve()
-              }, 0)
             })
             .then(() => {
               return tween({
