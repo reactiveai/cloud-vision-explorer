@@ -10,6 +10,7 @@ import Sidebar from './Sidebar'
 import * as sidebarActionCreators from '../actions/sidebar'
 import 'stylesheets/FrontPage'
 import {EventEmitter} from 'fbemitter'
+import { ReactiveLogo } from './ReactiveLogo'
 
 const emitter = new EventEmitter()
 
@@ -52,6 +53,7 @@ class FrontPage extends Component {
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
           <RenderView emitter={emitter} />
         </ToolboxApp>
+        <ReactiveLogo />
       </div>
     )
   }
