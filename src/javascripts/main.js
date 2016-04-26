@@ -1,4 +1,5 @@
 'use strict'
+import 'babel-polyfill'
 import 'stylesheets/main'
 import React from 'react'
 import ReactDom from 'react-dom'
