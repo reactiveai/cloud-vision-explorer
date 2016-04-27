@@ -9,6 +9,7 @@ module.exports = {
   devtool: 'inline-source-map',
 
   entry: [
+    'babel-polyfill',
     'webpack/hot/only-dev-server',
     './src/javascripts/main.js'
   ],
@@ -48,7 +49,10 @@ module.exports = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
-    new ExtractTextPlugin('[name].css')
+    new ExtractTextPlugin('[name].css'),
+    new webpack.ProvidePlugin({
+      'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+    })
   ],
 
   postcss: [
@@ -67,6 +71,6 @@ module.exports = {
   },
 
   stats: {
-    children: false  
+    children: false
   }
 }
