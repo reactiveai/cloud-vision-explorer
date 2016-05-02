@@ -14,7 +14,7 @@ import { createHexagonSpriteFromUrl,
 import { gcsBucketName }              from '../config.js'
 
 // Load some webpack-incompatible modules
-require('../misc/TrackballControls.js')(THREE)
+require('../misc/FreeLookControls.js')(THREE)
 
 // Styles
 import 'stylesheets/RenderView'
@@ -93,6 +93,9 @@ export default React.createClass({
 
     // Used for mousepicking
     const mouse = new THREE.Vector2()
+
+    const lookAtTarget = new THREE.Vector3()
+    const cameraTargetPosition = camera.position.clone()
 
     // Do some post-processing for points
     points.forEach((n, i) => {
@@ -244,19 +247,8 @@ export default React.createClass({
 
     scene.add(group)
 
-    const controls = new THREE.TrackballControls(camera, this._container)
+    const controls = new THREE.FreeLookControls(camera, this._container)
 
-    controls.rotateSpeed = 1.0 * 1.0
-    controls.zoomSpeed = 1.2 * 0.1
-    controls.panSpeed = 0.8 * 0.1
-
-    controls.noZoom = false
-    controls.noPan = false
-
-    controls.staticMoving = false
-    controls.dynamicDampingFactor = 0.2
-
-    controls.keys = [ 65, 83, 68 ]
 
     const trackNode = (node) => {
       const nodeGroup = clusters[node.g]
@@ -335,8 +327,7 @@ export default React.createClass({
             interpolatedPosition.normalize().multiplyScalar(distance)
 
             camera.position.copy(interpolatedPosition)
-
-            camera.lookAt(new THREE.Vector3())
+            cameraTargetPosition.copy(camera.position)
           }, TWEEN.Easing.Linear.None)
         ])
       })
@@ -515,7 +506,7 @@ export default React.createClass({
       raycaster.setFromCamera( mouse, camera )
       const intersects = raycaster.intersectObject(particles)
 
-      if ( intersects.length > 0 ) {
+      if ( intersects.length > 0 && !controls.hasRecentlyRotated) {
         const index = intersects[ 0 ].index
         if ( mousedownObject === index ) {
           // Make sure the object has an actual image
@@ -527,7 +518,40 @@ export default React.createClass({
       }
     }, false)
 
-    const tick = () => {
+    this._container.addEventListener('mousewheel', () => {
+      let delta = 0
+
+      if ( event.wheelDelta ) {
+        delta = event.wheelDelta / 40
+      }
+      else if ( event.detail ) {
+        delta = - event.detail / 3
+      }
+
+      const forwardVec = new THREE.Vector3(0, 0, -1)
+      forwardVec.applyQuaternion(camera.quaternion)
+      forwardVec.multiplyScalar(delta)
+
+      cameraTargetPosition.add(forwardVec)
+    })
+
+    const m1 = new THREE.Matrix4()
+
+    const tick = (delta) => {
+
+      if (!currentlyTrackingNode) {
+        controls.enabled = true
+        controls.update(delta)
+        camera.position.lerp(cameraTargetPosition, delta * 4)
+      }
+      else {
+        controls.enabled = false
+        m1.lookAt(camera.position, lookAtTarget, camera.up)
+        const targetQuat = new THREE.Quaternion()
+        targetQuat.setFromRotationMatrix(m1)
+        camera.quaternion.slerp(targetQuat, delta * 2)
+      }
+
       raycaster.setFromCamera( mouse, camera )
 
       const intersects = raycaster.intersectObject(particles)
@@ -594,15 +618,12 @@ export default React.createClass({
     }
 
     const animate = () => {
-      if (!currentlyTrackingNode) {
-        controls.update()
-      }
+      const delta = clock.getDelta()
 
       requestAnimationFrame(animate)
 
       TWEEN.update()
 
-      const delta = clock.getDelta()
       tick(delta)
 
       renderer.render(scene, camera)
