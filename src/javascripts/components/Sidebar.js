@@ -71,12 +71,14 @@ class GraphTab extends React.Component {
       }
     }
 
+    const link = `https://www.google.com/maps/place/${latitude}+${longitude}/@${latitude},${longitude},11z`
+
     return (
       <div className="description">
         <div>{annon.description}</div>
         <div style={style.wrapper}>
           {_.round(latitude, 6)}, {_.round(longitude, 6)}
-          <div style={style.maps}></div>
+          <a href={link} target="_blank"><div style={style.maps}></div></a>
         </div>
       </div>
     )
