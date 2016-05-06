@@ -54,18 +54,31 @@ class GraphTab extends React.Component {
       )
     }
 
+    const googleMapsStaticAPIKey = 'AIzaSyB7RdXl3Bo0RrOeTjN0fai2ABzd20O7VZI'
+
     const {latitude, longitude} = annon.locations[0].latLng   // takes only the first one
     const style = {
-      marginTop: 8,
-      fontSize: 'medium'
+      wrapper: {
+        marginTop: 8,
+        fontSize: 'medium'
+      },
+      maps: {
+        marginTop: '20px',
+        height: '100px',
+        backgroundPosition: 'center',
+        backgroundImage: `url('https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=11&size=306x200\
+&markers=${latitude},${longitude}&key=${googleMapsStaticAPIKey}')`
+      }
     }
+
+    const link = `https://www.google.com/maps/place/${latitude}+${longitude}/@${latitude},${longitude},11z`
 
     return (
       <div className="description">
         <div>{annon.description}</div>
-        <div style={style}>
-          Latitude : {latitude}<br />
-          Longitude : {longitude}
+        <div style={style.wrapper}>
+          {_.round(latitude, 6)}, {_.round(longitude, 6)}
+          <a href={link} target="_blank"><div style={style.maps}></div></a>
         </div>
       </div>
     )
@@ -239,7 +252,7 @@ class GraphTab extends React.Component {
         {getDetectionSection('landmarkAnnotations', 'landmark-detection', 'LANDMARK', annons =>
           annons.map((annon, index) =>
             <div key={index} className="landmark-detection">
-              <PlusTitle>{this.landmarkContent(annon)}</PlusTitle>
+              {this.landmarkContent(annon)}
             </div>
           )
         )}
