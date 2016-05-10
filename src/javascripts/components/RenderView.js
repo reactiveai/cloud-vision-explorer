@@ -373,8 +373,6 @@ export default React.createClass({
 
       renderer.setSize(window.innerWidth, window.innerHeight)
 
-      controls.handleResize()
-
     }, false)
 
     let lastClickedNodeIndex = null
