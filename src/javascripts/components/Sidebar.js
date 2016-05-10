@@ -11,6 +11,7 @@ import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
+import FaceView from './FaceView'
 import Switch from 'react-toolbox/lib/switch'
 import InlineSVG from 'react-inlinesvg'
 
@@ -89,6 +90,13 @@ class GraphTab extends React.Component {
     const classForPerson = (idx) => {
       const classes = ['primary', 'secondary', 'third']
       return `face-detection-person ${classes[idx % classes.length]}`
+    }
+    const colorForPerson = (idx) => {
+      // Has to be hardcoded unfortunately, since there's no way
+      // to extract a color from CSS to JS unless we use react inline styles
+      // Taken from $sidebar-primary-color-x
+      const colors = [0x1DE9B6, 0xD4E157, 0x2196F3]
+      return colors[idx % colors.length]
     }
     const likelihoodLevel = (likelihood) => {
       const levelMap = {
@@ -184,7 +192,12 @@ class GraphTab extends React.Component {
             {annons.map((face, idx) =>
               <div className={classForPerson(idx)} key={idx}>
                 <div>
-                  <FontIcon className="humanoid" value="accessibility" />
+                  <FaceView className="face-view"
+                    faceColor={colorForPerson(idx)}
+                    rollAngle={face.rollAngle}
+                    panAngle={face.panAngle}
+                    tiltAngle={face.tiltAngle}
+                  />
                   <div className="person-label">Person {idx + 1}</div>
                   {getAngleSection('Roll', face.rollAngle)}
                   {getAngleSection('Pan', face.panAngle)}

@@ -1,3 +1,37 @@
+@import "./toolbox-theme";
+
+.face-detection-overlay {
+  svg {
+    .cls-1 {
+      color: red;
+    }
+  }
+  &:nth-child(3n+2) {
+    .face-bounding-poly {
+      border: solid 2px $sidebar-primary-color-1;
+    }
+    .face-id {
+      color: $sidebar-primary-color-1;
+    }
+  }
+  &:nth-child(3n+0) {
+    .face-bounding-poly {
+      border: solid 2px $sidebar-secondary-color-1;
+    }
+    .face-id {
+      color: $sidebar-secondary-color-1;
+    }
+  }
+  &:nth-child(3n+1) {
+    .face-bounding-poly {
+      border: solid 2px $sidebar-third-color-1;
+    }
+    .face-id {
+      color: $sidebar-third-color-1;
+    }
+  }
+}
+
 .image-view {
   position: relative;
 
@@ -16,9 +50,20 @@
   }
 
   .face-bounding-poly {
+    border: solid 2px $sidebar-primary-color-1;
     position: absolute;
-    border: solid 2px #1DE9B6;
     padding: 0 1px 1px 0;
+  }
+
+  .face-id {
+    color: $sidebar-primary-color-1;
+    position: absolute;
+    font-size: 20px;
+    bottom: 0;
+    left: 50%;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    margin-left: -6px;
+    margin-bottom: -27px;
   }
 
   .face-landmark {
