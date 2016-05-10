@@ -4,7 +4,7 @@ import 'stylesheets/main'
 import React from 'react'
 import ReactDom from 'react-dom'
 import { Provider } from 'react-redux'
-import { Router, Route, Redirect } from 'react-router'
+import { Router, Route, Redirect, hashHistory } from 'react-router'
 import injectTapEventPlugin from 'react-tap-event-plugin'
 injectTapEventPlugin()
 
@@ -16,7 +16,7 @@ const store = configureStore()
 
 ReactDom.render(
   <Provider store={store}>
-    <Router>
+    <Router history={hashHistory}>
       <Route path="/galaxy" component={FrontPage} />
       <Route path="/" component={EntrancePage} />
       <Redirect from="*" to="/" />
