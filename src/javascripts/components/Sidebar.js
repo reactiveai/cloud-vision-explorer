@@ -7,7 +7,6 @@ import Drawer from 'react-toolbox/lib/drawer'
 import FontIcon from 'react-toolbox/lib/font_icon'
 import Button from 'react-toolbox/lib/button'
 import ProgressBar from 'react-toolbox/lib/progress_bar'
-import { Donut } from 'rebass'
 import 'stylesheets/Sidebar'
 import tabStyle from 'react-toolbox/lib/tabs/style'
 import PlusTitle from './PlusTitle'
@@ -128,14 +127,7 @@ class GraphTab extends React.Component {
       return (
         <section className="angle">
           <div className="angle-label">{name}</div>
-          <Donut
-            color="currentColor"
-            size={50}
-            strokeWidth={4}
-            value={(value + 180) / 360}
-          >
-            <span className="angle-value">{_.round(value)}&deg;</span>
-          </Donut>
+          <span className="angle-value">{_.round(value)}&deg;</span>
         </section>
       )
     }
