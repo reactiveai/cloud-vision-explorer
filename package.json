@@ -6,6 +6,7 @@
     "node": "5.x"
   },
   "scripts": {
+    "start": "gulp",
     "lint": "gulp lint",
     "build": "gulp build"
   },
@@ -50,7 +51,6 @@
     "eslint-plugin-react": "^4.1.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "gulp": "^3.9.1",
-    "gulp-jasmine": "^2.3.0",
     "gulp-plumber": "^1.1.0",
     "gulp-supervisor": "^0.1.2",
     "json-loader": "^0.5.4",

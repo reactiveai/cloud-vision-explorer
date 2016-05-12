@@ -4,12 +4,14 @@
 
 Run `npm install`.
 
-Run `gulp` and open `http://localhost:3000/webpack-dev-server/index.html`.
+Run `npm start` and open `http://localhost:3000/webpack-dev-server/index.html`.
 
 If you can't stand the banner, open `http://localhost:3000/` instead.
 
 ## Deploying
 
-Run `gulp build`
+Run `npm run build`, then upload the contents in `build/prod` folder.
 
-Upload the `build/prod` folder.
+## Custom
+
+See Wiki
