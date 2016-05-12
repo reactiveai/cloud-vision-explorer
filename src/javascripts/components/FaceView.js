@@ -1,9 +1,5 @@
 
 import React    from 'react'
-import THREE    from 'three'
-
-// Load some webpack-incompatible modules
-require('../misc/OBJLoader.js')(THREE)
 
 import getBase64FaceImage from '../misc/FaceRenderer.js'
 
