@@ -40,14 +40,28 @@ module.exports = (THREE) => {
       object.quaternion.multiply(quat)
     }
 
-    element.addEventListener('mousemove', () => {
+    let previousEvent = null
+
+    element.addEventListener('mousemove', (event) => {
       if ( this.enabled === false || !this.holdingDownMouse ) return
+
+      if (!previousEvent) {
+        previousEvent = {
+          screenX: event.screenX,
+          screenY: event.screenY
+        }
+      }
 
       this.hasRecentlyRotated = true
       clearRecentlyRotated()
 
-      const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0
-      const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0
+      const movementX = event.screenX - previousEvent.screenX
+      const movementY = event.screenY - previousEvent.screenY
+
+      previousEvent = {
+        screenX: event.screenX,
+        screenY: event.screenY
+      }
 
       this.orientation.y += movementX * 0.0025
       this.orientation.x += movementY * 0.0025
@@ -61,6 +75,7 @@ module.exports = (THREE) => {
 
     element.addEventListener( 'mouseup', () => {
       this.holdingDownMouse = false
+      previousEvent = null
     }, false)
   }
 }
