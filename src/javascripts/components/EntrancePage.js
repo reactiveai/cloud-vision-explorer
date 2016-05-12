@@ -12,7 +12,7 @@ export default class EntrancePage extends Component {
     return (
       <div className="entrance">
         <div className="poweredby">
-          <img className="gcp-logo" src="/images/Google-Cloud-Platform.png" /><br />
+          <img className="gcp-logo" src="/images/Vision-API.png" /><br />
           <h1>Cloud Vision API<br/>Demo</h1>
         </div>
         <div>
