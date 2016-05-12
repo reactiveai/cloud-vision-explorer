@@ -219,6 +219,11 @@
             margin-bottom: 0;
           }
 
+          .face-view {
+            width: 80px;
+            height: 80px;
+          }
+
           &.primary {
             color: $sidebar-primary-color-2;
 
@@ -268,12 +273,12 @@
             margin-right: 0.5em;
           }
 
-          .Donut {
-            font-size: 0.8em !important;
-
-            .angle-value {
-              margin-left: 0.5em;
-            }
+          .angle-value {
+            margin-left: 0.5em;
+            margin-top: 0.05em;
+            padding-bottom: 0.05em;
+            width: 100%;
+            text-align: right;
           }
         }
 

@@ -100,15 +100,15 @@ export default class ImaveView extends React.Component {
       return 'faceAnnotations' in vision ?
         vision.faceAnnotations.map((face, idx) =>
           <div className="face-detection-overlay" key={idx}>
-            <div
-              className="face-bounding-poly"
-              style={getBoundingPolyStyle(face.boundingPoly)}
-            />
+            <div className="face-bounding-poly"
+              style={getBoundingPolyStyle(face.boundingPoly)}>
+              <div className="face-id">{idx + 1}</div>
+            </div>
             {face.landmarks.map(landmark =>
               <img
                 className="face-landmark" style={getLandmarkStyle(landmark)}
                 key={landmark.type}
-                src={require('../../images/icon/face_landmark')}
+                src={require(`../../images/icon/face_landmark${idx % 3}`)}
               />
             )}
           </div>

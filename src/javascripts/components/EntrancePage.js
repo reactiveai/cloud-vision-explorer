@@ -12,10 +12,18 @@ export default class EntrancePage extends Component {
     return (
       <div className="entrance">
         <div className="poweredby">
-          <img className="gcp-logo" src="/images/Google-Cloud-Platform.png" /><br />
+          <img className="gcp-logo" src="/images/Vision-API.png" /><br />
           <h1>Cloud Vision API<br/>Demo</h1>
         </div>
-        <RippleLink className="launch-button" to="/galaxy">LAUNCH</RippleLink>
+        <div>
+          <RippleLink className="launch-button" to="/galaxy">LAUNCH</RippleLink>
+          <nav>
+            <ul>
+              <li><a href="#" target="_blank">What's this?</a></li>
+              <li><a href="https://github.com/reactiveai/cloud-vision-explorer" target="_blank">GitHub repo</a></li>
+            </ul>
+          </nav>
+        </div>
         <ReactiveLogo />
       </div>
     )
