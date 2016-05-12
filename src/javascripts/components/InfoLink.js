@@ -70,7 +70,7 @@ export default class InfoLink extends React.Component {
 
     return (
       <div style={this.props.style}>
-        <img className="gcp-logo" src="/images/Google-Cloud-Platform.png" /><br />
+        <img className="gcp-logo" src="/images/Vision-API.png" /><br />
         <h1 style={style.h1}>Cloud Vision API<br/>Demo</h1>
         <ul style={style.imageBookmarks.ul}>
           {imageBookmarks}
