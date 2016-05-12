@@ -32,8 +32,25 @@
     text-decoration: none;
     font-weight: bold;
     font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+  }
+
+  nav {
+    text-align: center;
+    margin-top: 20px;
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    li {
+      display: block;
+      margin-top: 10px;
+      a {
+        text-decoration: none;
+        text-transform: uppercase;
+        color: #ccc;
+      }
+    }
   }
 }
