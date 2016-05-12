@@ -1,7 +1,0 @@
-version: '2'
-services:
-  nginx:
-    build: .
-    ports:
-      - "80:80"
-      - "443:443"
