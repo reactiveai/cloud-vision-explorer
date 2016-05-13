@@ -35,6 +35,7 @@ public/javascripts/bundle.js
 
 scripts/images/*.jpg
 scripts/results/*
+scripts/vision_api.json
 build/**/*
 *.mat
 *.pyc
