@@ -1,0 +1,10 @@
+{
+  "responses": [
+    {
+      "error": {
+        "code": 3,
+        "message": "image-annotator::Malformed request.: Invalid GCS path specified: "
+      }
+    }
+  ]
+}
