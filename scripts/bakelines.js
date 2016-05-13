@@ -7,7 +7,16 @@ const THREE = require('three')
 const _ = require('lodash')
 const fs = require('fs')
 
-const outputJson = require('../public/output.json')
+const args = process.argv.slice(2)
+
+if (!args[0]) {
+  console.error('No input file given')
+  process.exit()
+}
+
+console.log(args[0])
+const outputJson = JSON.parse(fs.readFileSync(args[0], 'utf8'))
+console.log(outputJson)
 
 const data = outputJson.points
 
@@ -73,7 +82,7 @@ _.forEach(groupedData, (value, key) => {
   outputJson.points = [...outputJson.points, ...serializedVectors]
 })
 
-fs.writeFile('./public/output.json', JSON.stringify(outputJson), (err) => {
+fs.writeFile(args[0], JSON.stringify(outputJson), (err) => {
   if (err) {
     console.log(err)
     return
