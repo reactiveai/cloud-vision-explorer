@@ -8,10 +8,11 @@ from collections import Counter
 from sys import argv
 
 import numpy as np
+import scipy.io
+
 from clustering import kmeans
 from tsne import low_dim_mapper
-from util import json_utils
-import scipy.io
+from util import utils
 
 DEFAULT_NO_CLUSTERS = 25
 DEFAULT_INPUT_FILENAME = 'vision_api_1000.json'
@@ -97,6 +98,7 @@ if __name__ == "__main__":
 
     scipy.io.savemat('vectors.mat', mdict=matlab_obj, appendmat=False, do_compression=False, oned_as='row')
 
+    # TODO: optimize this code. Request from Google to have a specific cluster name such as CAT.
     labels = []
     max_frequency_specific_cluster = 0
     specific_cluster_id = -1
@@ -140,5 +142,5 @@ if __name__ == "__main__":
               '(count=', max_frequency_specific_cluster,
               '- specific), center=', specific_cluster_center)
 
-    json_utils.convert_to_json(X_vectors, X_assignments, c_centers, labels, X_image_ids, filename=arg_p.output)
+    utils.convert_to_json(X_vectors, X_assignments, c_centers, labels, X_image_ids, filename=arg_p.output)
     print("Program took {0:.2f} seconds to execute.".format(time.time() - start_time))

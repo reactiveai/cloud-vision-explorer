@@ -1,6 +1,9 @@
 from __future__ import print_function
+
 import json
+
 import numpy as np
+
 import word2vec
 
 
@@ -89,30 +92,3 @@ def load_json(json_input_filename, w2v_dim=50):
     label_map = generate_label_map(json_input_filename)
     enrich_map_with_word2vec(label_map, w2v)
     return label_map
-
-'''
-from scipy.io import savemat
-import pickle
-import string
-if __name__ == "__main__":
-    vecs = []
-    label_names = []
-    label_map = load_json('../input.json')
-    for label in label_map.values():
-        # print("______________")
-        for val in label:  # use scores in a later version.
-            vec = val['word2vec']
-            score = val['score']
-            desc = str(''.join(c for c in val['description'] if c in string.printable))
-
-            label_names.append(desc)
-            vecs.append(vec)
-
-    matlab_dict = dict()
-    matlab_dict['data'] = vecs
-    matlab_dict['label'] = label_names
-    savemat(file_name="tsne.mat", appendmat=False, do_compression=False, oned_as='row', mdict=matlab_dict)
-    tsne_python_file = open('tsne_data.dat', 'w')
-    pickle.dump(obj=matlab_dict, file=tsne_python_file)
-    np.savetxt('tsne_data.txt', vecs)
-'''

@@ -14,4 +14,4 @@ Run `npm run build`, then upload the contents in `build/prod` folder.
 
 ## Custom
 
-See [Wiki](/reactiveai/cloud-vision-explorer/wiki/How-to-build-your-own-cluster)
+See [Wiki](/reactiveai/cloud-vision-explorer/wiki/How-to-build-your-own-galaxy)
