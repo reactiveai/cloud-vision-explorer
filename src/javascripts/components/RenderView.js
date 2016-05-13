@@ -11,7 +11,8 @@ import { createHexagonSpriteFromUrl,
          createClusterNameSprite,
          groupOpacFunction,
          updateNodeColor  }           from '../misc/RenderUtil.js'
-import { gcsBucketName }              from '../config.js'
+import { gcsBucketName,
+         gcsDatapointPath }           from '../config.js'
 
 // Load some webpack-incompatible modules
 require('../misc/FreeLookControls.js')(THREE)
@@ -21,7 +22,7 @@ import 'stylesheets/RenderView'
 
 const seededRandom = new Random(Random.engines.mt19937().seed(0))
 
-const DATAPOINT_URL = `https://storage.googleapis.com/${gcsBucketName}/datapoint/output_100k.json`
+const DATAPOINT_URL = `https://storage.googleapis.com/${gcsBucketName}/${gcsDatapointPath}`
 
 const tweenSpeed = 200
 const thumbCheckSpeed = 10
