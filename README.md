@@ -1,5 +1,7 @@
 # Google Cloud Vision API Explorer
 
+[Demo Site](http://vision-explorer.reactive.ai/) (Chrome v50 or later only)
+
 ## Quick start
 
 Run `npm install`.
