@@ -34,6 +34,7 @@ public/javascripts/bundle.js
 .envrc
 
 scripts/images/*.jpg
+scripts/results/*
 build/**/*
 *.mat
 *.pyc
