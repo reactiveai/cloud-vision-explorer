@@ -3,7 +3,7 @@ from __future__ import print_function
 import string
 
 from bhtsne import bh_tsne
-from util import json_utils
+from util import utils
 from util import word2vec
 
 
@@ -11,7 +11,7 @@ def generate_vectors(json_input_filename, w2v_dim, perplexity, theta, pca_dims, 
     vectors = []
     most_dominant_labels = []
     image_ids = []
-    label_map = json_utils.load_json(json_input_filename, w2v_dim)
+    label_map = utils.load_json(json_input_filename, w2v_dim)
     for image_id, label in label_map.iteritems():
         label_vectors = []
         label_scores = []
@@ -34,5 +34,5 @@ def generate_vectors(json_input_filename, w2v_dim, perplexity, theta, pca_dims, 
                           no_dims=dim):
         embeddings.append(result)
 
-    embeddings = json_utils.scale_max_abs(embeddings)
+    embeddings = utils.scale_max_abs(embeddings)
     return embeddings, most_dominant_labels, image_ids

@@ -8,13 +8,13 @@ import tensorflow as tf
 
 def tf_k_means_cluster(vectors, no_clusters=3, no_iterations=100, verbose=False):
     """
-    K-Means Clustering using TensorFlow.
+    K-Means Clustering using TensorFlow. Thanks to David Andersen.
     :param vectors: should be a n*k 2-D NumPy array, where n is the number
     of vectors of dimensionality k.
     :param no_clusters:  number of clusters. should be an integer.
     :param no_iterations:  number of iterations. should be an integer.
     :param verbose:  True or False.
-    :return:
+    :return: clusters
     """
     N = len(vectors)
     dim = len(vectors[0])
