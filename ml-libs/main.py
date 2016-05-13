@@ -8,7 +8,6 @@ from collections import Counter
 from sys import argv
 
 import numpy as np
-import scipy.io
 
 from clustering import kmeans
 from tsne import low_dim_mapper
@@ -96,7 +95,8 @@ if __name__ == "__main__":
         'assignments': X_assignments
     }
 
-    scipy.io.savemat('vectors.mat', mdict=matlab_obj, appendmat=False, do_compression=False, oned_as='row')
+    # import scipy.io
+    # scipy.io.savemat('vectors.mat', mdict=matlab_obj, appendmat=False, do_compression=False, oned_as='row')
 
     # TODO: optimize this code. Request from Google to have a specific cluster name such as CAT.
     labels = []
