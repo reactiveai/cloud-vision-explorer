@@ -4,6 +4,32 @@
 
 body {
   font-family: "Roboto";
+
+  .overlay-dialog {
+    background-color: rgba(0,0,0,0.7);
+    text-align: center;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+
+    section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #DDDDDD;
+
+      .material-icons {
+        font-size: 200%;
+      }
+      p {
+        font-size: 130%;
+      }
+    }
+    nav {
+      display: none;
+    }
+  }
 }
 
 pre {

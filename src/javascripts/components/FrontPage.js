@@ -11,6 +11,7 @@ import * as sidebarActionCreators from '../actions/sidebar'
 import 'stylesheets/FrontPage'
 import {EventEmitter} from 'fbemitter'
 import { ReactiveLogo } from './ReactiveLogo'
+import BrowserChecker from './BrowserChecker'
 
 const emitter = new EventEmitter()
 
@@ -51,6 +52,7 @@ class FrontPage extends Component {
             highlightFaceLandmarks={sidebar.highlightFaceLandmarks}
           />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
+          <BrowserChecker />
           <RenderView emitter={emitter} />
         </ToolboxApp>
         <ReactiveLogo />
