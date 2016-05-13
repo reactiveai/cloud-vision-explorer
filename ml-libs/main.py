@@ -14,8 +14,8 @@ from tsne import low_dim_mapper
 from util import utils
 
 DEFAULT_NO_CLUSTERS = 25
-DEFAULT_INPUT_FILENAME = 'vision_api_1000.json'
-DEFAULT_OUTPUT_FILENAME = 'output.json'
+DEFAULT_INPUT_FILENAME = os.path.join('..', 'scripts', 'vision_api.json')
+DEFAULT_OUTPUT_FILENAME = os.path.join('..', 'scripts', 'vision_api.galaxy.json')
 DEFAULT_GLOVE_WORD2VEC_DIM = 200  # valid values are 50, 100, 150, 200, 250 and 300
 DEFAULT_INITIAL_DIMS_AFTER_PCA = 50  # should be less or equal than glove word2vec dimension
 DEFAULT_PERPLEXITY = 50
