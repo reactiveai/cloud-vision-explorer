@@ -4,6 +4,8 @@
 
 ## Quick start
 
+Copy `src/javascripts/config.js.sample` to `src/javascripts/config.js` and setup the variables.
+
 Run `npm install`.
 
 Run `npm start` and open `http://localhost:3000/webpack-dev-server/index.html`.

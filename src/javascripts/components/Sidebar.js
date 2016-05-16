@@ -13,6 +13,7 @@ import PlusTitle from './PlusTitle'
 import FaceView from './FaceView'
 import Switch from 'react-toolbox/lib/switch'
 import InlineSVG from 'react-inlinesvg'
+import { gcsGoogleMapsApiKey } from '../config.js'
 
 import { getVisionJsonURL } from '../misc/Util.js'
 
@@ -54,8 +55,6 @@ class GraphTab extends React.Component {
       )
     }
 
-    const googleMapsStaticAPIKey = 'AIzaSyB7RdXl3Bo0RrOeTjN0fai2ABzd20O7VZI'
-
     const {latitude, longitude} = annon.locations[0].latLng   // takes only the first one
     const style = {
       wrapper: {
@@ -67,7 +66,7 @@ class GraphTab extends React.Component {
         height: '100px',
         backgroundPosition: 'center',
         backgroundImage: `url('https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=11&size=306x200\
-&markers=${latitude},${longitude}&key=${googleMapsStaticAPIKey}')`
+&markers=${latitude},${longitude}&key=${gcsGoogleMapsApiKey}')`
       }
     }
 

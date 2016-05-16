@@ -43,3 +43,4 @@ build/**/*
 ml-libs/data/*.txt
 .idea
 *.mat
+src/javascripts/config.js
