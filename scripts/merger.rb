@@ -1,17 +1,21 @@
 #!/usr/bin/env ruby
 require 'json'
 
-records = []
-Dir.glob("results/*.json").each do |file|
+output = File.open('vision_api.json', 'w')
+inputs = Dir.glob("results/*.json")
+input_count = inputs.length
+
+output.puts '['
+
+inputs.each_with_index{|file, index|
   image_id = File.basename(file, '.json')
 
   record = JSON.parse(File.read(file))
   record['imageId'] = image_id
-  records << record
-end
 
-File.open('vision_api.json', 'w') do |f|
-  f.puts '['
-  f.puts records.join(",\n")
-  f.puts ']'
-end
+	output.puts record.to_json
+	output.puts ',' if index != input_count - 1
+}
+
+output.puts ']'
+output.close
