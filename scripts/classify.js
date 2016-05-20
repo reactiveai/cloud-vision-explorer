@@ -35,7 +35,7 @@ const requests = _.map(images, (imagePath) => {
     })
     .then((res) => {
       const baseName = path.basename(imagePath, '.jpg')
-      fs.writeFileSync(`results/${baseName}.json`, JSON.stringify(res.data, null, 2))
+      fs.writeFileSync(`results/${baseName}.json`, JSON.stringify(res.data.responses, null, 2))
       console.log(imagePath)
     })
     .catch(console.error)
