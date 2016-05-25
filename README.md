@@ -2,6 +2,8 @@
 
 [Demo Site](http://vision-explorer.reactive.ai/) (Chrome v50 or later only)
 
+[About Cloud Vision Explorer](https://cloud.google.com/blog/big-data/2016/05/explore-the-galaxy-of-images-with-cloud-vision-api)
+
 ## Quick start
 
 Copy `src/javascripts/config.js.sample` to `src/javascripts/config.js` and setup the variables.
