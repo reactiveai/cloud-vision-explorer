@@ -52,7 +52,6 @@ class FrontPage extends Component {
             highlightFaceLandmarks={sidebar.highlightFaceLandmarks}
           />
           <Sidebar sidebar={sidebar} emitter={emitter} {...sidebarBounds} />
-          <BrowserChecker />
           <RenderView emitter={emitter} />
         </ToolboxApp>
         <ReactiveLogo />

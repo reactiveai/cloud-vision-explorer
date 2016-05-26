@@ -26,7 +26,6 @@ export default class EntrancePage extends Component {
           </nav>
         </div>
         <ReactiveLogo />
-        <BrowserChecker />
       </div>
     )
   }
