@@ -34,9 +34,7 @@ module.exports = {
       })
     }
   },
-  createClusterNameSprite: (cluster) => {
-    const text = cluster.label
-
+  createTextSprite: (text) => {
     const canvas = document.createElement('canvas')
     canvas.width = 512
     canvas.height = 512

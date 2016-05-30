@@ -8,7 +8,7 @@ import Random   from 'random-js'
 import { getVisionJsonURL,
          preloadImage }               from '../misc/Util.js'
 import { createHexagonSpriteFromUrl,
-         createClusterNameSprite,
+         createTextSprite,
          groupOpacFunction,
          updateNodeColor  }           from '../misc/RenderUtil.js'
 import { gcsBucketName,
@@ -236,7 +236,7 @@ export default React.createClass({
 
     // Add cluster names
     clusters.forEach((cluster) => {
-      const sprite = createClusterNameSprite(cluster)
+      const sprite = createTextSprite(cluster.label)
 
       sprite.position.copy(cluster.center)
       sprite.scale.multiplyScalar(denseFactor / 2)
