@@ -48,7 +48,7 @@ gulp.task('webpack-dev-server', () => {
     stats: {
       colors: true
     }
-  }).listen(3000, 'localhost', (err) => {
+  }).listen(3000, (err) => {
     if(err) throw new gutil.PluginError('webpack-dev-server', err)
     // Server listening
     gutil.log('[webpack-dev-server]', 'http://localhost:3000/webpack-dev-server/index.html')
