@@ -511,6 +511,7 @@ export default React.createClass({
           // Make sure the object has an actual image
           if (points[index].plane) {
             lastClickedNodeIndex = index
+            console.log(points[lastClickedNodeIndex].i)
             this.props.emitter.emit('showSidebar', points[lastClickedNodeIndex].i)
           }
         }
