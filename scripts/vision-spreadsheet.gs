@@ -13,10 +13,11 @@ function loadCsvInNewSheet(fileUrl, sheetName) {
   }
 }
 
-
 function loadCveCsv() {
+  var cveCsvId = '0B69xlFeuS9FJQnNhcmJXQThVT1E';
+
   // DIRECT DOWNLOAD link to file
-  var cveCsvUrl = 'https://drive.google.com/uc?export=download&id=0B69xlFeuS9FJQnNhcmJXQThVT1E';
+  var cveCsvUrl = 'https://drive.google.com/uc?export=download&id='.concat(cveCsvId);
   
   var timestamp = Utilities.formatDate(new Date(), "JST", "yyy-MM-dd_HH:mm:ss");
   var sheetName = 'Vision Clusters '.concat(timestamp);
