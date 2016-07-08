@@ -12,7 +12,7 @@ inputs.each_with_index{|file, index|
   record = JSON.parse(File.read(file))
   record[0]['imageId'] = image_id
 
-	puts record['responses'][0].to_json
+	puts record[0].to_json
 	puts ',' if index != input_count - 1
 }
 
