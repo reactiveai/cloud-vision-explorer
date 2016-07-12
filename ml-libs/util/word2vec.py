@@ -2,12 +2,22 @@ from __future__ import print_function
 
 import numpy as np
 
+# cache
+W2V = None
+
 
 def linear_combination_vectors(vectors, coefficients):
     return np.sum(vectors * np.reshape(coefficients, (-1, 1)), axis=0) / np.sum(coefficients)
 
 
-def load_glove(dim):
+def get_glove_handler(dim=200):
+    global W2V
+    if W2V is None:
+        W2V = _load_glove(dim)
+    return W2V
+
+
+def _load_glove(dim):
     word2vec = {}
     print('[Word2vec] loading glove with', dim, 'dimensions')
     with open("data/glove.6B." + str(dim) + "d.txt") as f:
@@ -40,23 +50,3 @@ def create_vector(word, word2vec, word_vector_size, silent=False):
     if not silent:
         print("%s is missing" % word)
     return vector
-
-
-if __name__ == "__main__":
-    vec1 = np.array([1, 1, 1, 1, 1], dtype=float)
-    vec2 = np.array([3, 3, 3, 3, 3], dtype=float)
-    vec = np.array([vec1, vec2])
-    coeff = np.array([2, 4])
-    print(linear_combination_vectors(vec, coeff))
-
-    m_dim = 50
-    m_silent = False
-    m_word2vec = load_glove(m_dim)
-    hello_world = process_word("hello world", m_word2vec, m_silent)
-    hello = process_word("hello", m_word2vec, m_silent)
-    world = process_word("world", m_word2vec, m_silent)
-    hello_world2 = (hello + world) / 2
-    print(hello_world == hello_world2)
-
-    not_existing_word = process_word("idontknowaboutit", m_word2vec, m_silent)
-    print(not_existing_word)
